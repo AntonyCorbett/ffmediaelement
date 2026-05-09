@@ -494,17 +494,9 @@
 
             #endregion
 
-            // The maximum change in milliseconds for a skip or rewind operation
-            const double latencyStepMs = 10d;
-
-            // The minimum elapsed time in milliseconds before another rewind or skip operation can take place.
-            const double updateTimeoutMs = 200d;
-
             var lastSyncSinceMs = TimeSpan.FromTicks(DateTime.UtcNow.Ticks - LastSyncrhonize.Ticks).TotalMilliseconds;
             var hardwareLatencyMs = WaveFormat.ConvertByteSizeToDuration(requestedBytes).TotalMilliseconds;
             var bufferLatencyMs = BufferLatency.TotalMilliseconds; // we want the buffer latency to be the negative of the device latency
-            const double maxAcceptableLagMs = 0d; // more than this and we need to skip samples
-            const double minAcceptableLeadMs = -2 * latencyStepMs; // less than this and we need to rewind samples
             var isLoggingEnabled = Math.Abs(speedRatio - 1.0) <= double.Epsilon;
             var operationName = string.Empty;
 
@@ -518,21 +510,21 @@
                     return true;
 
                 // Don't perform syncs back and forth so often.
-                if (lastSyncSinceMs < updateTimeoutMs)
+                if (lastSyncSinceMs < Constants.AudioSyncUpdateTimeoutMs)
                     return true;
 
                 // The ideal target latency is the negative of the audio device's desired latency.
                 // this is approximately -40ms (i.e. have the buffer position 40ms ahead (negative lag) of the playback clock
                 // so that samples are rendered right on time.)
-                if (bufferLatencyMs >= minAcceptableLeadMs && bufferLatencyMs <= maxAcceptableLagMs)
+                if (bufferLatencyMs >= Constants.AudioSyncMinLeadMs && bufferLatencyMs <= Constants.AudioSyncMaxLagMs)
                     return true;
 
-                if (bufferLatencyMs > maxAcceptableLagMs)
+                if (bufferLatencyMs > Constants.AudioSyncMaxLagMs)
                 {
                     // this is the case where the buffer latency is too positive (i.e. buffer is lagging by too much)
                     // the goal is to skip some samples to make the buffer latency approximately that of the hardware latency
                     // so that the buffer leads by the hardware lag and we get sync-perferct results.
-                    var audioLatencyBytes = WaveFormat.ConvertMillisToByteSize(bufferLatencyMs + latencyStepMs);
+                    var audioLatencyBytes = WaveFormat.ConvertMillisToByteSize(bufferLatencyMs + Constants.AudioSyncLatencyStepMs);
 
                     if (AudioBuffer.ReadableCount > audioLatencyBytes)
                     {
@@ -546,12 +538,12 @@
                     Array.Clear(targetBuffer, targetBufferOffset, requestedBytes);
                     return false;
                 }
-                else if (bufferLatencyMs < minAcceptableLeadMs)
+                else if (bufferLatencyMs < Constants.AudioSyncMinLeadMs)
                 {
                     // this is the case where the buffer latency is too negative (i.e. buffer is leading by too much)
                     // the goal is to rewind some samples to make the buffer latency approximately that of the hardware latency
                     // so that the buffer leads by the hardware lag and we get sync-perferct results.
-                    var audioLatencyBytes = WaveFormat.ConvertMillisToByteSize(Math.Abs(bufferLatencyMs) - latencyStepMs);
+                    var audioLatencyBytes = WaveFormat.ConvertMillisToByteSize(Math.Abs(bufferLatencyMs) - Constants.AudioSyncLatencyStepMs);
 
                     if (AudioBuffer.RewindableCount > audioLatencyBytes)
                     {

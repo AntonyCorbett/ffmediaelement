@@ -156,6 +156,81 @@
         internal static TimeSpan DefaultTimingPeriod => TimeSpan.FromMilliseconds(15);
 
         /// <summary>
+        /// The minimum video frame duration used to clamp the rendering cycle interval.
+        /// Prevents excessively fast polling on very-high-frame-rate content.
+        /// </summary>
+        internal static TimeSpan MinVideoFrameDuration => TimeSpan.FromMilliseconds(10);
+
+        /// <summary>
+        /// The maximum video frame duration used to clamp the rendering cycle interval.
+        /// Prevents audio starvation on very-low-frame-rate content.
+        /// </summary>
+        internal static TimeSpan MaxVideoFrameDuration => TimeSpan.FromMilliseconds(50);
+
+        /// <summary>
+        /// Minimum number of video blocks to keep in the block buffer.
+        /// </summary>
+        internal const int MinVideoBlocks = 8;
+
+        /// <summary>
+        /// Minimum number of audio blocks to keep in the block buffer (~1 s at 48 kHz).
+        /// </summary>
+        internal const int MinAudioBlocks = 48;
+
+        /// <summary>
+        /// Minimum number of subtitle blocks to keep in the block buffer.
+        /// </summary>
+        internal const int MinSubtitleBlocks = 4;
+
+        /// <summary>
+        /// Target lower bound of the live-stream packet buffer in milliseconds (work in progress).
+        /// </summary>
+        internal static double LiveStreamMinBufferMs => 500d;
+
+        /// <summary>
+        /// Target upper bound of the live-stream packet buffer in milliseconds (work in progress).
+        /// </summary>
+        internal static double LiveStreamMaxBufferMs => 1000d;
+
+        /// <summary>
+        /// Minimum elapsed time in milliseconds between live-stream speed-ratio adjustments.
+        /// </summary>
+        internal static double LiveStreamSpeedUpdateTimeoutMs => 100d;
+
+        /// <summary>
+        /// Minimum buffer delta in milliseconds before a live-stream timing nudge is applied.
+        /// </summary>
+        internal static double LiveStreamTimingAdjustThresholdMs => 100d;
+
+        /// <summary>
+        /// Maximum bytes-of-buffer change applied per audio A/V sync correction step.
+        /// Expressed in milliseconds of audio duration.
+        /// </summary>
+        internal static double AudioSyncLatencyStepMs => 10d;
+
+        /// <summary>
+        /// Minimum elapsed time in milliseconds between consecutive audio skip/rewind corrections.
+        /// </summary>
+        internal static double AudioSyncUpdateTimeoutMs => 200d;
+
+        /// <summary>
+        /// Maximum audio lag (ms) before samples are skipped to re-sync.
+        /// Positive values mean audio is behind video.
+        /// </summary>
+        internal static double AudioSyncMaxLagMs => 0d;
+
+        /// <summary>
+        /// Minimum audio lead (ms) before samples are rewound to re-sync.
+        /// Derived from <see cref="AudioSyncLatencyStepMs"/>.
+        /// </summary>
+        internal static double AudioSyncMinLeadMs => -2d * AudioSyncLatencyStepMs;
+
+        /// <summary>
+        /// Minimum stream size in bytes below which buffering statistics are not computed.
+        /// </summary>
+        internal const long MinimumValidFileSize = 1024 * 1024;
+
+        /// <summary>
         /// Gets the maximum blocks to cache for the given component type.
         /// </summary>
         /// <param name="t">The t.</param>
@@ -163,10 +238,6 @@
         /// <returns>The number of blocks to cache.</returns>
         internal static int GetMaxBlocks(MediaType t, MediaEngine mediaCore)
         {
-            const int MinVideoBlocks = 8;
-            const int MinAudioBlocks = 48;
-            const int MinSubtitleBlocks = 4;
-
             var result = 0;
 
             if (t == MediaType.Video)
@@ -184,6 +255,7 @@
                 result = mediaCore.MediaOptions.SubtitleBlockCache;
                 if (result < MinSubtitleBlocks) result = MinSubtitleBlocks;
             }
+
 
             return result;
         }

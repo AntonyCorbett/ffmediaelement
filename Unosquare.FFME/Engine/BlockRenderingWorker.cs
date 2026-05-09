@@ -88,9 +88,6 @@ namespace Unosquare.FFME.Engine
         {
             get
             {
-                const double MaxFrameDuration = 50d;
-                const double MinFrameDuration = 10d;
-
                 try
                 {
                     var frameDuration = MediaCore.Timing.ReferenceType == MediaType.Video && MediaCore.Blocks[MediaType.Video].Count > 0
@@ -100,8 +97,8 @@ namespace Unosquare.FFME.Engine
                     // protect against too slow or too fast of a video framerate
                     // which might impact audio rendering.
                     frameDuration = frameDuration.Clamp(
-                        TimeSpan.FromMilliseconds(MinFrameDuration),
-                        TimeSpan.FromMilliseconds(MaxFrameDuration));
+                        Constants.MinVideoFrameDuration,
+                        Constants.MaxVideoFrameDuration);
 
                     return TimeSpan.FromTicks(frameDuration.Ticks - CurrentCycleElapsed.Ticks);
                 }
@@ -354,10 +351,6 @@ namespace Unosquare.FFME.Engine
             // It will fail on m3u8 files for example
             // I am using 2 approches: dealing with timing and dealing with speed ratios
             // I need more time to complete.
-            const double DefaultMinBufferMs = 500d;
-            const double DefaultMaxBufferMs = 1000d;
-            const double UpdateTimeoutMs = 100d;
-
             if (!State.IsLiveStream)
                 return;
 
@@ -365,8 +358,8 @@ namespace Unosquare.FFME.Engine
             if (State.PacketBufferDuration == TimeSpan.MinValue)
                 return;
 
-            var maxBufferedMs = DefaultMaxBufferMs;
-            var minBufferedMs = DefaultMinBufferMs;
+            var maxBufferedMs = Constants.LiveStreamMaxBufferMs;
+            var minBufferedMs = Constants.LiveStreamMinBufferMs;
             var bufferedMs = Container.Components.Seekable.BufferDuration.TotalMilliseconds; // State.PacketBufferDuration.TotalMilliseconds;
 
             if (State.HasAudio && State.HasVideo && !HasDisconnectedClocks)
@@ -391,12 +384,12 @@ namespace Unosquare.FFME.Engine
                 ? bufferedMs - maxBufferedMs
                 : minBufferedMs - bufferedMs;
 
-            if (!needsSpeedChange || lastUpdateSinceMs < UpdateTimeoutMs)
+            if (!needsSpeedChange || lastUpdateSinceMs < Constants.LiveStreamSpeedUpdateTimeoutMs)
                 return;
 
             // TODO: Another option is to mess around some with the timing itself
             // instead of using the speedratio.
-            if (bufferedDelta > 100d && (needsSpeedUp || needsSlowDown))
+            if (bufferedDelta > Constants.LiveStreamTimingAdjustThresholdMs && (needsSpeedUp || needsSlowDown))
             {
                 var deltaPosition = TimeSpan.FromMilliseconds(bufferedDelta / 10);
                 if (needsSlowDown) deltaPosition = deltaPosition.Negate();

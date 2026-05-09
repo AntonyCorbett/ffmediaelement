@@ -702,8 +702,6 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void InitializeBufferingStatistics()
         {
-            const long MinimumValidFileSize = 1024 * 1024; // 1 MB
-
             // Start with default values
             ResetBufferingStatistics();
 
@@ -719,7 +717,7 @@
             var durationSeconds = NaturalDuration?.TotalSeconds ?? 0d;
 
             // Compute the bit rate and buffering properties based on media byte size
-            if (MediaStreamSize >= MinimumValidFileSize && IsSeekable && durationSeconds > 0)
+            if (MediaStreamSize >= Constants.MinimumValidFileSize && IsSeekable && durationSeconds > 0)
             {
                 // The bit rate is simply the media size over the total duration
                 BitRate = Convert.ToInt64(8d * MediaStreamSize / durationSeconds);
