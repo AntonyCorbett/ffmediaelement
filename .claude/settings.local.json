@@ -3,7 +3,10 @@
     "allow": [
       "Bash(Get-ChildItem -Name -Recurse -Include *.sln, *.csproj)",
       "Bash(Sort-Object)",
-      "Bash(Select-String *)"
+      "Bash(Select-String *)",
+      "Bash(dotnet build *)",
+      "PowerShell(dotnet test *)",
+      "PowerShell(dotnet build *)"
     ]
   }
 }
