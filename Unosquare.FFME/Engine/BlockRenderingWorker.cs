@@ -659,7 +659,7 @@ namespace Unosquare.FFME.Engine
             if (!HasDisconnectedClocks)
             {
                 // Resume the reference type clock.
-                var t = MediaType.None;
+                const MediaType t = MediaType.None;
                 if (CanResumeClock(t))
                     MediaCore.Timing.Play(t);
 
@@ -750,7 +750,7 @@ namespace Unosquare.FFME.Engine
             {
                 var drift = TimeSpan.FromTicks(clockPosition.Ticks - block.StartTime.Ticks);
                 this.LogTrace(Aspects.RenderingWorker,
-                    $"{block.MediaType.ToString().Substring(0, 1)} "
+                    $"{block.MediaType.ToString()[0]} "
                     + $"BLK: {block.StartTime.Format()} | "
                     + $"CLK: {clockPosition.Format()} | "
                     + $"DFT: {drift.TotalMilliseconds,4:0} | "

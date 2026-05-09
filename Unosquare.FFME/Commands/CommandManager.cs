@@ -318,7 +318,9 @@ namespace Unosquare.FFME.Commands
             if (!Debugger.IsAttached) return;
             if (RC.Current.InstancesByLocation.Count <= 0) return;
 
+#pragma warning disable U2U1108
             var builder = new StringBuilder()
+#pragma warning restore U2U1108
                 .AppendLine("Unmanaged references are still alive. If there are no further media container instances to be disposed,")
                 .AppendLine("this is an indication that there is a memory leak. Otherwise, this message can be ignored.");
 

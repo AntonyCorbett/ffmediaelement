@@ -542,7 +542,9 @@
             var removableRenderers = oldMediaTypes.Where(t => !newMediaTypes.Contains(t)).Distinct().ToArray();
 
             // find all existing component renderers that are no longer needed
+#pragma warning disable U2U1203
             foreach (var t in removableRenderers)
+#pragma warning restore U2U1203
             {
                 // Remove the renderer for the component
                 if (!MediaCore.Renderers.ContainsKey(t))
@@ -553,7 +555,9 @@
             }
 
             // Remove blocks that no longer are required or don't match in cache size
+#pragma warning disable U2U1203
             foreach (var t in allMediaTypes)
+#pragma warning restore U2U1203
             {
                 // if blocks don't exist we don't need to remove them
                 if (!MediaCore.Blocks.ContainsKey(t))

@@ -269,7 +269,7 @@
             {
                 try
                 {
-                    var closeInfo = default(CloseAdapterInfo);
+                    CloseAdapterInfo closeInfo;
                     closeInfo.AdapterHandle = CurrentAdapterInfo.AdapterHandle;
 
                     // This will return 0 on success, and another value for failure.

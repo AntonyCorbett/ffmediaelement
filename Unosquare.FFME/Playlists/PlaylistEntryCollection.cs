@@ -107,7 +107,9 @@
             foreach (var entry in source)
                 Add(entry);
 
+#pragma warning disable U2U1203
             foreach (var key in Attributes.Keys.ToArray())
+#pragma warning restore U2U1203
                 Attributes.Remove(key);
 
             foreach (var attribute in source.Attributes)

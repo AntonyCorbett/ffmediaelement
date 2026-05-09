@@ -43,13 +43,13 @@ namespace Unosquare.FFME
         /// <summary>
         /// The allow content change flag.
         /// </summary>
-        private readonly bool AllowContentChange;
+        private readonly bool _allowContentChange;
 
-        private readonly ConcurrentBag<string> PropertyUpdates = new();
-        private readonly AtomicBoolean m_IsStateUpdating = new(false);
-        private readonly DispatcherTimer UpdatesTimer;
+        private readonly ConcurrentBag<string> _propertyUpdates = [];
+        private readonly AtomicBoolean _isStateUpdating = new(false);
+        private readonly DispatcherTimer _updatesTimer;
 
-        private bool m_IsDisposed;
+        private bool _isDisposed;
 
         #endregion
 
@@ -60,7 +60,7 @@ namespace Unosquare.FFME
         /// </summary>
         static MediaElement()
         {
-            MediaEngine.FFmpegMessageLogged += (s, message) =>
+            MediaEngine.FFmpegMessageLogged += (_, message) =>
                 FFmpegMessageLogged?.Invoke(typeof(MediaElement), new MediaLogMessageEventArgs(message));
 
             // Content property cannot be changed.
@@ -79,7 +79,7 @@ namespace Unosquare.FFME
         {
             try
             {
-                AllowContentChange = true;
+                _allowContentChange = true;
 
                 if (!Library.IsInDesignMode)
                 {
@@ -88,13 +88,13 @@ namespace Unosquare.FFME
                     VideoView = new ImageHost(GuiContext.Type == GuiContextType.WPF && Library.EnableWpfMultiThreadedVideo)
                     { Name = nameof(VideoView) };
 
-                    // Setup the media engine and property updates timer
+                    // Set up the media engine and property updates timer
                     MediaCore = new MediaEngine(this, new MediaConnector(this));
-                    MediaCore.State.PropertyChanged += (s, e) => PropertyUpdates.Add(e.PropertyName);
+                    MediaCore.State.PropertyChanged += (_, e) => _propertyUpdates.Add(e.PropertyName);
 
                     // When the media element is removed from the visual tree
                     // we want to close the current media to prevent memory leaks
-                    Unloaded += async (s, e) =>
+                    Unloaded += async (_, _) =>
                     {
                         if (UnloadedBehavior != MediaPlaybackState.Close)
                             return;
@@ -109,20 +109,20 @@ namespace Unosquare.FFME
                         }
                     };
 
-                    UpdatesTimer = new DispatcherTimer(DispatcherPriority.DataBind)
+                    _updatesTimer = new DispatcherTimer(DispatcherPriority.DataBind)
                     {
                         Interval = TimeSpan.FromMilliseconds(15),
                     };
 
-                    UpdatesTimer.Tick += CoerceMediaCoreState;
-                    UpdatesTimer.Start();
+                    _updatesTimer.Tick += CoerceMediaCoreState;
+                    _updatesTimer.Start();
                 }
 
                 InitializeComponent();
             }
             finally
             {
-                AllowContentChange = false;
+                _allowContentChange = false;
             }
         }
 
@@ -136,36 +136,36 @@ namespace Unosquare.FFME
         /// <summary>
         /// Provides access to various internal media renderer options.
         /// The default options are optimal to work for most media streams.
-        /// This is an advanced feature and it is not recommended to change these
+        /// This is an advanced feature, and it is not recommended to change these
         /// options without careful consideration.
         /// </summary>
-        public RendererOptions RendererOptions { get; } = new RendererOptions();
+        public RendererOptions RendererOptions { get; } = new();
 
         /// <summary>
         /// The GUI context used to create this media element.
         /// </summary>
-        internal IGuiContext GuiContext { get; private set; }
+        internal IGuiContext GuiContext { get; }
 
         /// <summary>
         /// This is the image that holds video bitmaps. It is a Hosted Image which means that in a WPF
-        /// GUI context, it runs on its own dispatcher (multi-threaded UI).
+        /// GUI context, it runs on its own dispatcher (multithreaded UI).
         /// </summary>
         internal ImageHost VideoView { get; }
 
         /// <summary>
         /// Gets the closed captions view control.
         /// </summary>
-        internal ClosedCaptionsControl CaptionsView { get; } = new ClosedCaptionsControl { Name = nameof(CaptionsView) };
+        internal ClosedCaptionsControl CaptionsView { get; } = new() { Name = nameof(CaptionsView) };
 
         /// <summary>
         /// A ViewBox holding the subtitle text blocks.
         /// </summary>
-        internal SubtitlesControl SubtitlesView { get; } = new SubtitlesControl { Name = nameof(SubtitlesView) };
+        internal SubtitlesControl SubtitlesView { get; } = new() { Name = nameof(SubtitlesView) };
 
         /// <summary>
         /// Gets the grid control holding the rest of the controls.
         /// </summary>
-        internal Grid ContentGrid { get; } = new Grid { Name = nameof(ContentGrid) };
+        internal Grid ContentGrid { get; } = new() { Name = nameof(ContentGrid) };
 
         /// <summary>
         /// Determines whether the property values are being copied over from the
@@ -173,8 +173,8 @@ namespace Unosquare.FFME
         /// </summary>
         internal bool IsStateUpdating
         {
-            get => m_IsStateUpdating.Value;
-            set => m_IsStateUpdating.Value = value;
+            get => _isStateUpdating.Value;
+            set => _isStateUpdating.Value = value;
         }
 
         #endregion
@@ -197,8 +197,7 @@ namespace Unosquare.FFME
 
             await videoView.InvokeAsync(() =>
             {
-                var source = videoView.Source?.Clone() as BitmapSource;
-                if (source == null)
+                if (videoView.Source?.Clone() is not BitmapSource source)
                     return;
 
                 source.Freeze();
@@ -251,7 +250,7 @@ namespace Unosquare.FFME
         /// <exception cref="InvalidOperationException">When content has been locked.</exception>
         private static object OnCoerceContentValue(DependencyObject d, object baseValue)
         {
-            if (d is MediaElement element && element.AllowContentChange == false)
+            if (d is MediaElement element && element._allowContentChange == false)
                 throw new InvalidOperationException($"The '{nameof(Content)}' property is not meant to be set.");
 
             return baseValue;
@@ -265,7 +264,7 @@ namespace Unosquare.FFME
             // Synchronize initial property values to the MediaElement properties.
             // This is because the hosted element gets created after the MediaElement properties
             // might have been set.
-            VideoView.ElementLoaded += (vs, ve) =>
+            VideoView.ElementLoaded += (_, _) =>
             {
                 VideoView.UseLayoutRounding = true;
                 VideoView.SnapsToDevicePixels = true;
@@ -282,7 +281,7 @@ namespace Unosquare.FFME
             UseLayoutRounding = true;
             SnapsToDevicePixels = true;
 
-            // Setup the content grid and add it as part of the user control
+            // Set up the content grid and add it as part of the user control
             Content = ContentGrid;
 
             // Set some layout defaults
@@ -292,7 +291,7 @@ namespace Unosquare.FFME
             ContentGrid.SnapsToDevicePixels = true;
             ContentGrid.IsHitTestVisible = false;
 
-            // Setup the Subtitle View
+            // Set up the Subtitle View
             SubtitlesView.FontSize = 98;
             SubtitlesView.Padding = new Thickness(0);
             SubtitlesView.FontFamily = new FontFamily("Microsoft Sans Serif, Lucida Console, Calibri");
@@ -352,11 +351,11 @@ namespace Unosquare.FFME
             // which is below the Input priority.
             try
             {
-                if (PropertyUpdates.IsEmpty)
+                if (_propertyUpdates.IsEmpty)
                     return;
 
                 IsStateUpdating = true;
-                while (PropertyUpdates.TryTake(out var p))
+                while (_propertyUpdates.TryTake(out var p))
                 {
                     if (p == nameof(Position) || p == nameof(NaturalDuration))
                     {
@@ -396,7 +395,7 @@ namespace Unosquare.FFME
             }
             finally
             {
-                IsStateUpdating = !PropertyUpdates.IsEmpty;
+                IsStateUpdating = !_propertyUpdates.IsEmpty;
             }
         }
 
@@ -479,16 +478,16 @@ namespace Unosquare.FFME
         /// <param name="alsoManaged"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         private void Dispose(bool alsoManaged)
         {
-            if (!m_IsDisposed)
+            if (!_isDisposed)
             {
                 if (alsoManaged)
                 {
                     MediaCore.Dispose();
                     VideoView.Dispose();
-                    UpdatesTimer.Stop();
+                    _updatesTimer.Stop();
                 }
 
-                m_IsDisposed = true;
+                _isDisposed = true;
             }
         }
 

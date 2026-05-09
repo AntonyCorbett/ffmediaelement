@@ -289,8 +289,8 @@
                 for (var s = 0; s < p->nb_stream_indexes; s++)
                 {
                     var streamIndex = Convert.ToInt32(p->stream_index[s]);
-                    if (streams.ContainsKey(streamIndex))
-                        associatedStreams.Add(streams[streamIndex]);
+                    if (streams.TryGetValue(streamIndex, out var streamInfo))
+                        associatedStreams.Add(streamInfo);
                 }
 
                 program.Streams = associatedStreams;

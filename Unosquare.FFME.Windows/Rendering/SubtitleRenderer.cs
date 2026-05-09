@@ -10,24 +10,24 @@
     /// Subtitle Renderer - Does nothing at this point.
     /// </summary>
     /// <seealso cref="IMediaRenderer" />
-    internal class SubtitleRenderer : IMediaRenderer, ILoggingSource
+    internal sealed class SubtitleRenderer : IMediaRenderer, ILoggingSource
     {
         /// <summary>
         /// The synchronize lock.
         /// </summary>
-        private readonly object SyncLock = new object();
-        private TimeSpan? StartTime;
-        private TimeSpan? EndTime;
+        private readonly object _syncLock = new();
+        private TimeSpan? _startTime;
+        private TimeSpan? _endTime;
 
         /// <summary>
         /// Holds the text to be rendered when the Update method is called.
         /// </summary>
-        private string BlockText = string.Empty;
+        private string _blockText = string.Empty;
 
         /// <summary>
         /// Holds the text that was last rendered when Update was called.
         /// </summary>
-        private string RenderedText = string.Empty;
+        private string _renderedText = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitleRenderer"/> class.
@@ -79,21 +79,21 @@
         /// <inheritdoc />
         public void OnStarting()
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 // This initializes the text blocks
                 // for subtitle rendering automatically.
-                BlockText = string.Empty;
+                _blockText = string.Empty;
                 SetText(string.Empty);
-                StartTime = default;
-                EndTime = default;
+                _startTime = default;
+                _endTime = default;
             }
         }
 
         /// <inheritdoc />
         public void Render(MediaBlock mediaBlock, TimeSpan clockPosition)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 if (mediaBlock is SubtitleBlock == false) return;
 
@@ -105,19 +105,19 @@
 
                 if (cancelRender)
                 {
-                    BlockText = string.Empty;
-                    StartTime = null;
-                    EndTime = null;
+                    _blockText = string.Empty;
+                    _startTime = null;
+                    _endTime = null;
                 }
                 else
                 {
                     // Save the block text lines to display
-                    BlockText = string.Join("\r\n", subtitleBlock.Text);
+                    _blockText = string.Join("\r\n", subtitleBlock.Text);
 
                     // Save the start and end times. We will need
                     // them in order to make the subtitles disappear
-                    StartTime = subtitleBlock.StartTime;
-                    EndTime = subtitleBlock.EndTime;
+                    _startTime = subtitleBlock.StartTime;
+                    _endTime = subtitleBlock.EndTime;
                 }
 
                 // Call the selective update method
@@ -130,21 +130,21 @@
         {
             // Check if we have received a start and end time value.
             // if we have not, just clear the text
-            if (StartTime.HasValue == false || EndTime.HasValue == false)
+            if (_startTime.HasValue == false || _endTime.HasValue == false)
             {
                 SetText(string.Empty);
                 return;
             }
 
             // Check if the subtitle needs to be cleared based on the start and end times range
-            if (clockPosition > EndTime.Value || clockPosition < StartTime.Value)
+            if (clockPosition > _endTime.Value || clockPosition < _startTime.Value)
             {
                 SetText(string.Empty);
                 return;
             }
 
             // Update the text with the block text
-            SetText(BlockText);
+            SetText(_blockText);
         }
 
         /// <summary>
@@ -154,19 +154,19 @@
         /// <param name="text">The text.</param>
         private void SetText(string text)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
-                if (RenderedText == text)
+                if (_renderedText == text)
                     return;
             }
 
             // We fire-and-forget the update of the text
             MediaElement.GuiContext.EnqueueInvoke(() =>
             {
-                lock (SyncLock)
+                lock (_syncLock)
                 {
                     MediaElement.SubtitlesView.Text = text;
-                    RenderedText = text;
+                    _renderedText = text;
                 }
             });
         }

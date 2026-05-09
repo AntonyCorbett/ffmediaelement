@@ -21,28 +21,28 @@
         /// <summary>
         /// DirectSound default playback device GUID.
         /// </summary>
-        public static readonly Guid DefaultPlaybackDeviceId = new Guid("DEF00000-9C6D-47ED-AAF1-4DDA8F2B5C03");
+        public static readonly Guid DefaultPlaybackDeviceId = new("DEF00000-9C6D-47ED-AAF1-4DDA8F2B5C03");
 
         // Device enumerations
-        private static readonly object DevicesEnumLock = new object();
-        private static List<DirectSoundDeviceData> EnumeratedDevices;
+        private static readonly object DevicesEnumLock = new();
+        private static List<DirectSoundDeviceData> enumeratedDevices;
 
         // Instance fields
-        private readonly EventWaitHandle CancelEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
+        private readonly EventWaitHandle _cancelEvent = new(false, EventResetMode.ManualReset);
 
-        private readonly WaveFormat WaveFormat;
-        private int SamplesTotalSize;
-        private int SamplesFrameSize;
-        private int NextSamplesWriteIndex;
-        private Guid DeviceId;
-        private byte[] Samples;
-        private DirectSound.IDirectSound DirectSoundDriver;
-        private DirectSound.IDirectSoundBuffer AudioRenderBuffer;
-        private DirectSound.IDirectSoundBuffer AudioBackBuffer;
-        private EventWaitHandle FrameStartEventWaitHandle;
-        private EventWaitHandle FrameEndEventWaitHandle;
-        private EventWaitHandle PlaybackEndedEventWaitHandle;
-        private WaitHandle[] PlaybackWaitHandles;
+        private readonly WaveFormat _waveFormat;
+        private int _samplesTotalSize;
+        private int _samplesFrameSize;
+        private int _nextSamplesWriteIndex;
+        private Guid _deviceId;
+        private byte[] _samples;
+        private DirectSound.IDirectSound _directSoundDriver;
+        private DirectSound.IDirectSoundBuffer _audioRenderBuffer;
+        private DirectSound.IDirectSoundBuffer _audioBackBuffer;
+        private EventWaitHandle _frameStartEventWaitHandle;
+        private EventWaitHandle _frameEndEventWaitHandle;
+        private EventWaitHandle _playbackEndedEventWaitHandle;
+        private WaitHandle[] _playbackWaitHandles;
 
         #endregion
 
@@ -58,8 +58,8 @@
             : base(nameof(DirectSoundPlayer))
         {
             Renderer = renderer;
-            DeviceId = deviceId == Guid.Empty ? DefaultPlaybackDeviceId : deviceId;
-            WaveFormat = renderer.WaveFormat;
+            _deviceId = deviceId == Guid.Empty ? DefaultPlaybackDeviceId : deviceId;
+            _waveFormat = renderer.WaveFormat;
         }
 
         #endregion
@@ -93,31 +93,31 @@
         {
             lock (DevicesEnumLock)
             {
-                EnumeratedDevices = new List<DirectSoundDeviceData>(32);
+                enumeratedDevices = new List<DirectSoundDeviceData>(32);
                 NativeMethods.DirectSoundEnumerateA(EnumerateDevicesCallback, IntPtr.Zero);
-                return EnumeratedDevices;
+                return enumeratedDevices;
             }
         }
 
         /// <inheritdoc />
         public void Start()
         {
-            if (DirectSoundDriver != null || IsDisposed)
+            if (_directSoundDriver != null || IsDisposed)
                 throw new InvalidOperationException($"{nameof(DirectSoundPlayer)} was already started");
 
             InitializeDirectSound();
-            AudioBackBuffer.SetCurrentPosition(0);
-            NextSamplesWriteIndex = 0;
+            _audioBackBuffer.SetCurrentPosition(0);
+            _nextSamplesWriteIndex = 0;
 
             // Give the buffer initial samples to work with
-            if (FeedBackBuffer(SamplesTotalSize) <= 0)
+            if (FeedBackBuffer(_samplesTotalSize) <= 0)
                 throw new InvalidOperationException($"Method {nameof(FeedBackBuffer)} could not write samples.");
 
             // Set the state to playing
             PlaybackState = PlaybackState.Playing;
 
             // Begin notifications on playback wait events
-            AudioBackBuffer.Play(0, 0, DirectSound.DirectSoundPlayFlags.Looping);
+            _audioBackBuffer.Play(0, 0, DirectSound.DirectSoundPlayFlags.Looping);
 
             StartAsync();
         }
@@ -138,7 +138,7 @@
             const int TimeoutHandle = WaitHandle.WaitTimeout;
 
             // Wait for signals on frameEventWaitHandle1 (Position 0), frameEventWaitHandle2 (Position 1/2)
-            var handleIndex = WaitHandle.WaitAny(PlaybackWaitHandles, DesiredLatency * 3, false);
+            var handleIndex = WaitHandle.WaitAny(_playbackWaitHandles, DesiredLatency * 3, false);
 
             // Not ready yet
             if (handleIndex == TimeoutHandle)
@@ -151,10 +151,10 @@
                 return;
             }
 
-            NextSamplesWriteIndex = handleIndex == FrameStartHandle ? SamplesFrameSize : default;
+            _nextSamplesWriteIndex = handleIndex == FrameStartHandle ? _samplesFrameSize : default;
 
             // Only carry on playing if we can read more samples
-            if (FeedBackBuffer(SamplesFrameSize) <= 0)
+            if (FeedBackBuffer(_samplesFrameSize) <= 0)
                 throw new InvalidOperationException($"Method {nameof(FeedBackBuffer)} could not write samples.");
         }
 
@@ -169,12 +169,12 @@
         {
             // Signal Completion
             PlaybackState = PlaybackState.Stopped;
-            CancelEvent.Set(); // causes the WaitAny to exit
+            _cancelEvent.Set(); // causes the WaitAny to exit
 
-            try { AudioRenderBuffer.Stop(); } catch { /* Ignore exception and continue */ }
+            try { _audioRenderBuffer.Stop(); } catch { /* Ignore exception and continue */ }
 
             try { ClearBackBuffer(); } catch { /* Ignore exception and continue */ }
-            try { AudioBackBuffer.Stop(); } catch { /* Ignore exception and continue */ }
+            try { _audioBackBuffer.Stop(); } catch { /* Ignore exception and continue */ }
         }
 
         /// <inheritdoc />
@@ -185,10 +185,10 @@
             if (alsoManaged)
             {
                 // Dispose DirectSound buffer wait handles
-                PlaybackEndedEventWaitHandle?.Dispose();
-                FrameStartEventWaitHandle?.Dispose();
-                FrameEndEventWaitHandle?.Dispose();
-                CancelEvent.Dispose();
+                _playbackEndedEventWaitHandle?.Dispose();
+                _frameStartEventWaitHandle?.Dispose();
+                _frameEndEventWaitHandle?.Dispose();
+                _cancelEvent.Dispose();
             }
         }
 
@@ -221,7 +221,7 @@
             device.Description = descriptionPtr != IntPtr.Zero ? Marshal.PtrToStringAnsi(descriptionPtr) : default;
             device.ModuleName = modulePtr != IntPtr.Zero ? Marshal.PtrToStringAnsi(modulePtr) : default;
 
-            EnumeratedDevices.Add(device);
+            enumeratedDevices.Add(device);
             return true;
         }
 
@@ -247,14 +247,14 @@
             // feed the samples. We will copy audio data from the back buffer into the immediate render
             // buffer. We first open the DirectSound driver, create the buffers and start the playback!
             // Open DirectSound
-            DirectSoundDriver = null;
-            var createDriverResult = NativeMethods.DirectSoundCreate(ref DeviceId, out DirectSoundDriver, IntPtr.Zero);
+            _directSoundDriver = null;
+            var createDriverResult = NativeMethods.DirectSoundCreate(ref _deviceId, out _directSoundDriver, IntPtr.Zero);
 
-            if (DirectSoundDriver == null || createDriverResult != 0)
+            if (_directSoundDriver == null || createDriverResult != 0)
                 return;
 
             // Set Cooperative Level to PRIORITY (priority level can call the SetFormat and Compact methods)
-            DirectSoundDriver.SetCooperativeLevel(NativeMethods.GetDesktopWindow(),
+            _directSoundDriver.SetCooperativeLevel(NativeMethods.GetDesktopWindow(),
                 DirectSound.DirectSoundCooperativeLevel.Normal);
 
             // Fill BufferDescription for immediate, rendering buffer
@@ -269,21 +269,21 @@
             };
 
             // Create the Render Buffer (Immediate audio out)
-            DirectSoundDriver.CreateSoundBuffer(renderBuffer, out var audioRenderBuffer, IntPtr.Zero);
-            AudioRenderBuffer = audioRenderBuffer as DirectSound.IDirectSoundBuffer;
+            _directSoundDriver.CreateSoundBuffer(renderBuffer, out var audioRenderBuffer, IntPtr.Zero);
+            _audioRenderBuffer = audioRenderBuffer as DirectSound.IDirectSoundBuffer;
 
             // Play & Loop on the render buffer
-            AudioRenderBuffer?.Play(0, 0, DirectSound.DirectSoundPlayFlags.Looping);
+            _audioRenderBuffer?.Play(0, 0, DirectSound.DirectSoundPlayFlags.Looping);
 
             // A frame of samples equals to Desired Latency
-            SamplesFrameSize = MillisToBytes(DesiredLatency);
-            var waveFormatHandle = GCHandle.Alloc(WaveFormat, GCHandleType.Pinned);
+            _samplesFrameSize = MillisToBytes(DesiredLatency);
+            var waveFormatHandle = GCHandle.Alloc(_waveFormat, GCHandleType.Pinned);
 
             // Fill BufferDescription for sample-receiving back buffer
             var backBuffer = new DirectSound.BufferDescription
             {
                 Size = Marshal.SizeOf<DirectSound.BufferDescription>(),
-                BufferBytes = (uint)(SamplesFrameSize * 2),
+                BufferBytes = (uint)(_samplesFrameSize * 2),
                 Flags = DirectSound.DirectSoundBufferCaps.GetCurrentPosition2
                         | DirectSound.DirectSoundBufferCaps.ControlNotifyPosition
                         | DirectSound.DirectSoundBufferCaps.GlobalFocus
@@ -296,33 +296,33 @@
             };
 
             // Create back buffer where samples will be fed
-            DirectSoundDriver.CreateSoundBuffer(backBuffer, out audioRenderBuffer, IntPtr.Zero);
-            AudioBackBuffer = audioRenderBuffer as DirectSound.IDirectSoundBuffer;
+            _directSoundDriver.CreateSoundBuffer(backBuffer, out audioRenderBuffer, IntPtr.Zero);
+            _audioBackBuffer = audioRenderBuffer as DirectSound.IDirectSoundBuffer;
             waveFormatHandle.Free();
 
             // Get effective SecondaryBuffer size
             var bufferCapabilities = new DirectSound.BufferCaps { Size = Marshal.SizeOf<DirectSound.BufferCaps>() };
-            AudioBackBuffer?.GetCaps(bufferCapabilities);
+            _audioBackBuffer?.GetCaps(bufferCapabilities);
 
-            NextSamplesWriteIndex = 0;
-            SamplesTotalSize = bufferCapabilities.BufferBytes;
-            Samples = new byte[SamplesTotalSize];
-            Debug.Assert(SamplesTotalSize == (2 * SamplesFrameSize), "Invalid SamplesTotalSize vs SamplesFrameSize");
+            _nextSamplesWriteIndex = 0;
+            _samplesTotalSize = bufferCapabilities.BufferBytes;
+            _samples = new byte[_samplesTotalSize];
+            Debug.Assert(_samplesTotalSize == (2 * _samplesFrameSize), "Invalid SamplesTotalSize vs SamplesFrameSize");
 
             // Create double buffering notifications.
             // Use DirectSoundNotify at Position [0, 1/2] and Stop Position (0xFFFFFFFF)
             var notifier = audioRenderBuffer as DirectSound.IDirectSoundNotify;
 
-            FrameStartEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-            FrameEndEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-            PlaybackEndedEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-            PlaybackWaitHandles = new WaitHandle[] { FrameStartEventWaitHandle, FrameEndEventWaitHandle, PlaybackEndedEventWaitHandle, CancelEvent };
+            _frameStartEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+            _frameEndEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+            _playbackEndedEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+            _playbackWaitHandles = new WaitHandle[] { _frameStartEventWaitHandle, _frameEndEventWaitHandle, _playbackEndedEventWaitHandle, _cancelEvent };
 
             var notificationEvents = new[]
             {
-                CreatePositionNotification(FrameStartEventWaitHandle, 0),
-                CreatePositionNotification(FrameEndEventWaitHandle, (uint)SamplesFrameSize),
-                CreatePositionNotification(PlaybackEndedEventWaitHandle, 0xFFFFFFFF)
+                CreatePositionNotification(_frameStartEventWaitHandle, 0),
+                CreatePositionNotification(_frameEndEventWaitHandle, (uint)_samplesFrameSize),
+                CreatePositionNotification(_playbackEndedEventWaitHandle, 0xFFFFFFFF)
             };
 
             notifier?.SetNotificationPositions((uint)notificationEvents.Length, notificationEvents);
@@ -335,7 +335,7 @@
         /// <c>true</c> if [is buffer lost]; otherwise, <c>false</c>.
         /// </returns>
         private bool IsBufferLost() =>
-            AudioBackBuffer.GetStatus().HasFlag(DirectSound.DirectSoundBufferStatus.BufferLost);
+            _audioBackBuffer.GetStatus().HasFlag(DirectSound.DirectSoundBufferStatus.BufferLost);
 
         /// <summary>
         /// Convert ms to bytes size according to WaveFormat.
@@ -344,8 +344,8 @@
         /// <returns>number of bytes.</returns>
         private int MillisToBytes(int millis)
         {
-            var bytes = millis * (WaveFormat.AverageBytesPerSecond / 1000);
-            bytes -= bytes % WaveFormat.BlockAlign;
+            var bytes = millis * (_waveFormat.AverageBytesPerSecond / 1000);
+            bytes -= bytes % _waveFormat.BlockAlign;
             return bytes;
         }
 
@@ -365,14 +365,14 @@
         /// </remarks>
         private void ClearBackBuffer()
         {
-            if (AudioBackBuffer == null)
+            if (_audioBackBuffer == null)
                 return;
 
-            var silence = new byte[SamplesTotalSize];
+            var silence = new byte[_samplesTotalSize];
 
             // Lock the SecondaryBuffer
-            AudioBackBuffer.Lock(0,
-                (uint)SamplesTotalSize,
+            _audioBackBuffer.Lock(0,
+                (uint)_samplesTotalSize,
                 out var wavBuffer1,
                 out var nbSamples1,
                 out var wavBuffer2,
@@ -390,7 +390,7 @@
             }
 
             // Unlock the SecondaryBuffer
-            AudioBackBuffer.Unlock(wavBuffer1, nbSamples1, wavBuffer2, nbSamples2);
+            _audioBackBuffer.Unlock(wavBuffer1, nbSamples1, wavBuffer2, nbSamples2);
         }
 
         /// <summary>
@@ -402,20 +402,20 @@
         {
             // Restore the buffer if lost
             if (IsBufferLost())
-                AudioBackBuffer.Restore();
+                _audioBackBuffer.Restore();
 
             // Read data from stream (Should this be inserted between the lock / unlock?)
-            var bytesRead = Renderer?.Read(Samples, 0, bytesToCopy) ?? 0;
+            var bytesRead = Renderer?.Read(_samples, 0, bytesToCopy) ?? 0;
 
             // Write silence
             if (bytesRead <= 0)
             {
-                Array.Clear(Samples, 0, Samples.Length);
+                Array.Clear(_samples, 0, _samples.Length);
                 return 0;
             }
 
             // Lock a portion of the SecondaryBuffer (starting from 0 or 1/2 the buffer)
-            AudioBackBuffer.Lock(NextSamplesWriteIndex,
+            _audioBackBuffer.Lock(_nextSamplesWriteIndex,
                 (uint)bytesRead,  // (uint)bytesToCopy,
                 out var wavBuffer1,
                 out var nbSamples1,
@@ -426,16 +426,16 @@
             // Copy back to the SecondaryBuffer
             if (wavBuffer1 != IntPtr.Zero)
             {
-                Marshal.Copy(Samples, 0, wavBuffer1, nbSamples1);
+                Marshal.Copy(_samples, 0, wavBuffer1, nbSamples1);
                 if (wavBuffer2 != IntPtr.Zero)
                 {
                     // TODO: Should this be wav buffer 2 and nbSamples2 ??
-                    Marshal.Copy(Samples, 0, wavBuffer1, nbSamples1);
+                    Marshal.Copy(_samples, 0, wavBuffer1, nbSamples1);
                 }
             }
 
             // Unlock the SecondaryBuffer
-            AudioBackBuffer.Unlock(wavBuffer1, nbSamples1, wavBuffer2, nbSamples2);
+            _audioBackBuffer.Unlock(wavBuffer1, nbSamples1, wavBuffer2, nbSamples2);
 
             return bytesRead;
         }

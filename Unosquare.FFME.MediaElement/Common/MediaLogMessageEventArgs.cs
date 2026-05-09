@@ -7,7 +7,7 @@
     /// Contains the Message Logged Event Arguments.
     /// </summary>
     /// <seealso cref="EventArgs" />
-    public class MediaLogMessageEventArgs : EventArgs
+    public sealed class MediaLogMessageEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaLogMessageEventArgs"/> class.
@@ -53,23 +53,16 @@
         /// <returns>A 3-letter abbreviation.</returns>
         private string GetTypePrefix()
         {
-            switch (MessageType)
+            return MessageType switch
             {
-                case MediaLogMessageType.Debug:
-                    return "DBG";
-                case MediaLogMessageType.Error:
-                    return "ERR";
-                case MediaLogMessageType.Info:
-                    return "INF";
-                case MediaLogMessageType.None:
-                    return "NON";
-                case MediaLogMessageType.Trace:
-                    return "TRC";
-                case MediaLogMessageType.Warning:
-                    return "WRN";
-                default:
-                    return "INV";
-            }
+                MediaLogMessageType.Debug => "DBG",
+                MediaLogMessageType.Error => "ERR",
+                MediaLogMessageType.Info => "INF",
+                MediaLogMessageType.None => "NON",
+                MediaLogMessageType.Trace => "TRC",
+                MediaLogMessageType.Warning => "WRN",
+                _ => "INV"
+            };
         }
     }
 }

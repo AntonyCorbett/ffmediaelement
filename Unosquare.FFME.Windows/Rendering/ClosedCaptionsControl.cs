@@ -20,12 +20,11 @@
         private const double DefaultOpacity = 0.80d;
         private const double DefaultFontSize = 65;
 
-        private readonly ClosedCaptionsBuffer Buffer = new ClosedCaptionsBuffer();
-        private readonly FontFamily FontFamily = new FontFamily("Lucida Console");
-        private readonly Dictionary<int, Dictionary<int, TextBlock>> CharacterLookup
-            = new Dictionary<int, Dictionary<int, TextBlock>>(ClosedCaptionsBuffer.RowCount);
+        private readonly ClosedCaptionsBuffer _buffer = new();
+        private readonly FontFamily _fontFamily = new("Lucida Console");
+        private readonly Dictionary<int, Dictionary<int, TextBlock>> _characterLookup = new(ClosedCaptionsBuffer.RowCount);
 
-        private Grid CaptionsGrid;
+        private Grid _captionsGrid;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClosedCaptionsControl"/> class.
@@ -49,7 +48,7 @@
         /// <param name="mediaCore">The media core.</param>
         public void SendPackets(VideoBlock currentBlock, MediaEngine mediaCore)
         {
-            Buffer.Write(currentBlock, mediaCore);
+            _buffer.Write(currentBlock, mediaCore);
         }
 
         /// <summary>
@@ -59,7 +58,7 @@
         /// <param name="clockPosition">The clock position.</param>
         public void Render(CaptionsChannel channel, TimeSpan clockPosition)
         {
-            if (Buffer.UpdateState(channel, clockPosition))
+            if (_buffer.UpdateState(channel, clockPosition))
                 PaintBuffer();
         }
 
@@ -68,7 +67,7 @@
         /// </summary>
         public void Reset()
         {
-            Buffer.Reset();
+            _buffer.Reset();
             PaintBuffer();
         }
 
@@ -78,14 +77,14 @@
         private void InitializeComponent()
         {
             // Create The Layout Controls
-            CaptionsGrid = new Grid { UseLayoutRounding = true, SnapsToDevicePixels = true, Focusable = false };
-            Child = CaptionsGrid;
+            _captionsGrid = new Grid { UseLayoutRounding = true, SnapsToDevicePixels = true, Focusable = false };
+            Child = _captionsGrid;
 
             for (var columnIndex = 0; columnIndex < ClosedCaptionsBuffer.ColumnCount; columnIndex++)
-                CaptionsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(ClosedCaptionsBuffer.ColumnCount, GridUnitType.Star) });
+                _captionsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(ClosedCaptionsBuffer.ColumnCount, GridUnitType.Star) });
 
             for (var columnIndex = 0; columnIndex < ClosedCaptionsBuffer.RowCount; columnIndex++)
-                CaptionsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(ClosedCaptionsBuffer.RowCount, GridUnitType.Star) });
+                _captionsGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(ClosedCaptionsBuffer.RowCount, GridUnitType.Star) });
 
             for (var rowIndex = 0; rowIndex < ClosedCaptionsBuffer.RowCount; rowIndex++)
             {
@@ -110,7 +109,7 @@
                         Focusable = false,
                         IsHitTestVisible = false,
                         Text = string.Empty,
-                        FontFamily = FontFamily,
+                        FontFamily = _fontFamily,
                         TextAlignment = TextAlignment.Center,
                         Foreground = Brushes.WhiteSmoke,
                         HorizontalAlignment = HorizontalAlignment.Center,
@@ -120,13 +119,13 @@
                     };
 
                     letterBorder.Child = letterText;
-                    CaptionsGrid.Children.Add(letterBorder);
+                    _captionsGrid.Children.Add(letterBorder);
                     Grid.SetRow(letterBorder, rowIndex);
                     Grid.SetColumn(letterBorder, columnIndex);
-                    if (CharacterLookup.ContainsKey(rowIndex) == false)
-                        CharacterLookup[rowIndex] = new Dictionary<int, TextBlock>(ClosedCaptionsBuffer.ColumnCount);
+                    if (_characterLookup.ContainsKey(rowIndex) == false)
+                        _characterLookup[rowIndex] = new Dictionary<int, TextBlock>(ClosedCaptionsBuffer.ColumnCount);
 
-                    CharacterLookup[rowIndex][columnIndex] = letterText;
+                    _characterLookup[rowIndex][columnIndex] = letterText;
                     letterBorder.Name = $"CC_{rowIndex:00}_{columnIndex:00}";
                     letterText.Name = $"TX_{rowIndex:00}_{columnIndex:00}";
                 }
@@ -137,10 +136,10 @@
                 return;
 
             // Line 11 (index 10) preview
-            Buffer.SetText(10, "L11: Closed Captions (preview)");
+            _buffer.SetText(10, "L11: Closed Captions (preview)");
 
             // Line 12 (index 11) preview
-            Buffer.SetText(11, "L12: Closed Captions (preview)");
+            _buffer.SetText(11, "L12: Closed Captions (preview)");
 
             PaintBuffer();
         }
@@ -159,8 +158,8 @@
             {
                 for (var c = 0; c < ClosedCaptionsBuffer.ColumnCount; c++)
                 {
-                    block = CharacterLookup[r][c];
-                    cell = Buffer.State[r][c].Display;
+                    block = _characterLookup[r][c];
+                    cell = _buffer.State[r][c].Display;
 
                     border = block.Parent as Border;
                     if (border == null) continue;

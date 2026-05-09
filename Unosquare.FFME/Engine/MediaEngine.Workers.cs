@@ -237,7 +237,9 @@
         internal void InvalidateRenderers()
         {
             var mediaTypes = Renderers.Keys.ToArray();
+#pragma warning disable U2U1203
             foreach (var t in mediaTypes)
+#pragma warning restore U2U1203
                 InvalidateRenderer(t);
         }
 

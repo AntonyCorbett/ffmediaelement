@@ -7,7 +7,7 @@
     /// or <see cref="MediaElement.MediaChanging"/> routed events.
     /// </summary>
     /// <seealso cref="EventArgs" />
-    public class MediaOpeningEventArgs : EventArgs
+    public sealed class MediaOpeningEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaOpeningEventArgs" /> class.

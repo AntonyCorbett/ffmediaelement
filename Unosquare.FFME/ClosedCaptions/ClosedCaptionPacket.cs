@@ -401,44 +401,44 @@
                 // Special North American character set
                 if ((D0 == 0x11 || D0 == 0x19) && D1 >= 0x30 && D1 <= 0x3F)
                 {
-                    if (SpecialNorthAmerican.ContainsKey(D1))
+                    if (SpecialNorthAmerican.TryGetValue(D1, out var value))
                     {
                         FieldChannel = D0 == 0x11 ? 1 : 2;
-                        Text = SpecialNorthAmerican[D1];
+                        Text = value;
                         return;
                     }
                 }
 
                 if (D0 == 0x12 || D0 == 0x1A)
                 {
-                    if (Spanish.ContainsKey(D1))
+                    if (Spanish.TryGetValue(D1, out var valueSpanish))
                     {
                         FieldChannel = 1;
-                        Text = Spanish[D1];
+                        Text = valueSpanish;
                         return;
                     }
 
-                    if (French.ContainsKey(D1))
+                    if (French.TryGetValue(D1, out var valueFrench))
                     {
                         FieldChannel = 2;
-                        Text = French[D1];
+                        Text = valueFrench;
                         return;
                     }
                 }
 
                 if (D0 == 0x13 || D0 == 0x1B)
                 {
-                    if (Portuguese.ContainsKey(D1))
+                    if (Portuguese.TryGetValue(D1, out var valuePortuguese))
                     {
                         FieldChannel = 1;
-                        Text = Portuguese[D1];
+                        Text = valuePortuguese;
                         return;
                     }
 
-                    if (German.ContainsKey(D1))
+                    if (German.TryGetValue(D1, out var valueGerman))
                     {
                         FieldChannel = 2;
-                        Text = German[D1];
+                        Text = valueGerman;
                         return;
                     }
                 }

@@ -7,7 +7,7 @@
     /// Represents the event arguments of the MediaInitializing routed event.
     /// </summary>
     /// <seealso cref="RoutedEventArgs" />
-    public class MediaInitializingEventArgs : EventArgs
+    public sealed class MediaInitializingEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaInitializingEventArgs" /> class.

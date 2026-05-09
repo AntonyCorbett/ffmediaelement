@@ -1,6 +1,5 @@
 ﻿namespace Unosquare.FFME.Common
 {
-    using Common;
     using System;
 
     /// <summary>
@@ -8,7 +7,7 @@
     /// <see cref="MediaElement.MediaChanged"/> routed events.
     /// </summary>
     /// <seealso cref="EventArgs" />
-    public class MediaOpenedEventArgs : EventArgs
+    public sealed class MediaOpenedEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaOpenedEventArgs" /> class.

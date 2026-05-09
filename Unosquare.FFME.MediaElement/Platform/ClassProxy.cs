@@ -102,7 +102,7 @@
             if (declaredOnly) flags |= BindingFlags.DeclaredOnly;
 
             var result = new List<PropertyInfo>(64);
-            var propertyInfos = typeof(T).GetProperties(flags).ToArray();
+            var propertyInfos = typeof(T).GetProperties(flags);
             foreach (var propertyInfo in propertyInfos)
                 result.Add(propertyInfo);
 

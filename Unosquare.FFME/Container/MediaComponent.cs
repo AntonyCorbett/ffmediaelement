@@ -110,10 +110,9 @@
             AVCodec* forcedCodec = null;
 
             // If set, change the codec to the forced codec.
-            if (Container.MediaOptions.DecoderCodec.ContainsKey(StreamIndex) &&
-                string.IsNullOrWhiteSpace(Container.MediaOptions.DecoderCodec[StreamIndex]) == false)
+            if (Container.MediaOptions.DecoderCodec.TryGetValue(StreamIndex, out var forcedCodecName) &&
+                string.IsNullOrWhiteSpace(forcedCodecName) == false)
             {
-                var forcedCodecName = Container.MediaOptions.DecoderCodec[StreamIndex];
                 forcedCodec = ffmpeg.avcodec_find_decoder_by_name(forcedCodecName);
                 if (forcedCodec == null)
                 {

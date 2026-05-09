@@ -13,8 +13,8 @@
     /// </summary>
     internal static class PropertyMapper
     {
-        private static readonly ClassProxy<IMediaEngineState> MediaEngineProxy = new ClassProxy<IMediaEngineState>();
-        private static readonly ClassProxy<MediaElement> MediaElementProxy = new ClassProxy<MediaElement>((p) =>
+        private static readonly ClassProxy<IMediaEngineState> MediaEngineProxy = new();
+        private static readonly ClassProxy<MediaElement> MediaElementProxy = new(p =>
                 MediaEngineProxy.PropertyNames.Contains(p.Name));
 
         /// <summary>
@@ -123,7 +123,7 @@
         /// <param name="m">The m.</param>
         /// <returns>The current state of all read-only properties.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static IReadOnlyDictionary<string, object> SnapshotReadOnlyState(this MediaElement m)
+        private static Dictionary<string, object> SnapshotReadOnlyState(this MediaElement m)
         {
             var properties = MediaElementProxy.ReadOnlyPropertyNames;
             var target = new Dictionary<string, object>(properties.Count, StringComparer.Ordinal);

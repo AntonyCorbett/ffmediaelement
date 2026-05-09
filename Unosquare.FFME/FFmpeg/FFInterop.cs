@@ -67,7 +67,7 @@ internal static unsafe class FFInterop
     /// <returns>The decoded error message.</returns>
     public static unsafe string DecodeMessage(int errorCode)
     {
-        var bufferSize = 1024;
+        const int bufferSize = 1024;
         var buffer = stackalloc byte[bufferSize];
         ffmpeg.av_strerror(errorCode, buffer, (ulong)bufferSize);
         var message = Utilities.PtrToStringUTF8(buffer);
@@ -225,10 +225,10 @@ internal static unsafe class FFInterop
             FFmpegLogBuffer.Add(line);
 
             var messageType = MediaLogMessageType.Debug;
-            if (FFmpegLogLevels.ContainsKey(level))
-                messageType = FFmpegLogLevels[level];
+            if (FFmpegLogLevels.TryGetValue(level, out var type))
+                messageType = type;
 
-            if (!line.EndsWith("\n")) return;
+            if (!line.EndsWith("\n", StringComparison.Ordinal)) return;
             line = string.Join(string.Empty, FFmpegLogBuffer);
             line = line.TrimEnd();
             FFmpegLogBuffer.Clear();

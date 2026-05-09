@@ -113,9 +113,9 @@
         {
             var result = new Dictionary<string, string>(GlobalOptions);
 
-            if (PrivateOptions.ContainsKey(streamIndex))
+            if (PrivateOptions.TryGetValue(streamIndex, out var privateOptions))
             {
-                foreach (var kvp in PrivateOptions[streamIndex])
+                foreach (var kvp in privateOptions)
                     result[kvp.Key] = kvp.Value;
             }
 

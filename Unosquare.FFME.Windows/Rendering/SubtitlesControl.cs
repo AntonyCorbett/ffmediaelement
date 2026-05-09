@@ -13,7 +13,7 @@ namespace Unosquare.FFME.Rendering
     /// Layout is: UserControl:ViewBox:Grid:TextBlocks.
     /// </summary>
     /// <seealso cref="UserControl" />
-    internal class SubtitlesControl : UserControl
+    internal sealed class SubtitlesControl : UserControl
     {
         #region Constants and Defaults
 
@@ -38,7 +38,7 @@ namespace Unosquare.FFME.Rendering
         /// <summary>
         /// The default text outline width.
         /// </summary>
-        private static readonly Thickness DefaultTextOutlineWidth = new Thickness(1);
+        private static readonly Thickness DefaultTextOutlineWidth = new(1);
 
         #endregion
 
@@ -96,17 +96,17 @@ namespace Unosquare.FFME.Rendering
         /// <summary>
         /// Holds the text blocks that together create an outlined subtitle text display.
         /// </summary>
-        private readonly Dictionary<Block, TextBlock> TextBlocks = new Dictionary<Block, TextBlock>(5);
+        private readonly Dictionary<Block, TextBlock> _textBlocks = new(5);
 
         /// <summary>
         /// The container for the outlined text blocks.
         /// </summary>
-        private readonly Viewbox Container = new Viewbox { Name = nameof(Container) };
+        private readonly Viewbox _container = new() { Name = nameof(_container) };
 
         /// <summary>
         /// A Layout transform to condense text.
         /// </summary>
-        private readonly ScaleTransform CondenseTransform = new ScaleTransform();
+        private readonly ScaleTransform _condenseTransform = new();
 
         #endregion
 
@@ -120,7 +120,7 @@ namespace Unosquare.FFME.Rendering
                 Name = $"{nameof(SubtitlesControl)}TextGrid"
             };
 
-            Container.Child = layoutElement;
+            _container.Child = layoutElement;
 
             for (var i = (int)Block.Bottom; i >= (int)Block.Foreground; i--)
             {
@@ -131,10 +131,10 @@ namespace Unosquare.FFME.Rendering
                     TextAlignment = TextAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
-                    LayoutTransform = CondenseTransform
+                    LayoutTransform = _condenseTransform
                 };
 
-                TextBlocks[(Block)i] = textBlock;
+                _textBlocks[(Block)i] = textBlock;
 
                 var blockType = (Block)i;
                 if (blockType == Block.Foreground)
@@ -153,11 +153,11 @@ namespace Unosquare.FFME.Rendering
             }
 
             // Add the container as the content of the control.
-            Container.Stretch = Stretch.Uniform;
-            Container.StretchDirection = StretchDirection.DownOnly;
-            Container.VerticalAlignment = VerticalAlignment.Stretch;
-            Container.HorizontalAlignment = HorizontalAlignment.Stretch;
-            Content = Container;
+            _container.Stretch = Stretch.Uniform;
+            _container.StretchDirection = StretchDirection.DownOnly;
+            _container.VerticalAlignment = VerticalAlignment.Stretch;
+            _container.HorizontalAlignment = HorizontalAlignment.Stretch;
+            Content = _container;
             Height = 0;
 
             // set font defaults
@@ -247,19 +247,19 @@ namespace Unosquare.FFME.Rendering
             if (e.Property.Name == nameof(FontSize))
             {
                 var value = (double)e.NewValue;
-                foreach (var t in TextBlocks)
+                foreach (var t in _textBlocks)
                     t.Value.FontSize = value;
             }
             else if (e.Property.Name == nameof(FontStretch))
             {
                 var value = (FontStretch)e.NewValue;
-                foreach (var t in TextBlocks)
+                foreach (var t in _textBlocks)
                     t.Value.FontStretch = value;
             }
             else if (e.Property.Name == nameof(FontWeight))
             {
                 var value = (FontWeight)e.NewValue;
-                foreach (var t in TextBlocks)
+                foreach (var t in _textBlocks)
                     t.Value.FontWeight = value;
             }
 
@@ -317,7 +317,7 @@ namespace Unosquare.FFME.Rendering
             var value = e.NewValue as string;
             if (string.IsNullOrWhiteSpace(value)) value = " \r\n ";
             if (value.ContainsOrdinal("\n") == false) value = $"{value}\r\n ";
-            foreach (var t in element.TextBlocks)
+            foreach (var t in element._textBlocks)
                 t.Value.Text = value;
         }
 
@@ -327,7 +327,7 @@ namespace Unosquare.FFME.Rendering
 
             var element = (SubtitlesControl)dependencyObject;
             var value = e.NewValue as Brush;
-            element.TextBlocks[Block.Foreground].Foreground = value;
+            element._textBlocks[Block.Foreground].Foreground = value;
         }
 
         private static void OnTextOutlinePropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
@@ -336,7 +336,7 @@ namespace Unosquare.FFME.Rendering
 
             var element = (SubtitlesControl)dependencyObject;
             var value = e.NewValue as Brush;
-            foreach (var t in element.TextBlocks)
+            foreach (var t in element._textBlocks)
             {
                 if (t.Key != Block.Foreground)
                     t.Value.Foreground = value;
@@ -349,7 +349,7 @@ namespace Unosquare.FFME.Rendering
 
             var element = (SubtitlesControl)dependencyObject;
             var value = (Thickness)e.NewValue;
-            foreach (var t in element.TextBlocks)
+            foreach (var t in element._textBlocks)
                 t.Value.Margin = ComputeMargin(t.Key, value);
         }
 
@@ -359,7 +359,7 @@ namespace Unosquare.FFME.Rendering
 
             var element = (SubtitlesControl)dependencyObject;
             var value = e.NewValue as Effect;
-            element.TextBlocks[Block.Foreground].Effect = value;
+            element._textBlocks[Block.Foreground].Effect = value;
         }
 
         #endregion

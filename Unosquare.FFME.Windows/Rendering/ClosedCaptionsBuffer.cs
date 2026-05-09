@@ -62,23 +62,21 @@
         /// <summary>
         /// The linear, non-demuxed packet buffer.
         /// </summary>
-        private readonly Dictionary<long, ClosedCaptionPacket> PacketBuffer
-            = new Dictionary<long, ClosedCaptionPacket>();
+        private readonly Dictionary<long, ClosedCaptionPacket> _packetBuffer = [];
 
         /// <summary>
         /// The independent channel packet buffers.
         /// </summary>
-        private readonly Dictionary<CaptionsChannel, Dictionary<long, ClosedCaptionPacket>> ChannelPacketBuffer
-            = new Dictionary<CaptionsChannel, Dictionary<long, ClosedCaptionPacket>>();
+        private readonly Dictionary<CaptionsChannel, Dictionary<long, ClosedCaptionPacket>> _channelPacketBuffer = [];
 
         /// <summary>
         /// Prevents Writing and resetting at the same time, causing the keys to become
         /// invalid when processing packets.
         /// </summary>
-        private readonly object SyncLock = new object();
+        private readonly object _syncLock = new();
 
-        private int m_CursorColumnIndex;
-        private int m_CursorRowIndex = DefaultBaseRowIndex;
+        private int _cursorColumnIndex;
+        private int _cursorRowIndex = DefaultBaseRowIndex;
 
         #endregion
 
@@ -90,7 +88,7 @@
         public ClosedCaptionsBuffer()
         {
             for (var channel = 1; channel <= 4; channel++)
-                ChannelPacketBuffer[(CaptionsChannel)channel] = new Dictionary<long, ClosedCaptionPacket>(MaxBufferLength / 4);
+                _channelPacketBuffer[(CaptionsChannel)channel] = new Dictionary<long, ClosedCaptionPacket>(MaxBufferLength / 4);
 
             // Instantiate the state buffer
             for (var rowIndex = 0; rowIndex < RowCount; rowIndex++)
@@ -185,8 +183,8 @@
         /// </summary>
         public int CursorRowIndex
         {
-            get => m_CursorRowIndex;
-            private set => m_CursorRowIndex = value.Clamp(0, RowCount - 1);
+            get => _cursorRowIndex;
+            private set => _cursorRowIndex = value.Clamp(0, RowCount - 1);
         }
 
         /// <summary>
@@ -194,8 +192,8 @@
         /// </summary>
         public int CursorColumnIndex
         {
-            get => m_CursorColumnIndex;
-            private set => m_CursorColumnIndex = value.Clamp(0, ColumnCount - 1);
+            get => _cursorColumnIndex;
+            private set => _cursorColumnIndex = value.Clamp(0, ColumnCount - 1);
         }
 
         /// <summary>
@@ -244,7 +242,7 @@
         /// <param name="text">The text.</param>
         public void SetText(int rowIndex, string text)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 for (var c = 0; c < Math.Min(text.Length, ColumnCount); c++)
                     State[rowIndex][c].Display.Character = text[c];
@@ -262,7 +260,7 @@
             if (currentBlock == null || mediaCore == null)
                 return;
 
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 // Feed the available closed captions into the packet buffer
                 // We pre-feed the video blocks to avoid any skipping of CC packets
@@ -276,7 +274,7 @@
                         // Add the CC packets to the linear, ordered packet buffer
                         foreach (var cc in block.ClosedCaptions)
                         {
-                            PacketBuffer[cc.Timestamp.Ticks] = cc;
+                            _packetBuffer[cc.Timestamp.Ticks] = cc;
                         }
 
                         // Update the Write Tag and move on to the next block
@@ -290,12 +288,12 @@
                 // into the corresponding independent channel packet buffers
                 var maxPosition = currentBlock.EndTime.Ticks; // The maximum demuxer position
                 var lastDemuxedKey = long.MinValue; // The demuxer position
-                var linearBufferKeys = PacketBuffer.Keys.OrderBy(k => k).ToArray();
+                var linearBufferKeys = _packetBuffer.Keys.OrderBy(k => k).ToArray();
 
                 foreach (var position in linearBufferKeys)
                 {
                     // Get a reference to the packet to demux
-                    var packet = PacketBuffer[position];
+                    var packet = _packetBuffer[position];
 
                     // Stop demuxing packets beyond the current video block
                     if (position > maxPosition) break;
@@ -322,7 +320,7 @@
                         packet.FieldParity, packet.FieldParity == 1 ? Field1LastChannel : Field2LastChannel);
 
                     // Demux the packet to the corresponding channel buffer so the channels are independent
-                    ChannelPacketBuffer[channel][position] = packet;
+                    _channelPacketBuffer[channel][position] = packet;
                 }
 
                 // Remove the demuxed packets from the general (linear) packet buffer
@@ -331,7 +329,7 @@
                     if (bufferKey > lastDemuxedKey)
                         break;
 
-                    PacketBuffer.Remove(bufferKey);
+                    _packetBuffer.Remove(bufferKey);
                 }
 
                 // Trim all buffers to their max length
@@ -345,14 +343,14 @@
         /// </summary>
         public void Reset()
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 // Clear the packet buffers
                 LastReceiveTime = DateTime.UtcNow;
                 CurrentPacket = default;
-                PacketBuffer.Clear();
+                _packetBuffer.Clear();
                 for (var channel = 1; channel <= 4; channel++)
-                    ChannelPacketBuffer[(CaptionsChannel)channel].Clear();
+                    _channelPacketBuffer[(CaptionsChannel)channel].Clear();
 
                 // Reset the writer state
                 Field1LastChannel = DefaultFieldChannel;
@@ -386,7 +384,7 @@
         /// <returns>A boolean to determine if the display needs repainting.</returns>
         public bool UpdateState(CaptionsChannel channel, TimeSpan clockPosition)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 var needsRepaint = false;
 
@@ -406,7 +404,7 @@
                 for (var c = 1; c <= 4; c++)
                 {
                     var currentChannel = (CaptionsChannel)c;
-                    var dequeuedPackets = DequeuePackets(ChannelPacketBuffer[currentChannel], clockPosition.Ticks);
+                    var dequeuedPackets = DequeuePackets(_channelPacketBuffer[currentChannel], clockPosition.Ticks);
                     if (currentChannel == Channel)
                         packets = dequeuedPackets;
                 }
@@ -508,7 +506,9 @@
         {
             var result = new List<ClosedCaptionPacket>(buffer.Count);
             var linearBufferKeys = buffer.Keys.OrderBy(k => k).ToArray();
+#pragma warning disable U2U1203
             foreach (var bufferKey in linearBufferKeys)
+#pragma warning restore U2U1203
             {
                 if (bufferKey > upToTicks)
                     break;
@@ -525,7 +525,7 @@
         /// </summary>
         /// <param name="buffer">The buffer.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void TrimBuffer(IDictionary<long, ClosedCaptionPacket> buffer)
+        private static void TrimBuffer(Dictionary<long, ClosedCaptionPacket> buffer)
         {
             // Don't trim it if we have not reached a maximum length
             if (buffer.Count <= MaxBufferLength)
@@ -536,7 +536,9 @@
             var keysToRemove = buffer.Keys.Skip(0).Take(removalCount).ToArray();
 
             // Remove the target keys
+#pragma warning disable U2U1203
             foreach (var key in keysToRemove)
+#pragma warning restore U2U1203
                 buffer.Remove(key);
         }
 
@@ -773,11 +775,11 @@
         private void TrimBuffers()
         {
             // Trim the linear buffer
-            TrimBuffer(PacketBuffer);
+            TrimBuffer(_packetBuffer);
 
             // Trim the packet buffer
             for (var channel = 1; channel <= 4; channel++)
-                TrimBuffer(ChannelPacketBuffer[(CaptionsChannel)channel]);
+                TrimBuffer(_channelPacketBuffer[(CaptionsChannel)channel]);
         }
 
         #endregion

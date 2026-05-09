@@ -1,13 +1,12 @@
 ﻿namespace Unosquare.FFME.Common
 {
-    using Common;
     using System;
 
     /// <summary>
     /// Contains the media state changed event args.
     /// </summary>
     /// <seealso cref="EventArgs" />
-    public class MediaStateChangedEventArgs : EventArgs
+    public sealed class MediaStateChangedEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaStateChangedEventArgs"/> class.

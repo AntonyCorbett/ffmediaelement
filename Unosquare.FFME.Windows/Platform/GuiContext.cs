@@ -81,7 +81,9 @@ namespace Unosquare.FFME.Platform
         /// <param name="arguments">The arguments.</param>
         /// <returns>The awaitable task.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable U2U1009
         private async Task InvokeAsyncInternal(DispatcherPriority priority, Delegate callback, params object[] arguments)
+#pragma warning restore U2U1009
         {
             if (Thread == Thread.CurrentThread)
             {

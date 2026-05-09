@@ -1066,7 +1066,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
 
         // Stream seeking by seeking component
         // The backward flag means that we want to seek to at MOST the target position
-        var seekFlags = ffmpeg.AVSEEK_FLAG_BACKWARD;
+        const int seekFlags = ffmpeg.AVSEEK_FLAG_BACKWARD;
         var streamIndex = comp.StreamIndex;
         var timeBase = comp.Stream->time_base;
 
@@ -1213,7 +1213,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             ? ffmpeg.AV_NOPTS_VALUE
             : main.StartTime.ToLong(main.Stream->time_base);
         var streamIndex = main.StreamIndex;
-        var seekFlags = ffmpeg.AVSEEK_FLAG_BACKWARD;
+        const int seekFlags = ffmpeg.AVSEEK_FLAG_BACKWARD;
 
         StreamReadInterruptStartTime.Value = DateTime.UtcNow;
 

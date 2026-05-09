@@ -19,9 +19,9 @@
         {
             // Change the default location of the ffmpeg binaries (same directory as application)
             // You can get the 64-bit binaries here: https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z
-            Library.FFmpegDirectory = @"c:\ffmpeg" + (Environment.Is64BitProcess ? @"\x64" : string.Empty);
+            Library.FFmpegDirectory = @"d:\ffmpeg\Version8";
 
-            // Multi-threaded video enables the creation of independent
+            // Multithreaded video enables the creation of independent
             // dispatcher threads to render video frames. This is an experimental feature
             // and might become deprecated in the future as no real performance enhancements
             // have been detected.
@@ -68,10 +68,10 @@
         {
             base.OnStartup(e);
             Current.MainWindow = new MainWindow();
-            Current.MainWindow.Loaded += (snd, eva) => ViewModel.OnApplicationLoaded();
+            Current.MainWindow.Loaded += (_, _) => ViewModel.OnApplicationLoaded();
             Current.MainWindow.Show();
 
-            // Pre-load FFmpeg libraries in the background. This is optional.
+            // Preload FFmpeg libraries in the background. This is optional.
             // FFmpeg will be automatically loaded if not already loaded when you try to open
             // a new stream or file. See issue #242
             Task.Run(async () =>
@@ -91,7 +91,7 @@
                             MessageBox.Show(MainWindow,
                                 $"Unable to Load FFmpeg Libraries from path:\r\n    {Library.FFmpegDirectory}" +
                                 $"\r\nMake sure the above folder contains FFmpeg shared binaries (dll files) for the " +
-                                $"applicantion's architecture ({(Environment.Is64BitProcess ? "64-bit" : "32-bit")})" +
+                                $"application's architecture ({(Environment.Is64BitProcess ? "64-bit" : "32-bit")})" +
                                 $"\r\nTIP: You can download builds from https://ffmpeg.org/download.html" +
                                 $"\r\n{ex.GetType().Name}: {ex.Message}\r\n\r\nApplication will exit.",
                                 "FFmpeg Error",
