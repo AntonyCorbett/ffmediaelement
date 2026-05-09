@@ -19,7 +19,7 @@
         // Synchronization locks
         private readonly object ComponentSyncLock = new();
         private readonly object BufferSyncLock = new();
-        private readonly AtomicBoolean m_IsDisposed = new(false);
+        private volatile bool m_IsDisposed;
 
         private IReadOnlyList<MediaComponent> m_All = new List<MediaComponent>(0);
         private IReadOnlyList<MediaType> m_MediaTypes = new List<MediaType>(0);
@@ -64,7 +64,7 @@
         /// <summary>
         /// Gets a value indicating whether this instance is disposed.
         /// </summary>
-        public bool IsDisposed => m_IsDisposed.Value;
+        public bool IsDisposed => m_IsDisposed;
 
         /// <summary>
         /// Gets the registered component count.
@@ -487,7 +487,7 @@
                 if (IsDisposed || alsoManaged == false)
                     return;
 
-                m_IsDisposed.Value = true;
+                m_IsDisposed = true;
                 foreach (var mediaType in m_MediaTypes)
                     RemoveComponent(mediaType);
             }

@@ -14,7 +14,7 @@
     /// Contact author: Alexandre Mutel - alexandre_mutel at yahoo.fr
     /// Modified by: Graham "Gee" Plumb.
     /// </summary>
-    internal sealed class DirectSoundPlayer : IntervalWorkerBase, IWavePlayer, ILoggingSource
+    internal sealed class DirectSoundPlayer : WorkerBase, IWavePlayer, ILoggingSource
     {
         #region Fields
 
@@ -147,7 +147,7 @@
             // Handle cancel events
             if (handleIndex == CancelHandle || handleIndex == PlaybackEndHandle)
             {
-                WantedWorkerState = WorkerState.Stopped;
+                _ = StopAsync();
                 return;
             }
 
@@ -178,18 +178,13 @@
         }
 
         /// <inheritdoc />
-        protected override void Dispose(bool alsoManaged)
+        public override void Dispose()
         {
-            base.Dispose(alsoManaged);
-
-            if (alsoManaged)
-            {
-                // Dispose DirectSound buffer wait handles
-                _playbackEndedEventWaitHandle?.Dispose();
-                _frameStartEventWaitHandle?.Dispose();
-                _frameEndEventWaitHandle?.Dispose();
-                _cancelEvent.Dispose();
-            }
+            base.Dispose();
+            _playbackEndedEventWaitHandle?.Dispose();
+            _frameStartEventWaitHandle?.Dispose();
+            _frameEndEventWaitHandle?.Dispose();
+            _cancelEvent.Dispose();
         }
 
         #endregion

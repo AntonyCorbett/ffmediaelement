@@ -10,7 +10,7 @@
     /// A wave player that opens an audio device and continuously feeds it
     /// with audio samples using a wave provider.
     /// </summary>
-    internal sealed class LegacyAudioPlayer : IntervalWorkerBase, IWavePlayer, ILoggingSource
+    internal sealed class LegacyAudioPlayer : WorkerBase, IWavePlayer, ILoggingSource
     {
         #region State Variables
 
@@ -191,9 +191,9 @@
         }
 
         /// <inheritdoc />
-        protected override void Dispose(bool alsoManaged)
+        public override void Dispose()
         {
-            base.Dispose(alsoManaged);
+            base.Dispose();
             DriverCallbackEvent.Dispose();
         }
 

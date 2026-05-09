@@ -2,10 +2,10 @@
 {
     using Common;
     using Container;
-    using Primitives;
     using System;
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;
+    using System.Threading;
 
     /// <summary>
     /// Contains all the status properties of the stream being handled by the media engine.
@@ -17,25 +17,29 @@
         private static readonly IReadOnlyDictionary<string, string> EmptyDictionary = new Dictionary<string, string>(0);
 
         private readonly MediaEngine MediaCore;
-        private readonly AtomicInteger m_MediaState = new((int)MediaPlaybackState.Close);
-        private readonly AtomicBoolean m_HasMediaEnded = new(default);
+        // volatile int/bool give memory-barrier semantics for frequently toggled flags.
+        // Timing values are stored as long (ticks) accessed via Volatile.Read/Write.
+        // Double fields (SpeedRatio, Volume, Balance, etc.) are plain fields — aligned
+        // 64-bit reads/writes are atomically safe on net8.0-windows (x64).
+        private volatile int m_MediaState = (int)MediaPlaybackState.Close;
+        private volatile bool m_HasMediaEnded;
 
-        private readonly AtomicBoolean m_IsBuffering = new(default);
-        private readonly AtomicLong m_DecodingBitRate = new(default);
-        private readonly AtomicDouble m_BufferingProgress = new(default);
-        private readonly AtomicDouble m_DownloadProgress = new(default);
-        private readonly AtomicLong m_PacketBufferLength = new(default);
-        private readonly AtomicTimeSpan m_PacketBufferDuration = new(TimeSpan.MinValue);
-        private readonly AtomicInteger m_PacketBufferCount = new(default);
+        private volatile bool m_IsBuffering;
+        private long m_DecodingBitRate;
+        private double m_BufferingProgress;
+        private double m_DownloadProgress;
+        private long m_PacketBufferLength;
+        private long m_PacketBufferDurationTicks = TimeSpan.MinValue.Ticks;
+        private volatile int m_PacketBufferCount;
 
-        private readonly AtomicTimeSpan m_FramePosition = new(default);
-        private readonly AtomicTimeSpan m_Position = new(default);
-        private readonly AtomicDouble m_SpeedRatio = new(Constants.DefaultSpeedRatio);
-        private readonly AtomicDouble m_Volume = new(Constants.DefaultVolume);
-        private readonly AtomicDouble m_Balance = new(Constants.DefaultBalance);
-        private readonly AtomicBoolean m_IsMuted = new(false);
-        private readonly AtomicBoolean m_ScrubbingEnabled = new(true);
-        private readonly AtomicBoolean m_VerticalSyncEnabled = new(true);
+        private long m_FramePositionTicks;
+        private long m_PositionTicks;
+        private double m_SpeedRatio = Constants.DefaultSpeedRatio;
+        private double m_Volume = Constants.DefaultVolume;
+        private double m_Balance = Constants.DefaultBalance;
+        private volatile bool m_IsMuted;
+        private volatile bool m_ScrubbingEnabled = true;
+        private volatile bool m_VerticalSyncEnabled = true;
 
         private Uri m_Source;
         private bool m_IsOpen;
@@ -103,43 +107,76 @@
         /// <inheritdoc />
         public double SpeedRatio
         {
-            get => m_SpeedRatio.Value;
-            set => SetProperty(m_SpeedRatio, value.Clamp(Constants.MinSpeedRatio, Constants.MaxSpeedRatio));
+            get => m_SpeedRatio;
+            set
+            {
+                value = value.Clamp(Constants.MinSpeedRatio, Constants.MaxSpeedRatio);
+                if (m_SpeedRatio == value) return;
+                m_SpeedRatio = value;
+                NotifyPropertyChanged(nameof(SpeedRatio));
+            }
         }
 
         /// <inheritdoc />
         public double Volume
         {
-            get => m_Volume.Value;
-            set => SetProperty(m_Volume, value.Clamp(Constants.MinVolume, Constants.MaxVolume));
+            get => m_Volume;
+            set
+            {
+                value = value.Clamp(Constants.MinVolume, Constants.MaxVolume);
+                if (m_Volume == value) return;
+                m_Volume = value;
+                NotifyPropertyChanged(nameof(Volume));
+            }
         }
 
         /// <inheritdoc />
         public double Balance
         {
-            get => m_Balance.Value;
-            set => SetProperty(m_Balance, value.Clamp(Constants.MinBalance, Constants.MaxBalance));
+            get => m_Balance;
+            set
+            {
+                value = value.Clamp(Constants.MinBalance, Constants.MaxBalance);
+                if (m_Balance == value) return;
+                m_Balance = value;
+                NotifyPropertyChanged(nameof(Balance));
+            }
         }
 
         /// <inheritdoc />
         public bool IsMuted
         {
-            get => m_IsMuted.Value;
-            set => SetProperty(m_IsMuted, value);
+            get => m_IsMuted;
+            set
+            {
+                if (m_IsMuted == value) return;
+                m_IsMuted = value;
+                NotifyPropertyChanged(nameof(IsMuted));
+            }
         }
 
         /// <inheritdoc />
         public bool ScrubbingEnabled
         {
-            get => m_ScrubbingEnabled.Value;
-            set => SetProperty(m_ScrubbingEnabled, value);
+            get => m_ScrubbingEnabled;
+            set
+            {
+                if (m_ScrubbingEnabled == value) return;
+                m_ScrubbingEnabled = value;
+                NotifyPropertyChanged(nameof(ScrubbingEnabled));
+            }
         }
 
         /// <inheritdoc />
         public bool VerticalSyncEnabled
         {
-            get => m_VerticalSyncEnabled.Value;
-            set => SetProperty(m_VerticalSyncEnabled, value);
+            get => m_VerticalSyncEnabled;
+            set
+            {
+                if (m_VerticalSyncEnabled == value) return;
+                m_VerticalSyncEnabled = value;
+                NotifyPropertyChanged(nameof(VerticalSyncEnabled));
+            }
         }
 
         #endregion
@@ -149,13 +186,11 @@
         /// <inheritdoc />
         public MediaPlaybackState MediaState
         {
-            get => (MediaPlaybackState)m_MediaState.Value;
+            get => (MediaPlaybackState)m_MediaState;
             internal set
             {
-                var oldState = (MediaPlaybackState)m_MediaState.Value;
-                if (!SetProperty(m_MediaState, (int)value))
-                    return;
-
+                var oldState = (MediaPlaybackState)Interlocked.Exchange(ref m_MediaState, (int)value);
+                if (oldState == value) return;
                 ReportCommandStatus();
                 ReportTimingStatus();
                 MediaCore.SendOnMediaStateChanged(oldState, value);
@@ -165,26 +200,38 @@
         /// <inheritdoc />
         public TimeSpan Position
         {
-            get => m_Position.Value;
-            private set => SetProperty(m_Position, value);
+            get => TimeSpan.FromTicks(Volatile.Read(ref m_PositionTicks));
+            private set
+            {
+                var ticks = value.Ticks;
+                if (Volatile.Read(ref m_PositionTicks) == ticks) return;
+                Volatile.Write(ref m_PositionTicks, ticks);
+                NotifyPropertyChanged(nameof(Position));
+            }
         }
 
         /// <inheritdoc />
         public TimeSpan FramePosition
         {
-            get => m_FramePosition.Value;
-            private set => SetProperty(m_FramePosition, value);
+            get => TimeSpan.FromTicks(Volatile.Read(ref m_FramePositionTicks));
+            private set
+            {
+                var ticks = value.Ticks;
+                if (Volatile.Read(ref m_FramePositionTicks) == ticks) return;
+                Volatile.Write(ref m_FramePositionTicks, ticks);
+                NotifyPropertyChanged(nameof(FramePosition));
+            }
         }
 
         /// <inheritdoc />
         public bool HasMediaEnded
         {
-            get => m_HasMediaEnded.Value;
+            get => m_HasMediaEnded;
             internal set
             {
-                if (!SetProperty(m_HasMediaEnded, value))
-                    return;
-
+                if (m_HasMediaEnded == value) return;
+                m_HasMediaEnded = value;
+                NotifyPropertyChanged(nameof(HasMediaEnded));
                 if (value) MediaCore.SendOnMediaEnded();
             }
         }
@@ -467,53 +514,85 @@
         /// <inheritdoc />
         public bool IsBuffering
         {
-            get => m_IsBuffering.Value;
-            private set => SetProperty(m_IsBuffering, value);
+            get => m_IsBuffering;
+            private set
+            {
+                if (m_IsBuffering == value) return;
+                m_IsBuffering = value;
+                NotifyPropertyChanged(nameof(IsBuffering));
+            }
         }
 
         /// <inheritdoc />
         public long DecodingBitRate
         {
-            get => m_DecodingBitRate.Value;
-            private set => SetProperty(m_DecodingBitRate, value);
+            get => Volatile.Read(ref m_DecodingBitRate);
+            private set
+            {
+                if (Volatile.Read(ref m_DecodingBitRate) == value) return;
+                Volatile.Write(ref m_DecodingBitRate, value);
+                NotifyPropertyChanged(nameof(DecodingBitRate));
+            }
         }
 
         /// <inheritdoc />
         public double BufferingProgress
         {
-            get => m_BufferingProgress.Value;
-            private set => SetProperty(m_BufferingProgress, value);
+            get => m_BufferingProgress;
+            private set
+            {
+                if (m_BufferingProgress == value) return;
+                m_BufferingProgress = value;
+                NotifyPropertyChanged(nameof(BufferingProgress));
+            }
         }
 
         /// <inheritdoc />
         public double DownloadProgress
         {
-            get => m_DownloadProgress.Value;
-            private set => SetProperty(m_DownloadProgress, value);
+            get => m_DownloadProgress;
+            private set
+            {
+                if (m_DownloadProgress == value) return;
+                m_DownloadProgress = value;
+                NotifyPropertyChanged(nameof(DownloadProgress));
+            }
         }
 
         /// <inheritdoc />
         public long PacketBufferLength
         {
-            get => m_PacketBufferLength.Value;
-            private set => SetProperty(m_PacketBufferLength, value);
+            get => Volatile.Read(ref m_PacketBufferLength);
+            private set
+            {
+                if (Volatile.Read(ref m_PacketBufferLength) == value) return;
+                Volatile.Write(ref m_PacketBufferLength, value);
+                NotifyPropertyChanged(nameof(PacketBufferLength));
+            }
         }
 
         /// <inheritdoc />
         public TimeSpan PacketBufferDuration
         {
-            get => m_PacketBufferDuration.Value;
-            private set => SetProperty(m_PacketBufferDuration, value);
+            get => TimeSpan.FromTicks(Volatile.Read(ref m_PacketBufferDurationTicks));
+            private set
+            {
+                var ticks = value.Ticks;
+                if (Volatile.Read(ref m_PacketBufferDurationTicks) == ticks) return;
+                Volatile.Write(ref m_PacketBufferDurationTicks, ticks);
+                NotifyPropertyChanged(nameof(PacketBufferDuration));
+            }
         }
 
         /// <inheritdoc />
         public int PacketBufferCount
         {
-            get => m_PacketBufferCount.Value;
+            get => m_PacketBufferCount;
             private set
             {
-                SetProperty(m_PacketBufferCount, value);
-                NotifyPropertyChanged(nameof(IsAtEndOfStream));
+                if (m_PacketBufferCount == value) return;
+                m_PacketBufferCount = value;
+                NotifyPropertyChanged(nameof(PacketBufferCount), nameof(IsAtEndOfStream));
             }
         }
 

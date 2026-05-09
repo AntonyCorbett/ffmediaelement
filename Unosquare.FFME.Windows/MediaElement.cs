@@ -46,7 +46,7 @@ namespace Unosquare.FFME
         private readonly bool _allowContentChange;
 
         private readonly ConcurrentBag<string> _propertyUpdates = [];
-        private readonly AtomicBoolean _isStateUpdating = new(false);
+        private volatile bool _isStateUpdating;
         private readonly DispatcherTimer _updatesTimer;
 
         private bool _isDisposed;
@@ -173,8 +173,8 @@ namespace Unosquare.FFME
         /// </summary>
         internal bool IsStateUpdating
         {
-            get => _isStateUpdating.Value;
-            set => _isStateUpdating.Value = value;
+            get => _isStateUpdating;
+            set => _isStateUpdating = value;
         }
 
         #endregion

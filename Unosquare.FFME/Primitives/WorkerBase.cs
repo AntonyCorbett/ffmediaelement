@@ -1,278 +1,232 @@
-﻿namespace Unosquare.FFME.Primitives;
+namespace Unosquare.FFME.Primitives;
 
 using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Base class for background workers. Each worker runs its own dedicated
+/// background Thread — no thread-pool dependency for the core loop.
+/// Pause/resume use a SemaphoreSlim gate; stop uses CancellationTokenSource.
+/// A ManualResetEventSlim lets other workers signal an early wakeup.
+/// </summary>
 internal abstract class WorkerBase : IWorker
 {
-    private readonly object SyncLock = new();
-    private readonly Stopwatch CycleClock = new();
-    private readonly ManualResetEventSlim WantedStateCompleted = new(true);
-
-    private int m_IsDisposed;
-    private int m_IsDisposing;
-    private int m_WorkerState = (int)WorkerState.Created;
-    private int m_WantedWorkerState = (int)WorkerState.Running;
-    private CancellationTokenSource TokenSource = new();
-
-    protected WorkerBase(string name)
-    {
-        Name = name;
-        CycleClock.Restart();
-    }
-
     /// <summary>
-    /// Gets the name of the worker.
+    /// Run gate: 0 = blocked (Created or Paused), 1 = allowed to run.
+    /// Exposed as protected so BlockRenderingWorker's high-priority thread can use it directly.
     /// </summary>
+    protected readonly SemaphoreSlim RunGate = new(0, 1);
+
+    private CancellationTokenSource _stopCts = new();
+    private volatile CancellationTokenSource _cycleCts = new();
+    private readonly ManualResetEventSlim _wakeSignal = new(false);
+
+    private readonly TaskCompletionSource _loopDone = new();
+    private volatile int _stateValue = (int)WorkerState.Created;
+    private volatile bool _isDisposed;
+
+    protected WorkerBase(string name) => Name = name;
+
     public string Name { get; }
+    public WorkerState WorkerState => (WorkerState)_stateValue;
+    public bool IsDisposed => _isDisposed;
+    protected bool IsDisposing { get; private set; }
 
-    /// <inheritdoc />
-    public WorkerState WorkerState
-    {
-        get => (WorkerState)Interlocked.CompareExchange(ref m_WorkerState, 0, 0);
-        private set => Interlocked.Exchange(ref m_WorkerState, (int)value);
-    }
-
-    /// <inheritdoc />
-    public bool IsDisposed
-    {
-        get => Interlocked.CompareExchange(ref m_IsDisposed, 0, 0) != 0;
-        private set => Interlocked.Exchange(ref m_IsDisposed, value ? 1 : 0);
-    }
+    /// <summary>Fires when StopAsync is called. Exposed for subclasses with custom threads.</summary>
+    protected CancellationToken StopToken => _stopCts.Token;
 
     /// <summary>
-    /// Gets a value indicating whether this instance is currently being disposed.
+    /// Fires when Interrupt() is called (PauseAsync or StopAsync).
+    /// Cycle logic should check this to exit inner loops early.
     /// </summary>
-    /// <value>
-    ///   <c>true</c> if this instance is disposing; otherwise, <c>false</c>.
-    /// </value>
-    protected bool IsDisposing
-    {
-        get => Interlocked.CompareExchange(ref m_IsDisposing, 0, 0) != 0;
-        private set => Interlocked.Exchange(ref m_IsDisposing, value ? 1 : 0);
-    }
+    protected CancellationToken CycleToken => _cycleCts.Token;
 
-    /// <summary>
-    /// Gets or sets the desired state of the worker.
-    /// </summary>
-    protected WorkerState WantedWorkerState
-    {
-        get => (WorkerState)Interlocked.CompareExchange(ref m_WantedWorkerState, 0, 0);
-        set => Interlocked.Exchange(ref m_WantedWorkerState, (int)value);
-    }
-
-    /// <summary>
-    /// Gets the elapsed time of the last cycle.
-    /// </summary>
-    protected TimeSpan LastCycleElapsed { get; private set; }
-
-    /// <summary>
-    /// Gets the elapsed time of the current cycle.
-    /// </summary>
-    protected TimeSpan CurrentCycleElapsed => CycleClock.Elapsed;
-
-    /// <inheritdoc />
     public Task<WorkerState> StartAsync()
     {
-        lock (SyncLock)
-        {
-            if (IsDisposed || IsDisposing)
-                return Task.FromResult(WorkerState);
+        if (_isDisposed) return Task.FromResult(WorkerState);
 
-            if (WorkerState == WorkerState.Created)
-            {
-                WantedWorkerState = WorkerState.Running;
-                WorkerState = WorkerState.Running;
-                return Task.FromResult(WorkerState);
-            }
-            else if (WorkerState == WorkerState.Paused)
-            {
-                WantedStateCompleted.Reset();
-                WantedWorkerState = WorkerState.Running;
-            }
+        if (Interlocked.CompareExchange(ref _stateValue, (int)WorkerState.Running, (int)WorkerState.Created)
+            == (int)WorkerState.Created)
+        {
+            StartWorkerThread();
+            RunGate.Release(); // unblock the loop
         }
 
-        return RunWaitForWantedState();
+        return Task.FromResult(WorkerState);
     }
 
-    /// <inheritdoc />
-    public Task<WorkerState> PauseAsync()
+    public async Task<WorkerState> PauseAsync()
     {
-        // 2021-12-16 Moved this outside of the sync block, to avoid deadlock (#576)
-        if (IsDisposed || IsDisposing)
-            return Task.FromResult(WorkerState);
-        lock (SyncLock)
-        {
-            if (WorkerState != WorkerState.Running)
-                return Task.FromResult(WorkerState);
+        if (_isDisposed) return WorkerState;
 
-            WantedStateCompleted.Reset();
-            WantedWorkerState = WorkerState.Paused;
-        }
+        if (Interlocked.CompareExchange(ref _stateValue, (int)WorkerState.Paused, (int)WorkerState.Running)
+            != (int)WorkerState.Running)
+            return WorkerState;
 
-        return RunWaitForWantedState();
+        // Cancel the current cycle so its inner loops exit promptly,
+        // then wait for the gate (released by the cycle at the start of each iteration).
+        Interrupt();
+        await RunGate.WaitAsync(_stopCts.Token).ConfigureAwait(false);
+        return WorkerState;
     }
 
-    /// <inheritdoc />
     public Task<WorkerState> ResumeAsync()
     {
-        lock (SyncLock)
-        {
-            if (IsDisposed || IsDisposing)
-                return Task.FromResult(WorkerState);
+        if (_isDisposed) return Task.FromResult(WorkerState);
 
-            if (WorkerState != WorkerState.Paused)
-                return Task.FromResult(WorkerState);
+        if (Interlocked.CompareExchange(ref _stateValue, (int)WorkerState.Running, (int)WorkerState.Paused)
+            != (int)WorkerState.Paused)
+            return Task.FromResult(WorkerState);
 
-            WantedStateCompleted.Reset();
-            WantedWorkerState = WorkerState.Running;
-        }
-
-        return RunWaitForWantedState();
+        RunGate.Release();
+        return Task.FromResult(WorkerState);
     }
 
-    /// <inheritdoc />
-    public Task<WorkerState> StopAsync()
+    public async Task<WorkerState> StopAsync()
     {
-        lock (SyncLock)
-        {
-            if (IsDisposed || IsDisposing)
-                return Task.FromResult(WorkerState);
+        if (_isDisposed) return WorkerState;
 
-            if (WorkerState != WorkerState.Running && WorkerState != WorkerState.Paused)
-                return Task.FromResult(WorkerState);
+        var prevState = (WorkerState)Interlocked.Exchange(ref _stateValue, (int)WorkerState.Stopped);
+        if (prevState == WorkerState.Stopped || prevState == WorkerState.Created)
+            return WorkerState;
 
-            WantedStateCompleted.Reset();
-            WantedWorkerState = WorkerState.Stopped;
-            Interrupt();
-        }
+        Interrupt();
+        _wakeSignal.Set(); // unblock any cycle delay
+        _stopCts.Cancel();
 
-        return RunWaitForWantedState();
-    }
-
-    /// <inheritdoc />
-    public virtual void Dispose() => Dispose(true);
-
-    /// <summary>
-    /// Releases unmanaged and optionally managed resources.
-    /// </summary>
-    /// <param name="alsoManaged">Determines if managed resources hsould also be released.</param>
-    protected virtual void Dispose(bool alsoManaged)
-    {
-        StopAsync().Wait(TimeSpan.FromSeconds(2));
-
-        lock (SyncLock)
-        {
-            if (IsDisposed || IsDisposing)
-                return;
-
-            IsDisposing = true;
-            WantedStateCompleted.Set();
-            try { OnDisposing(); } catch { /* Ignore */ }
-            CycleClock.Reset();
-            WantedStateCompleted.Dispose();
-            TokenSource.Dispose();
-            IsDisposed = true;
-            IsDisposing = false;
-        }
-    }
-
-    /// <summary>
-    /// Handles the cycle logic exceptions.
-    /// </summary>
-    /// <param name="ex">The exception that was thrown.</param>
-    protected virtual void OnCycleException(Exception ex)
-    {
-        // placeholder
-    }
-
-    /// <summary>
-    /// This method is called automatically when <see cref="Dispose()"/> is called.
-    /// Makes sure you release all resources within this call.
-    /// </summary>
-    protected virtual void OnDisposing()
-    {
-        // placeholder
-    }
-
-    /// <summary>
-    /// Represents the user defined logic to be executed on a single worker cycle.
-    /// Check the cancellation token continuously if you need responsive interrupts.
-    /// </summary>
-    /// <param name="ct">The cancellation token.</param>
-    protected abstract void ExecuteCycleLogic(CancellationToken ct);
-
-    /// <summary>
-    /// Interrupts a cycle or a wait operation.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected void Interrupt() => TokenSource.Cancel();
-
-    /// <summary>
-    /// Tries to acquire a cycle for execution.
-    /// </summary>
-    /// <returns>True if a cycle should be executed.</returns>
-    protected bool TryBeginCycle()
-    {
-        if (WorkerState == WorkerState.Created || WorkerState == WorkerState.Stopped)
-            return false;
-
-        LastCycleElapsed = CycleClock.Elapsed;
-        CycleClock.Restart();
-
-        lock (SyncLock)
-        {
-            WorkerState = WantedWorkerState;
-            WantedStateCompleted.Set();
-
-            if (WorkerState == WorkerState.Stopped)
-                return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Executes the cyle calling the user-defined code.
-    /// </summary>
-    protected void ExecuteCyle()
-    {
-        lock (SyncLock)
-        {
-            // Recreate the token source -- applies to cycle logic and delay
-            var ts = TokenSource;
-            if (ts.IsCancellationRequested)
-            {
-                TokenSource = new CancellationTokenSource();
-                ts.Dispose();
-            }
-        }
-
-        if (WorkerState == WorkerState.Running)
-        {
-            try
-            {
-                ExecuteCycleLogic(TokenSource.Token);
-            }
-            catch (Exception ex)
-            {
-                OnCycleException(ex);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Returns a hot task that waits for the state of the worker to change.
-    /// </summary>
-    /// <returns>The awaitable state change task.</returns>
-    private Task<WorkerState> RunWaitForWantedState() => Task.Run(() =>
-    {
-        while (!WantedStateCompleted.Wait(Constants.DefaultTimingPeriod))
-            Interrupt();
+        try { await _loopDone.Task.ConfigureAwait(false); }
+        catch { }
 
         return WorkerState;
-    });
+    }
+
+    public virtual void Dispose()
+    {
+        if (_isDisposed) return;
+        IsDisposing = true;
+
+        StopAsync().GetAwaiter().GetResult();
+        try { OnDisposing(); } catch { /* ignore errors during cleanup */ }
+
+        RunGate.Dispose();
+        _stopCts.Dispose();
+        _cycleCts.Dispose();
+        _wakeSignal.Dispose();
+
+        _isDisposed = true;
+        IsDisposing = false;
+    }
+
+    /// <summary>
+    /// Signals this worker to start its next cycle immediately rather than waiting
+    /// for the next timer tick. Thread-safe; silently merges duplicate signals.
+    /// </summary>
+    public void RequestWakeup() => _wakeSignal.Set();
+
+    /// <summary>
+    /// Cancels the current cycle's CancellationToken and replaces it with a fresh one.
+    /// Called on pause and stop to break out of in-flight cycle logic promptly.
+    /// </summary>
+    protected void Interrupt()
+    {
+        var old = Interlocked.Exchange(ref _cycleCts, new CancellationTokenSource());
+        try { old.Cancel(); }
+        finally { old.Dispose(); }
+    }
+
+    /// <summary>Executes one unit of work. Check ct frequently for responsive interruption.</summary>
+    protected abstract void ExecuteCycleLogic(CancellationToken ct);
+
+    /// <summary>Called when the cycle logic throws an unexpected exception.</summary>
+    protected virtual void OnCycleException(Exception ex) { }
+
+    /// <summary>Called once, just before the worker is fully disposed.</summary>
+    protected virtual void OnDisposing() { }
+
+    /// <summary>
+    /// Returns how long to wait between cycles. Default is the standard timing period (~15 ms).
+    /// Workers that want to run as fast as possible return TimeSpan.Zero.
+    /// </summary>
+    protected virtual TimeSpan GetCycleDelay() => Constants.DefaultTimingPeriod;
+
+    /// <summary>
+    /// Starts the worker thread. Override to use a different thread (e.g. Highest priority).
+    /// The thread body must call <see cref="SignalLoopComplete"/> in its finally block.
+    /// </summary>
+    protected virtual void StartWorkerThread()
+    {
+        var thread = new Thread(RunLoop)
+        {
+            IsBackground = true,
+            Name = Name
+        };
+        thread.Start();
+    }
+
+    /// <summary>
+    /// Must be called at the end of any thread started by <see cref="StartWorkerThread"/> overrides.
+    /// Tells StopAsync that the loop has finished.
+    /// </summary>
+    protected void SignalLoopComplete() => _loopDone.TrySetResult();
+
+    private void RunLoop()
+    {
+        try
+        {
+            while (true)
+            {
+                // Block when paused or before the first StartAsync; exit on stop.
+                try { RunGate.Wait(StopToken); }
+                catch (OperationCanceledException) { break; }
+
+                if (StopToken.IsCancellationRequested)
+                {
+                    RunGate.Release(); // keep the count balanced
+                    break;
+                }
+
+                RunGate.Release(); // re-release immediately for next iteration
+
+                // Give each cycle a fresh, uncancelled token.
+                var oldCts = Interlocked.Exchange(ref _cycleCts, new CancellationTokenSource());
+                oldCts.Dispose();
+
+                var ct = _cycleCts.Token;
+                try
+                {
+                    ExecuteCycleLogic(ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // cycle interrupted via Interrupt() — continue the loop
+                }
+                catch (Exception ex)
+                {
+                    OnCycleException(ex);
+                }
+
+                WaitForNextCycle();
+            }
+        }
+        finally
+        {
+            _loopDone.TrySetResult();
+        }
+    }
+
+    private void WaitForNextCycle()
+    {
+        var delay = GetCycleDelay();
+        if (delay <= TimeSpan.Zero) return;
+
+        try
+        {
+            // Wait for the delay, but wake up early if another worker signals us or stop is requested.
+            _wakeSignal.Wait(delay, StopToken);
+        }
+        catch (OperationCanceledException) { }
+
+        _wakeSignal.Reset(); // reset for the next wait
+    }
 }

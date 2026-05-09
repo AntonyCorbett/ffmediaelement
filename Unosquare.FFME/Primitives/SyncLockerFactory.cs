@@ -111,13 +111,13 @@
         /// <seealso cref="ISyncReleasable" />
         private sealed class SyncLocker : ISyncLocker, ISyncReleasable
         {
-            private readonly AtomicBoolean m_IsDisposed = new AtomicBoolean(false);
+            private volatile bool m_IsDisposed;
             private readonly ReaderWriterLock Locker = new ReaderWriterLock();
 
             /// <summary>
             /// Gets a value indicating whether this instance is disposed.
             /// </summary>
-            public bool IsDisposed => m_IsDisposed.Value;
+            public bool IsDisposed => m_IsDisposed;
 
             /// <inheritdoc />
             public IDisposable AcquireReaderLock()
@@ -158,8 +158,8 @@
             /// <inheritdoc />
             public void Dispose()
             {
-                if (m_IsDisposed == true) return;
-                m_IsDisposed.Value = true;
+                if (m_IsDisposed) return;
+                m_IsDisposed = true;
                 Locker.ReleaseLock();
             }
 
@@ -171,7 +171,7 @@
             /// <returns>Success.</returns>
             private bool AcquireWriterLock(int timeoutMilliseconds, out IDisposable releaser)
             {
-                if (m_IsDisposed == true) throw new ObjectDisposedException(nameof(ISyncLocker));
+                if (m_IsDisposed) throw new ObjectDisposedException(nameof(ISyncLocker));
 
                 releaser = SyncLockReleaser.Empty;
                 if (Locker.IsReaderLockHeld)
@@ -198,7 +198,7 @@
             /// <returns>Success.</returns>
             private bool AcquireReaderLock(int timeoutMilliseconds, out IDisposable releaser)
             {
-                if (m_IsDisposed == true) throw new ObjectDisposedException(nameof(ISyncLocker));
+                if (m_IsDisposed) throw new ObjectDisposedException(nameof(ISyncLocker));
 
                 releaser = SyncLockReleaser.Empty;
                 Locker.AcquireReaderLock(timeoutMilliseconds);
@@ -215,11 +215,11 @@
         /// <seealso cref="ISyncReleasable" />
         private sealed class SyncLockerSlim : ISyncLocker, ISyncReleasable
         {
-            private readonly AtomicBoolean m_IsDisposed = new AtomicBoolean(false);
+            private volatile bool m_IsDisposed;
             private readonly ReaderWriterLockSlim Locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
             /// <inheritdoc />
-            public bool IsDisposed => m_IsDisposed.Value;
+            public bool IsDisposed => m_IsDisposed;
 
             /// <inheritdoc />
             public IDisposable AcquireReaderLock()
@@ -260,8 +260,8 @@
             /// <inheritdoc />
             public void Dispose()
             {
-                if (m_IsDisposed == true) return;
-                m_IsDisposed.Value = true;
+                if (m_IsDisposed) return;
+                m_IsDisposed = true;
                 Locker.Dispose();
             }
 
@@ -273,7 +273,7 @@
             /// <returns>Success.</returns>
             private bool AcquireWriterLock(int timeoutMilliseconds, out IDisposable releaser)
             {
-                if (m_IsDisposed == true) throw new ObjectDisposedException(nameof(ISyncLocker));
+                if (m_IsDisposed) throw new ObjectDisposedException(nameof(ISyncLocker));
 
                 releaser = SyncLockReleaser.Empty;
                 bool result;
@@ -302,7 +302,7 @@
             /// <returns>Success.</returns>
             private bool AcquireReaderLock(int timeoutMilliseconds, out IDisposable releaser)
             {
-                if (m_IsDisposed == true) throw new ObjectDisposedException(nameof(ISyncLocker));
+                if (m_IsDisposed) throw new ObjectDisposedException(nameof(ISyncLocker));
 
                 releaser = SyncLockReleaser.Empty;
                 var result = Locker.TryEnterReadLock(timeoutMilliseconds);

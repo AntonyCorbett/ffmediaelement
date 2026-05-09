@@ -41,12 +41,12 @@
         /// <summary>
         /// Detects redundant, unmanaged calls to the Dispose method.
         /// </summary>
-        private readonly AtomicBoolean m_IsDisposed = new(false);
+        private volatile bool m_IsDisposed;
 
         /// <summary>
         /// Determines if packets have been fed into the codec and frames can be decoded.
         /// </summary>
-        private readonly AtomicBoolean m_HasCodecPackets = new(false);
+        private volatile bool m_HasCodecPackets;
 
         /// <summary>
         /// Holds a reference to the associated input context stream.
@@ -395,8 +395,8 @@
         /// </summary>
         public bool HasPacketsInCodec
         {
-            get => m_HasCodecPackets.Value;
-            private set => m_HasCodecPackets.Value = value;
+            get => m_HasCodecPackets;
+            private set => m_HasCodecPackets = value;
         }
 
         /// <summary>
@@ -404,8 +404,8 @@
         /// </summary>
         public bool IsDisposed
         {
-            get => m_IsDisposed.Value;
-            private set => m_IsDisposed.Value = value;
+            get => m_IsDisposed;
+            private set => m_IsDisposed = value;
         }
 
         /// <summary>

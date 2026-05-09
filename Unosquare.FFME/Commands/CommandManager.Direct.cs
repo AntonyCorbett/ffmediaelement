@@ -4,7 +4,6 @@
     using Container;
     using Diagnostics;
     using Engine;
-    using Primitives;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -16,9 +15,9 @@
     {
         #region State Backing
 
-        private readonly AtomicBoolean HasDirectCommandCompleted = new(true);
-        private readonly AtomicInteger m_PendingDirectCommand = new((int)DirectCommandType.None);
-        private readonly AtomicBoolean m_IsCloseInterruptPending = new(false);
+        private volatile bool HasDirectCommandCompleted = true;
+        private volatile int m_PendingDirectCommand = (int)DirectCommandType.None;
+        private volatile bool m_IsCloseInterruptPending;
 
         #endregion
 
@@ -44,10 +43,10 @@
         /// </summary>
         private DirectCommandType PendingDirectCommand
         {
-            get => (DirectCommandType)m_PendingDirectCommand.Value;
+            get => (DirectCommandType)m_PendingDirectCommand;
             set
             {
-                m_PendingDirectCommand.Value = (int)value;
+                m_PendingDirectCommand = (int)value;
                 State.ReportCommandStatus();
             }
         }
@@ -57,15 +56,15 @@
         /// </summary>
         private bool IsDirectCommandPending =>
             PendingDirectCommand != DirectCommandType.None ||
-            HasDirectCommandCompleted.Value == false;
+            !HasDirectCommandCompleted;
 
         /// <summary>
         /// Gets or sets a value indicating whether a close interrupt is pending.
         /// </summary>
         private bool IsCloseInterruptPending
         {
-            get => m_IsCloseInterruptPending.Value;
-            set => m_IsCloseInterruptPending.Value = value;
+            get => m_IsCloseInterruptPending;
+            set => m_IsCloseInterruptPending = value;
         }
 
         #endregion
@@ -119,7 +118,7 @@
                 this.LogDebug(Aspects.EngineCommand, $"Direct Command '{command}' accepted. Perparing execution.");
 
                 PendingDirectCommand = command;
-                HasDirectCommandCompleted.Value = false;
+                HasDirectCommandCompleted = false;
                 MediaCore.PausePlayback();
 
                 var commandTask = new Task<bool>(() =>
@@ -182,7 +181,7 @@
                     finally
                     {
                         // Allow for a new direct command to be processed
-                        HasDirectCommandCompleted.Value = true;
+                        HasDirectCommandCompleted = true;
                         this.LogDebug(Aspects.EngineCommand, $"Direct Command '{command}' completed. Result: {commandResult}");
                     }
 

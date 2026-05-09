@@ -202,7 +202,7 @@ public sealed class VideoSeekIndexTests
     [Fact]
     public void SaveLoad_MediaSourceWithQuotes_IsEscapedAndRestored()
     {
-        var source = "file://path/with/\"quotes\"/video.mp4";
+        const string source = "file://path/with/\"quotes\"/video.mp4";
         var original = new VideoSeekIndex(source, 0);
 
         using var ms = new MemoryStream();

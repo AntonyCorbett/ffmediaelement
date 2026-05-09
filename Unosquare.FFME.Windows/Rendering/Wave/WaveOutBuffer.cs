@@ -10,7 +10,7 @@
     /// </summary>
     internal sealed class WaveOutBuffer : IDisposable
     {
-        private readonly AtomicBoolean m_IsDisposed = new AtomicBoolean(false);
+        private volatile bool m_IsDisposed;
         private readonly WaveHeader header;
         private readonly byte[] Buffer;
         private readonly IWaveProvider WaveStream;
@@ -58,8 +58,8 @@
         /// <inheritdoc />
         public void Dispose()
         {
-            if (m_IsDisposed.Value) return;
-            m_IsDisposed.Value = true;
+            if (m_IsDisposed) return;
+            m_IsDisposed = true;
 
             // Release the wave header
             WaveInterop.ReleaseHeader(DeviceHandle, header);

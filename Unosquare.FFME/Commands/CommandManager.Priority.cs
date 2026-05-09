@@ -1,7 +1,6 @@
 ﻿namespace Unosquare.FFME.Commands
 {
     using Common;
-    using Primitives;
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
@@ -11,7 +10,7 @@
     {
         #region State Backing Fields
 
-        private readonly AtomicInteger m_PendingPriorityCommand = new(0);
+        private volatile int m_PendingPriorityCommand;
         private readonly ManualResetEventSlim PriorityCommandCompleted = new(true);
 
         #endregion

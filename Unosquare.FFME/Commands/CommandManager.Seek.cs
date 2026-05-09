@@ -3,7 +3,6 @@
     using Common;
     using Container;
     using Diagnostics;
-    using Primitives;
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
@@ -14,9 +13,9 @@
         #region State Backing Fields
 
         private readonly ManualResetEventSlim SeekBlocksAvailable = new(true);
-        private readonly AtomicBoolean m_IsSeeking = new(false);
-        private readonly AtomicBoolean m_PlayAfterSeek = new(false);
-        private readonly AtomicInteger m_ActiveSeekMode = new((int)SeekMode.Normal);
+        private volatile bool m_IsSeeking;
+        private volatile bool m_PlayAfterSeek;
+        private volatile int m_ActiveSeekMode = (int)SeekMode.Normal;
 
         private SeekOperation QueuedSeekOperation;
         private Task<bool> QueuedSeekTask;
@@ -30,10 +29,10 @@
         /// </summary>
         public bool IsSeeking
         {
-            get => m_IsSeeking.Value;
+            get => m_IsSeeking;
             private set
             {
-                m_IsSeeking.Value = value;
+                m_IsSeeking = value;
                 State.ReportCommandStatus();
             }
         }
@@ -48,8 +47,8 @@
         /// </summary>
         public SeekMode ActiveSeekMode
         {
-            get => (SeekMode)m_ActiveSeekMode.Value;
-            private set => m_ActiveSeekMode.Value = (int)value;
+            get => (SeekMode)m_ActiveSeekMode;
+            private set => m_ActiveSeekMode = (int)value;
         }
 
         /// <summary>
@@ -58,8 +57,8 @@
         /// </summary>
         private bool PlayAfterSeek
         {
-            get => m_PlayAfterSeek.Value;
-            set => m_PlayAfterSeek.Value = value;
+            get => m_PlayAfterSeek;
+            set => m_PlayAfterSeek = value;
         }
 
         #endregion

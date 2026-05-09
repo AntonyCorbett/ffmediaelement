@@ -32,7 +32,7 @@
         /// <summary>
         /// Set when a bitmap is being written to the target bitmap.
         /// </summary>
-        private readonly AtomicBoolean m_IsRenderingInProgress = new(false);
+        private volatile bool m_IsRenderingInProgress;
 
         /// <summary>
         /// Keeps track of the elapsed time since the last frame was displayed.
@@ -87,8 +87,8 @@
         /// </summary>
         protected bool IsRenderingInProgress
         {
-            get => m_IsRenderingInProgress.Value;
-            set => m_IsRenderingInProgress.Value = value;
+            get => m_IsRenderingInProgress;
+            set => m_IsRenderingInProgress = value;
         }
 
         /// <summary>

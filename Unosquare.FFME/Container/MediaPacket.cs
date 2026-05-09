@@ -17,7 +17,7 @@
         /// </summary>
         private static readonly IntPtr FlushPacketData = (IntPtr)ffmpeg.av_malloc(0);
 
-        private readonly AtomicBoolean m_IsDisposed = new(false);
+        private volatile bool m_IsDisposed;
         private readonly IntPtr m_Pointer;
 
         /// <summary>
@@ -32,43 +32,43 @@
         /// <summary>
         /// Gets the <see cref="AVPacket"/> pointer.
         /// </summary>
-        public AVPacket* Pointer => m_IsDisposed.Value ? null : (AVPacket*)m_Pointer;
+        public AVPacket* Pointer => m_IsDisposed ? null : (AVPacket*)m_Pointer;
 
         /// <summary>
         /// Gets the <see cref="AVPacket"/> safe pointer.
         /// </summary>
-        public IntPtr SafePointer => m_IsDisposed.Value ? IntPtr.Zero : m_Pointer;
+        public IntPtr SafePointer => m_IsDisposed ? IntPtr.Zero : m_Pointer;
 
         /// <summary>
         /// Gets the size in bytes.
         /// </summary>
-        public int Size => m_IsDisposed.Value ? 0 : ((AVPacket*)m_Pointer)->size;
+        public int Size => m_IsDisposed ? 0 : ((AVPacket*)m_Pointer)->size;
 
         /// <summary>
         /// Gets the byte position of the packet -1 if unknown.
         /// </summary>
-        public long Position => m_IsDisposed.Value ? 0 : ((AVPacket*)m_Pointer)->pos;
+        public long Position => m_IsDisposed ? 0 : ((AVPacket*)m_Pointer)->pos;
 
         /// <summary>
         /// Gets the stream index this packet belongs to.
         /// </summary>
-        public int StreamIndex => m_IsDisposed.Value ? -1 : ((AVPacket*)m_Pointer)->stream_index;
+        public int StreamIndex => m_IsDisposed ? -1 : ((AVPacket*)m_Pointer)->stream_index;
 
         /// <summary>
         /// Gets the duration in stream timebase units.
         /// </summary>
-        public long Duration => m_IsDisposed.Value ? -1 : ((AVPacket*)m_Pointer)->duration;
+        public long Duration => m_IsDisposed ? -1 : ((AVPacket*)m_Pointer)->duration;
 
         /// <summary>
         /// Gets a value indicating whether the specified packet is a flush packet.
         /// These flush packets are used to clear the internal decoder buffers.
         /// </summary>
-        public bool IsFlushPacket => !m_IsDisposed.Value && (IntPtr)((AVPacket*)m_Pointer)->data == FlushPacketData;
+        public bool IsFlushPacket => !m_IsDisposed && (IntPtr)((AVPacket*)m_Pointer)->data == FlushPacketData;
 
         /// <summary>
         /// Gets a value indicating whether this instance is disposed.
         /// </summary>
-        public bool IsDisposed => m_IsDisposed.Value;
+        public bool IsDisposed => m_IsDisposed;
 
         /// <summary>
         /// Allocates a default readable packet.
@@ -135,8 +135,8 @@
         /// <inheritdoc />
         public void Dispose()
         {
-            if (m_IsDisposed.Value) return;
-            m_IsDisposed.Value = true;
+            if (m_IsDisposed) return;
+            m_IsDisposed = true;
 
             if (m_Pointer == IntPtr.Zero)
                 return;

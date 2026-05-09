@@ -16,7 +16,7 @@
     /// Implement frame decoding worker logic.
     /// </summary>
     /// <seealso cref="IMediaWorker" />
-    internal sealed class FrameDecodingWorker : IntervalWorkerBase, IMediaWorker, ILoggingSource
+    internal sealed class FrameDecodingWorker : WorkerBase, IMediaWorker, ILoggingSource
     {
         private readonly Action<IEnumerable<MediaType>, CancellationToken> SerialDecodeBlocks;
         private readonly Action<IEnumerable<MediaType>, CancellationToken> ParallelDecodeBlocks;
@@ -30,7 +30,7 @@
         /// Initializes a new instance of the <see cref="FrameDecodingWorker"/> class.
         /// </summary>
         /// <param name="mediaCore">The media core.</param>
-        public FrameDecodingWorker(MediaEngine mediaCore)
+        internal FrameDecodingWorker(MediaEngine mediaCore)
             : base(nameof(FrameDecodingWorker))
         {
             MediaCore = mediaCore;
@@ -116,6 +116,9 @@
                 // Detect End of Decoding Scenarios
                 // The Rendering will check for end of media when this condition is set.
                 MediaCore.HasDecodingEnded = DetectHasDecodingEnded();
+
+                // Signal the reader that buffer space may have been freed.
+                MediaCore.Workers?.Reading?.RequestWakeup();
             }
         }
 

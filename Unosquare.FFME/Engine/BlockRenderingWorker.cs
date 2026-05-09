@@ -18,18 +18,17 @@ namespace Unosquare.FFME.Engine
     /// <seealso cref="IMediaWorker" />
     internal sealed class BlockRenderingWorker : WorkerBase, IMediaWorker, ILoggingSource
     {
-        private readonly AtomicBoolean HasInitialized = new(false);
+        private volatile bool HasInitialized;
         private readonly Action<MediaType[]> SerialRenderBlocks;
         private readonly Action<MediaType[]> ParallelRenderBlocks;
-        private readonly Thread QuantumThread;
-        private readonly ManualResetEventSlim QuantumWaiter = new(false);
+        private readonly Stopwatch _cycleClock = Stopwatch.StartNew();
         private DateTime LastSpeedRatioTime;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockRenderingWorker"/> class.
         /// </summary>
         /// <param name="mediaCore">The media core.</param>
-        public BlockRenderingWorker(MediaEngine mediaCore)
+        internal BlockRenderingWorker(MediaEngine mediaCore)
             : base(nameof(BlockRenderingWorker))
         {
             MediaCore = mediaCore;
@@ -39,15 +38,6 @@ namespace Unosquare.FFME.Engine
             State = MediaCore.State;
             ParallelRenderBlocks = (all) => Parallel.ForEach(all, (t) => RenderBlock(t));
             SerialRenderBlocks = (all) => { foreach (var t in all) RenderBlock(t); };
-
-            QuantumThread = new Thread(RunQuantumThread)
-            {
-                IsBackground = true,
-                Priority = ThreadPriority.Highest,
-                Name = $"{nameof(BlockRenderingWorker)}.Thread",
-            };
-
-            QuantumThread.Start();
         }
 
         /// <inheritdoc />
@@ -100,7 +90,7 @@ namespace Unosquare.FFME.Engine
                         Constants.MinVideoFrameDuration,
                         Constants.MaxVideoFrameDuration);
 
-                    return TimeSpan.FromTicks(frameDuration.Ticks - CurrentCycleElapsed.Ticks);
+                    return TimeSpan.FromTicks(frameDuration.Ticks - _cycleClock.Elapsed.Ticks);
                 }
                 catch
                 {
@@ -167,59 +157,97 @@ namespace Unosquare.FFME.Engine
             MediaCore.SignalSyncBufferingExited();
         }
 
-        /// <inheritdoc />
-        protected override void Dispose(bool alsoManaged)
+        /// <summary>
+        /// Overrides the default thread start to use ThreadPriority.Highest for the quantum thread.
+        /// </summary>
+        protected override void StartWorkerThread()
         {
-            base.Dispose(alsoManaged);
-            QuantumWaiter.Dispose();
+            var thread = new Thread(RunQuantumThread)
+            {
+                IsBackground = true,
+                Priority = ThreadPriority.Highest,
+                Name = $"{nameof(BlockRenderingWorker)}.Thread"
+            };
+            thread.Start();
         }
 
         /// <summary>
-        /// Executes render thread logic in a cycle.
+        /// Executes render thread logic in a cycle on a high-priority dedicated thread.
+        /// Uses the base-class RunGate/StopToken/CycleToken for pause/resume/stop.
         /// </summary>
-        private void RunQuantumThread(object state)
+        private void RunQuantumThread()
         {
             try
             {
                 using var vsync = new VerticalSyncContext();
-                while (WorkerState != WorkerState.Stopped)
+                while (true)
                 {
+                    // Block when paused (gate count = 0) or not yet started.
+                    // OperationCanceledException exits when StopAsync cancels StopToken.
+                    try { RunGate.Wait(StopToken); }
+                    catch (OperationCanceledException) { break; }
+
+                    RunGate.Release(); // re-release for next iteration
+
                     if (!VerticalSyncContext.IsAvailable)
                         State.VerticalSyncEnabled = false;
 
-                    var performVersticalSyncWait =
+                    var performVerticalSyncWait =
                         Container.Components.HasVideo &&
                         MediaCore.Timing.GetIsRunning(MediaType.Video) &&
                         State.VerticalSyncEnabled;
 
-                    if (performVersticalSyncWait)
+                    if (performVerticalSyncWait)
                     {
-                        // wait a few times as there is no need to move on to the next frame
-                        // if the remaining cycle time is more than twice the refresh rate.
                         while (!IsDisposed && !IsDisposing && RemainingCycleTime.Ticks >= vsync.RefreshPeriod.Ticks * 2)
                             vsync.WaitForBlank();
 
-                        // wait one last time for the actual v-sync
                         if (!IsDisposed && !IsDisposing && RemainingCycleTime.Ticks > 0)
                             vsync.WaitForBlank();
                     }
                     else
                     {
-                        // Perform a synthetic wait
                         var waitTime = RemainingCycleTime;
                         if (!IsDisposed && !IsDisposing && waitTime.Ticks > 0)
-                            QuantumWaiter.Wait(waitTime);
+                        {
+                            // Interruptible sleep — exits early on stop or dispose.
+                            try { StopToken.WaitHandle.WaitOne(waitTime); }
+                            catch (ObjectDisposedException) { break; }
+                        }
                     }
 
-                    if (!TryBeginCycle())
-                        continue;
+                    if (StopToken.IsCancellationRequested) break;
 
-                    ExecuteCyle();
+                    // Refresh the cycle token so PauseAsync can interrupt the upcoming cycle.
+                    Interrupt();
+
+                    _cycleClock.Restart();
+                    var cycleCt = CycleToken;
+                    try
+                    {
+                        ExecuteCycleLogic(cycleCt);
+                    }
+                    catch (OperationCanceledException) when (cycleCt.IsCancellationRequested)
+                    {
+                        // paused — loop back to RunGate.Wait which will block
+                    }
+                    catch (OperationCanceledException) when (StopToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        OnCycleException(ex);
+                    }
                 }
             }
             catch (ObjectDisposedException)
             {
-                /* Worker has been disposed */
+                /* Worker disposed before thread could exit cleanly */
+            }
+            finally
+            {
+                SignalLoopComplete();
             }
         }
 
@@ -231,16 +259,13 @@ namespace Unosquare.FFME.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool Initialize(MediaType[] all)
         {
-            // Don't run the cycle if we have already initialized
-            if (HasInitialized == true)
+            if (HasInitialized)
                 return true;
 
-            // Wait for renderers to be ready
             foreach (var t in all)
                 MediaCore.Renderers[t]?.OnStarting();
 
-            // Mark as initialized
-            HasInitialized.Value = true;
+            HasInitialized = true;
             return true;
         }
 

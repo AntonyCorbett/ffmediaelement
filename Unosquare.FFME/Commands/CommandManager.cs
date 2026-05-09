@@ -17,10 +17,10 @@ namespace Unosquare.FFME.Commands
     /// Priority Commands execute in the queue but before anything else and are exclusive (Play, Pause, Stop)
     /// Seek commands are queued and replaced. These are processed in a deferred manner by this worker.
     /// </summary>
-    /// <seealso cref="IntervalWorkerBase" />
+    /// <seealso cref="WorkerBase" />
     /// <seealso cref="IMediaWorker" />
     /// <seealso cref="ILoggingSource" />
-    internal sealed partial class CommandManager : IntervalWorkerBase, IMediaWorker, ILoggingSource
+    internal sealed partial class CommandManager : WorkerBase, IMediaWorker, ILoggingSource
     {
         private readonly object SyncLock = new();
 
@@ -58,8 +58,8 @@ namespace Unosquare.FFME.Commands
         /// </summary>
         private PriorityCommandType PendingPriorityCommand
         {
-            get => (PriorityCommandType)m_PendingPriorityCommand.Value;
-            set => m_PendingPriorityCommand.Value = (int)value;
+            get => (PriorityCommandType)m_PendingPriorityCommand;
+            set => m_PendingPriorityCommand = (int)value;
         }
 
         #endregion
@@ -108,7 +108,7 @@ namespace Unosquare.FFME.Commands
                     {
                         try
                         {
-                            while (HasDirectCommandCompleted == false)
+                            while (!HasDirectCommandCompleted)
                             {
                                 MediaCore.Container?.SignalAbortReads(false);
                                 Task.Delay(Constants.DefaultTimingPeriod).GetAwaiter().GetResult();
@@ -294,12 +294,9 @@ namespace Unosquare.FFME.Commands
         }
 
         /// <inheritdoc />
-        protected override void Dispose(bool alsoManaged)
+        public override void Dispose()
         {
-            // Call the base dispose method
-            base.Dispose(alsoManaged);
-
-            // Dispose unmanged resources
+            base.Dispose();
             PriorityCommandCompleted.Dispose();
             SeekBlocksAvailable.Dispose();
             QueuedSeekOperation?.Dispose();

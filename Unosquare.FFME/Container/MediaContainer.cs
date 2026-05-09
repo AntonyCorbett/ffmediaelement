@@ -3,7 +3,7 @@ namespace Unosquare.FFME.Container;
 using Common;
 using Diagnostics;
 using FFmpeg.AutoGen;
-using Primitives;
+using System.Threading;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -53,17 +53,17 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     /// The stream read interrupt start time.
     /// When a read operation is started, this is set to the ticks of UTC now.
     /// </summary>
-    private readonly AtomicDateTime StreamReadInterruptStartTime = new(default);
+    private long m_StreamReadInterruptStartTimeTicks;
 
     /// <summary>
     /// The signal to request the abortion of the following read operation.
     /// </summary>
-    private readonly AtomicBoolean SignalAbortReadsRequested = new(false);
+    private volatile bool SignalAbortReadsRequested;
 
     /// <summary>
     /// If set to true, it will reset the abort requested flag to false.
     /// </summary>
-    private readonly AtomicBoolean SignalAbortReadsAutoReset = new(false);
+    private volatile bool SignalAbortReadsAutoReset;
 
     /// <summary>
     /// The stream read interrupt callback.
@@ -294,7 +294,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     /// <summary>
     /// Gets a value indicating whether reads are in the aborted state.
     /// </summary>
-    public bool IsReadAborted => SignalAbortReadsRequested.Value;
+    public bool IsReadAborted => SignalAbortReadsRequested;
 
     #endregion
 
@@ -519,8 +519,8 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     public void SignalAbortReads(bool reset)
     {
         if (IsDisposed) return;
-        SignalAbortReadsAutoReset.Value = reset;
-        SignalAbortReadsRequested.Value = true;
+        SignalAbortReadsAutoReset = reset;
+        SignalAbortReadsRequested = true;
     }
 
     /// <summary>
@@ -688,7 +688,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
 
                 // We set the start of the read operation time so timeouts can be detected
                 // and we open the URL so the input context can be initialized.
-                StreamReadInterruptStartTime.Value = DateTime.UtcNow;
+                Volatile.Write(ref m_StreamReadInterruptStartTimeTicks, DateTime.UtcNow.Ticks);
                 var privateOptionsRef = privateOptions.Pointer;
 
                 // Open the input and pass the private options dictionary
@@ -796,8 +796,8 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
         InputContext = ffmpeg.avformat_alloc_context();
 
         // Setup an interrupt callback to detect read timeouts
-        SignalAbortReadsRequested.Value = false;
-        SignalAbortReadsAutoReset.Value = true;
+        SignalAbortReadsRequested = false;
+        SignalAbortReadsAutoReset = true;
         InputContext->interrupt_callback.callback = StreamReadInterruptCallback;
         InputContext->interrupt_callback.opaque = InputContext;
 
@@ -963,7 +963,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
 
         // Allocate the packet to read
         var readPacket = MediaPacket.CreateReadPacket();
-        StreamReadInterruptStartTime.Value = DateTime.UtcNow;
+        Volatile.Write(ref m_StreamReadInterruptStartTimeTicks, DateTime.UtcNow.Ticks);
         var readResult = ffmpeg.av_read_frame(InputContext, readPacket.Pointer);
 
         if (readResult < 0)
@@ -1022,13 +1022,13 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
         const int OkResult = 0;
 
         // Check if a forced quit was triggered
-        if (SignalAbortReadsRequested.Value)
+        if (SignalAbortReadsRequested)
         {
             this.LogInfo(Aspects.Container,
                 $"{nameof(OnStreamReadInterrupt)} was requested an immediate read exit.");
 
-            if (SignalAbortReadsAutoReset.Value)
-                SignalAbortReadsRequested.Value = false;
+            if (SignalAbortReadsAutoReset)
+                SignalAbortReadsRequested = false;
 
             return ErrorResult;
         }
@@ -1036,7 +1036,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
         var nowTicks = DateTime.UtcNow.Ticks;
 
         // We use Interlocked read because in 32 bits it takes 2 trips!
-        var start = StreamReadInterruptStartTime.Value;
+        var start = new DateTime(Volatile.Read(ref m_StreamReadInterruptStartTimeTicks), DateTimeKind.Utc);
         var timeDifference = TimeSpan.FromTicks(nowTicks - start.Ticks);
 
         if (Configuration.ReadTimeout.Ticks < 0 || timeDifference.Ticks <= Configuration.ReadTimeout.Ticks)
@@ -1144,7 +1144,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             else
             {
                 // Reset Interrupt start time
-                StreamReadInterruptStartTime.Value = DateTime.UtcNow;
+                Volatile.Write(ref m_StreamReadInterruptStartTimeTicks, DateTime.UtcNow.Ticks);
 
                 // check if we have seeked before the start of the stream
                 if (streamSeekRelativeTime.Ticks <= comp.StartTime.Ticks)
@@ -1215,7 +1215,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
         var streamIndex = main.StreamIndex;
         const int seekFlags = ffmpeg.AVSEEK_FLAG_BACKWARD;
 
-        StreamReadInterruptStartTime.Value = DateTime.UtcNow;
+        Volatile.Write(ref m_StreamReadInterruptStartTimeTicks, DateTime.UtcNow.Ticks);
 
         // Execute the seek to start of main component
         var seekResult = ffmpeg.av_seek_frame(InputContext, streamIndex, seekTarget, seekFlags);
@@ -1244,7 +1244,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private MediaFrame StreamPositionDecode(MediaComponent component)
     {
-        while (SignalAbortReadsRequested.Value == false)
+        while (!SignalAbortReadsRequested)
         {
             // We may have hit the end of our stream, but
             // we'll continue decoding (and therefore returning)

@@ -11,214 +11,118 @@ using Xunit;
 public sealed class PrimitivesTests
 {
     // -------------------------------------------------------------------------
-    // AtomicBoolean
+    // WorkerBase lifecycle
     // -------------------------------------------------------------------------
 
-    [Fact]
-    public void AtomicBoolean_DefaultCtor_IsFalse() =>
-        Assert.False(new AtomicBoolean().Value);
-
-    [Fact]
-    public void AtomicBoolean_InitTrue_IsTrue() =>
-        Assert.True(new AtomicBoolean(true).Value);
-
-    [Fact]
-    public void AtomicBoolean_SetValue_Roundtrips()
+    private sealed class CountingWorker : WorkerBase
     {
-        var a = new AtomicBoolean(false);
-        a.Value = true;
-        Assert.True(a.Value);
-        a.Value = false;
-        Assert.False(a.Value);
+        private volatile int _cycles;
+
+        public CountingWorker() : base(nameof(CountingWorker)) { }
+
+        public int Cycles => _cycles;
+        public Exception? LastException { get; private set; }
+
+        protected override void ExecuteCycleLogic(CancellationToken ct)
+        {
+            Interlocked.Increment(ref _cycles);
+        }
+
+        protected override void OnCycleException(Exception ex) => LastException = ex;
+
+        // Run very fast for tests
+        protected override TimeSpan GetCycleDelay() => TimeSpan.Zero;
     }
 
     [Fact]
-    public void AtomicBoolean_EqualityOperators()
+    public void WorkerBase_BeforeStart_StateIsCreated()
     {
-        var a = new AtomicBoolean(true);
-        var b = new AtomicBoolean(true);
-        Assert.True(a == b);
-        Assert.True(a == true);
-        Assert.False(a != true);
-        b.Value = false;
-        Assert.True(a != b);
+        using var w = new CountingWorker();
+        Assert.Equal(WorkerState.Created, w.WorkerState);
     }
 
     [Fact]
-    public void AtomicBoolean_Increment_FlipsFalseToTrue()
+    public async Task WorkerBase_AfterStart_StateIsRunning()
     {
-        var a = new AtomicBoolean(false);
-        a.Increment();
-        Assert.True(a.Value);
+        var ct = TestContext.Current.CancellationToken;
+        using var w = new CountingWorker();
+        await w.StartAsync().WaitAsync(ct);
+        Assert.Equal(WorkerState.Running, w.WorkerState);
     }
 
     [Fact]
-    public void AtomicBoolean_Decrement_FlipsTrueToFalse()
+    public async Task WorkerBase_Start_CyclesExecute()
     {
-        var a = new AtomicBoolean(true);
-        a.Decrement();
-        Assert.False(a.Value);
+        var ct = TestContext.Current.CancellationToken;
+        using var w = new CountingWorker();
+        await w.StartAsync().WaitAsync(ct);
+        await Task.Delay(50, ct);
+        Assert.True(w.Cycles > 0, "Expected cycles to have run");
     }
 
     [Fact]
-    public void AtomicBoolean_NonZeroBackingValue_IsTrue()
+    public async Task WorkerBase_PauseResume_CyclesStopAndRestart()
     {
-        // Any non-zero backing value (not just 1) maps to true
-        var a = new AtomicBoolean(true);
-        a.Increment(); // backing value goes to 2
-        Assert.True(a.Value);
+        var ct = TestContext.Current.CancellationToken;
+        using var w = new CountingWorker();
+        await w.StartAsync().WaitAsync(ct);
+        await Task.Delay(20, ct);
+
+        await w.PauseAsync().WaitAsync(ct);
+        Assert.Equal(WorkerState.Paused, w.WorkerState);
+
+        var cyclesAtPause = w.Cycles;
+        await Task.Delay(30, ct);
+        Assert.Equal(cyclesAtPause, w.Cycles);
+
+        await w.ResumeAsync().WaitAsync(ct);
+        Assert.Equal(WorkerState.Running, w.WorkerState);
+        await Task.Delay(20, ct);
+        Assert.True(w.Cycles > cyclesAtPause, "Expected cycles to resume after ResumeAsync");
     }
 
     [Fact]
-    public void AtomicBoolean_ConcurrentWrites_AreThreadSafe()
+    public async Task WorkerBase_Stop_StateIsStopped()
     {
-        var a = new AtomicBoolean(false);
-        Parallel.For(0, 1000, _ => a.Value = true);
-        Assert.True(a.Value);
-    }
-
-    // -------------------------------------------------------------------------
-    // AtomicInteger
-    // -------------------------------------------------------------------------
-
-    [Fact]
-    public void AtomicInteger_DefaultCtor_IsZero() =>
-        Assert.Equal(0, new AtomicInteger().Value);
-
-    [Fact]
-    public void AtomicInteger_InitValue_Roundtrips() =>
-        Assert.Equal(42, new AtomicInteger(42).Value);
-
-    [Fact]
-    public void AtomicInteger_Increment_AddsByOne()
-    {
-        var a = new AtomicInteger(5);
-        a.Increment();
-        Assert.Equal(6, a.Value);
+        var ct = TestContext.Current.CancellationToken;
+        using var w = new CountingWorker();
+        await w.StartAsync().WaitAsync(ct);
+        await Task.Delay(10, ct);
+        await w.StopAsync().WaitAsync(ct);
+        Assert.Equal(WorkerState.Stopped, w.WorkerState);
     }
 
     [Fact]
-    public void AtomicInteger_Decrement_SubtractsByOne()
+    public async Task WorkerBase_StopWhilePaused_StateIsStopped()
     {
-        var a = new AtomicInteger(5);
-        a.Decrement();
-        Assert.Equal(4, a.Value);
+        var ct = TestContext.Current.CancellationToken;
+        using var w = new CountingWorker();
+        await w.StartAsync().WaitAsync(ct);
+        await w.PauseAsync().WaitAsync(ct);
+        await w.StopAsync().WaitAsync(ct);
+        Assert.Equal(WorkerState.Stopped, w.WorkerState);
     }
 
     [Fact]
-    public void AtomicInteger_Operators()
+    public async Task WorkerBase_RequestWakeup_DoesNotThrow()
     {
-        var a = new AtomicInteger(10);
-        Assert.True(a > 9);
-        Assert.True(a < 11);
-        Assert.True(a >= 10);
-        Assert.True(a <= 10);
-        Assert.True(a == 10);
-        Assert.True(a != 9);
+        var ct = TestContext.Current.CancellationToken;
+        using var w = new CountingWorker();
+        await w.StartAsync().WaitAsync(ct);
+        w.RequestWakeup();
+        w.RequestWakeup();
+        await w.StopAsync().WaitAsync(ct);
     }
 
     [Fact]
-    public void AtomicInteger_ConcurrentIncrements_AreThreadSafe()
+    public async Task WorkerBase_Dispose_SetsIsDisposed()
     {
-        var a = new AtomicInteger(0);
-        Parallel.For(0, 1000, _ => a.Increment());
-        Assert.Equal(1000, a.Value);
+        var ct = TestContext.Current.CancellationToken;
+        var w = new CountingWorker();
+        await w.StartAsync().WaitAsync(ct);
+        w.Dispose();
+        Assert.True(w.IsDisposed);
     }
-
-    // -------------------------------------------------------------------------
-    // AtomicLong
-    // -------------------------------------------------------------------------
-
-    [Fact]
-    public void AtomicLong_DefaultCtor_IsZero() =>
-        Assert.Equal(0L, new AtomicLong().Value);
-
-    [Fact]
-    public void AtomicLong_InitValue_Roundtrips() =>
-        Assert.Equal(long.MaxValue, new AtomicLong(long.MaxValue).Value);
-
-    [Fact]
-    public void AtomicLong_IncrementDecrement()
-    {
-        var a = new AtomicLong(0);
-        a.Increment();
-        Assert.Equal(1L, a.Value);
-        a.Decrement();
-        Assert.Equal(0L, a.Value);
-    }
-
-    // -------------------------------------------------------------------------
-    // AtomicDouble
-    // -------------------------------------------------------------------------
-
-    [Fact]
-    public void AtomicDouble_DefaultCtor_IsZero() =>
-        Assert.Equal(0.0, new AtomicDouble().Value);
-
-    [Fact]
-    public void AtomicDouble_InitValue_Roundtrips() =>
-        Assert.Equal(Math.PI, new AtomicDouble(Math.PI).Value);
-
-    [Fact]
-    public void AtomicDouble_PositiveInfinity_Roundtrips()
-    {
-        var a = new AtomicDouble(double.PositiveInfinity);
-        Assert.Equal(double.PositiveInfinity, a.Value);
-    }
-
-    [Fact]
-    public void AtomicDouble_NegativeInfinity_Roundtrips()
-    {
-        var a = new AtomicDouble(double.NegativeInfinity);
-        Assert.Equal(double.NegativeInfinity, a.Value);
-    }
-
-    [Fact]
-    public void AtomicDouble_NaN_RoundtripsViaBitConversion()
-    {
-        // AtomicDouble stores bit representation via BitConverter so NaN round-trips correctly.
-        var a = new AtomicDouble(double.NaN);
-        Assert.True(double.IsNaN(a.Value));
-    }
-
-    // -------------------------------------------------------------------------
-    // AtomicTimeSpan
-    // -------------------------------------------------------------------------
-
-    [Fact]
-    public void AtomicTimeSpan_InitZero_IsZero() =>
-        Assert.Equal(TimeSpan.Zero, new AtomicTimeSpan(TimeSpan.Zero).Value);
-
-    [Fact]
-    public void AtomicTimeSpan_InitValue_Roundtrips()
-    {
-        var ts = TimeSpan.FromSeconds(5.5);
-        Assert.Equal(ts, new AtomicTimeSpan(ts).Value);
-    }
-
-    [Fact]
-    public void AtomicTimeSpan_SetValue_UpdatesCorrectly()
-    {
-        var a = new AtomicTimeSpan(TimeSpan.Zero);
-        a.Value = TimeSpan.FromMinutes(2);
-        Assert.Equal(TimeSpan.FromMinutes(2), a.Value);
-    }
-
-    // -------------------------------------------------------------------------
-    // AtomicDateTime
-    // -------------------------------------------------------------------------
-
-    [Fact]
-    public void AtomicDateTime_SetValue_Roundtrips()
-    {
-        var now = DateTime.UtcNow;
-        var a = new AtomicDateTime(now);
-        Assert.Equal(now, a.Value);
-    }
-
-    [Fact]
-    public void AtomicDateTime_DefaultCtor_IsDefault() =>
-        Assert.Equal(default(DateTime), new AtomicDateTime(default).Value);
 
     // -------------------------------------------------------------------------
     // CircularBuffer
@@ -335,13 +239,12 @@ public sealed class PrimitivesTests
     [Fact]
     public void CircularBuffer_WrapAround_ReturnsCorrectData()
     {
-        // Write 6 bytes to an 8-byte buffer, read 6, then write 6 more (wraps around).
         using var buf = new CircularBuffer(8);
         Write(buf, new byte[] { 1, 2, 3, 4, 5, 6 });
         var discard = new byte[6];
-        buf.Read(6, discard, 0); // read index is now at 6
+        buf.Read(6, discard, 0);
 
-        Write(buf, new byte[] { 7, 8, 9, 10, 11, 12 }); // wraps: 7,8 at pos 6,7; 9,10,11,12 at 0,1,2,3
+        Write(buf, new byte[] { 7, 8, 9, 10, 11, 12 });
 
         var result = new byte[6];
         buf.Read(6, result, 0);
@@ -421,7 +324,6 @@ public sealed class PrimitivesTests
         clock.Play();
         var target = TimeSpan.FromSeconds(10);
         clock.Update(target);
-        // Position must be at or beyond the target since clock is still running
         Assert.True(clock.Position >= target);
         Assert.True(clock.IsRunning);
     }
@@ -433,7 +335,6 @@ public sealed class PrimitivesTests
         clock.Update(TimeSpan.FromSeconds(5));
         clock.Restart();
         Assert.True(clock.IsRunning);
-        // Position should be very close to zero immediately after restart
         Assert.True(clock.Position < TimeSpan.FromSeconds(1));
     }
 
@@ -455,7 +356,6 @@ public sealed class PrimitivesTests
         clock.SpeedRatio = 0;
         clock.Play();
         Thread.Sleep(50);
-        // With speed ratio 0, position should remain at the update value
         Assert.Equal(TimeSpan.FromSeconds(3), clock.Position);
     }
 
@@ -503,7 +403,7 @@ public sealed class PrimitivesTests
     public void MediaTypeDictionary_AllMediaTypes_AreIndependentSlots()
     {
         var dict = new MediaTypeDictionary<int>();
-        var types = Enum.GetValues<MediaType>().Cast<MediaType>().ToArray();
+        var types = Enum.GetValues<MediaType>();
         var i = 1;
         foreach (var t in types)
             dict[t] = i++;

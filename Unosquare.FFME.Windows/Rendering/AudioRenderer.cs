@@ -25,7 +25,7 @@
 
         private const int SyncLockTimeout = 100;
 
-        private readonly AtomicBoolean IsClosing = new(false);
+        private volatile bool IsClosing;
         private readonly object SyncLock = new();
 
         private IWavePlayer AudioDevice;
@@ -144,7 +144,7 @@
 
             var lockTaken = false;
 
-            if (IsClosing == false)
+            if (!IsClosing)
                 Monitor.TryEnter(SyncLock, SyncLockTimeout, ref lockTaken);
 
             if (lockTaken == false) return;
@@ -227,7 +227,7 @@
         /// <inheritdoc />
         public void OnClose()
         {
-            IsClosing.Value = true;
+            IsClosing = true;
 
             // Self-disconnect the exit event to prevent memory leaks
             if (Application.Current is Application app)
@@ -263,7 +263,7 @@
         /// <inheritdoc />
         public void Dispose()
         {
-            IsClosing.Value = true;
+            IsClosing = true;
 
             lock (SyncLock)
             {
@@ -284,7 +284,7 @@
             // We sync-lock the reads to avoid null reference exceptions as destroy might have been called
             var lockTaken = false;
 
-            if (IsClosing == false)
+            if (!IsClosing)
                 Monitor.TryEnter(SyncLock, SyncLockTimeout, ref lockTaken);
 
             if (lockTaken == false || HasFiredAudioDeviceStopped)
@@ -747,7 +747,7 @@
         private void ApplyVolumeAndBalance(byte[] targetBuffer, int targetBufferOffset, int requestedBytes)
         {
             // Check if we are muted. We don't need process volume and balance
-            var isMuted = MediaCore.State.IsMuted || IsClosing == true;
+            var isMuted = MediaCore.State.IsMuted || IsClosing;
             if (isMuted)
             {
                 for (var sourceBufferOffset = 0; sourceBufferOffset < requestedBytes; sourceBufferOffset++)

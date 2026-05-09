@@ -4,7 +4,6 @@
     using Common;
     using Diagnostics;
     using Platform;
-    using Primitives;
     using System;
     using System.Runtime.CompilerServices;
 
@@ -16,7 +15,7 @@
     /// <seealso cref="IDisposable" />
     internal sealed partial class MediaEngine : IDisposable, ILoggingSource, ILoggingHandler
     {
-        private readonly AtomicBoolean m_IsDisposed = new AtomicBoolean(false);
+        private volatile bool m_IsDisposed;
 
         #region Constructors
 
@@ -62,7 +61,7 @@
         /// <summary>
         /// Gets a value indicating whether this instance is disposed.
         /// </summary>
-        public bool IsDisposed => m_IsDisposed.Value;
+        public bool IsDisposed => m_IsDisposed;
 
         /// <summary>
         /// Gets the associated parent object.
@@ -101,8 +100,8 @@
         /// <inheritdoc />
         public void Dispose()
         {
-            if (m_IsDisposed == true) return;
-            m_IsDisposed.Value = true;
+            if (m_IsDisposed) return;
+            m_IsDisposed = true;
 
             // Dispose of commands. This closes the
             // Media automatically and signals an exit

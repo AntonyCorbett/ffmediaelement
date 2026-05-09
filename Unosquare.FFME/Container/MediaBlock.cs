@@ -18,7 +18,7 @@
     {
         private readonly object SyncLock = new();
         private readonly ISyncLocker Locker = SyncLockerFactory.Create(useSlim: true);
-        private readonly AtomicBoolean m_IsDisposed = new(false);
+        private volatile bool m_IsDisposed;
         private IntPtr m_Buffer = IntPtr.Zero;
         private int m_BufferLength;
 
@@ -105,8 +105,8 @@
         /// </summary>
         public bool IsDisposed
         {
-            get => m_IsDisposed.Value;
-            private set => m_IsDisposed.Value = value;
+            get => m_IsDisposed;
+            private set => m_IsDisposed = value;
         }
 
         /// <summary>

@@ -1,6 +1,5 @@
 ﻿namespace Unosquare.FFME.Diagnostics
 {
-    using Primitives;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -160,7 +159,7 @@
         private sealed class BenchmarkUnit : IDisposable
         {
             private readonly string Identifier;
-            private readonly AtomicBoolean IsDisposed = new AtomicBoolean(false); // To detect redundant calls
+            private volatile bool IsDisposed;
             private readonly Stopwatch Stopwatch = new Stopwatch();
 
             /// <summary>
@@ -182,8 +181,8 @@
             /// <param name="alsoManaged"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
             private void Dispose(bool alsoManaged)
             {
-                if (IsDisposed == true) return;
-                IsDisposed.Value = true;
+                if (IsDisposed) return;
+                IsDisposed = true;
                 if (!alsoManaged) return;
 
                 Add(Identifier, Stopwatch.Elapsed);

@@ -19,8 +19,8 @@
         /// </summary>
         internal const long BufferLengthMax = 16 * 1024 * 1024;
 
-        private readonly AtomicBoolean m_IsSyncBuffering = new AtomicBoolean(false);
-        private readonly AtomicBoolean m_HasDecodingEnded = new AtomicBoolean(false);
+        private volatile bool m_IsSyncBuffering;
+        private volatile bool m_HasDecodingEnded;
 
         private DateTime SyncBufferStartTime = DateTime.UtcNow;
 
@@ -58,8 +58,8 @@
         /// </summary>
         internal bool IsSyncBuffering
         {
-            get => m_IsSyncBuffering.Value;
-            private set => m_IsSyncBuffering.Value = value;
+            get => m_IsSyncBuffering;
+            private set => m_IsSyncBuffering = value;
         }
 
         /// <summary>
@@ -68,8 +68,8 @@
         /// </summary>
         internal bool HasDecodingEnded
         {
-            get => m_HasDecodingEnded.Value;
-            set => m_HasDecodingEnded.Value = value;
+            get => m_HasDecodingEnded;
+            set => m_HasDecodingEnded = value;
         }
 
         /// <summary>

@@ -11,9 +11,9 @@
     /// Implement packet reading worker logic.
     /// </summary>
     /// <seealso cref="IMediaWorker" />
-    internal sealed class PacketReadingWorker : IntervalWorkerBase, IMediaWorker, ILoggingSource
+    internal sealed class PacketReadingWorker : WorkerBase, IMediaWorker, ILoggingSource
     {
-        public PacketReadingWorker(MediaEngine mediaCore)
+        internal PacketReadingWorker(MediaEngine mediaCore)
             : base(nameof(PacketReadingWorker))
         {
             MediaCore = mediaCore;
@@ -64,15 +64,15 @@
         {
             while (MediaCore.ShouldReadMorePackets)
             {
-                if (Container.IsReadAborted || Container.IsAtEndOfStream || ct.IsCancellationRequested ||
-                    WorkerState != WantedWorkerState)
-                {
+                if (Container.IsReadAborted || Container.IsAtEndOfStream || ct.IsCancellationRequested)
                     break;
-                }
 
                 try { Container.Read(); }
                 catch (MediaContainerException) { /* ignore */ }
             }
+
+            // Signal the decoder that new packets may be available.
+            MediaCore.Workers?.Decoding?.RequestWakeup();
         }
 
         /// <inheritdoc />

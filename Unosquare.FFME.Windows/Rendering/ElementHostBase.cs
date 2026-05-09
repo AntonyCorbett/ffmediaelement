@@ -382,7 +382,7 @@ internal abstract class ElementHostBase<T> : FrameworkElement, IDisposable
     private sealed class HostedPresentationSource : PresentationSource, IDisposable
     {
         private readonly VisualTarget HostConnector;
-        private readonly AtomicBoolean m_IsDisposed = new(false);
+        private volatile bool m_IsDisposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HostedPresentationSource"/> class.
@@ -417,7 +417,7 @@ internal abstract class ElementHostBase<T> : FrameworkElement, IDisposable
         }
 
         /// <inheritdoc />
-        public override bool IsDisposed => m_IsDisposed.Value;
+        public override bool IsDisposed => m_IsDisposed;
 
         /// <inheritdoc />
         public void Dispose() => Dispose(true);
@@ -431,10 +431,10 @@ internal abstract class ElementHostBase<T> : FrameworkElement, IDisposable
         /// <param name="alsoManaged"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         private void Dispose(bool alsoManaged)
         {
-            if (m_IsDisposed.Value) return;
+            if (m_IsDisposed) return;
             if (!alsoManaged) return;
 
-            m_IsDisposed.Value = true;
+            m_IsDisposed = true;
             HostConnector?.Dispose();
         }
     }
