@@ -6,7 +6,17 @@
       "Bash(Select-String *)",
       "Bash(dotnet build *)",
       "PowerShell(dotnet test *)",
-      "PowerShell(dotnet build *)"
+      "PowerShell(dotnet build *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\anton\\\\source\\\\repos\\\\AntonyCorbett\\\\ffmediaelement\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\anton\\\\source\\\\repos\\\\AntonyCorbett\\\\ffmediaelement\\\\Unosquare.FFME\" -Recurse -File | Select-Object @{Name=\"RelativePath\"; Expression={$_.FullName -replace [regex]::Escape\\(\"C:\\\\Users\\\\anton\\\\source\\\\repos\\\\AntonyCorbett\\\\ffmediaelement\\\\Unosquare.FFME\\\\\"\\), \"\"}} | Sort-Object RelativePath)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\anton\\\\source\\\\repos\\\\AntonyCorbett\\\\ffmediaelement\\\\Unosquare.FFME.MediaElement\" -Recurse -File | Select-Object @{Name=\"RelativePath\"; Expression={$_.FullName -replace [regex]::Escape\\(\"C:\\\\Users\\\\anton\\\\source\\\\repos\\\\AntonyCorbett\\\\ffmediaelement\\\\Unosquare.FFME.MediaElement\\\\\"\\), \"\"}} | Sort-Object RelativePath)",
+      "Bash(sed -n '330,335p' \"C:/Users/anton/source/repos/AntonyCorbett/ffmediaelement/Unosquare.FFME.Windows/MediaElement.cs\")",
+      "Bash(sed -n '427,432p' \"C:/Users/anton/source/repos/AntonyCorbett/ffmediaelement/Unosquare.FFME.Windows/MediaElement.cs\")",
+      "Bash(sed -n '466,472p' \"C:/Users/anton/source/repos/AntonyCorbett/ffmediaelement/Unosquare.FFME.Windows/MediaElement.cs\")",
+      "Bash(sed -n '133,137p' \"C:/Users/anton/source/repos/AntonyCorbett/ffmediaelement/Unosquare.FFME.Windows/Rendering/ClosedCaptionsControl.cs\")",
+      "Bash(sed -n '166,170p' \"C:/Users/anton/source/repos/AntonyCorbett/ffmediaelement/Unosquare.FFME.Windows/Rendering/SubtitlesControl.cs\")"
     ]
   }
 }

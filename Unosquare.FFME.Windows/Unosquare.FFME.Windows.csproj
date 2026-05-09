@@ -17,11 +17,12 @@
 	<PropertyGroup>
 		<UseWPF>true</UseWPF>
 		<UseWindowsForms>true</UseWindowsForms>
+		<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 		<RootNamespace>Unosquare.FFME</RootNamespace>
 		<LangVersion>preview</LangVersion>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<WarningsNotAsErrors>$(WarningsNotAsErrors);CS8019</WarningsNotAsErrors>
+		<WarningsNotAsErrors>$(WarningsNotAsErrors);CS8019;CS0436</WarningsNotAsErrors>
 		<AssemblyName>ffme.win</AssemblyName>
 		<Product>FFME: The Adavanced WPF MediaElement Alternative</Product>
 		<Company>Unosquare SA de CV</Company>
@@ -85,6 +86,10 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+		<PackageReference Include="System.Resources.Extensions" Version="8.0.0" />
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0' AND '$(TargetFramework)' != 'netcoreapp3.1' AND '$(TargetFramework)' != 'net8.0-windows'">
 		<Reference Include="WindowsBase" />
 		<Reference Include="PresentationCore" />
@@ -94,7 +99,14 @@
 		<Reference Include="System.Web" />
 	</ItemGroup>
 
-	<Import Project="..\Unosquare.FFME.MediaElement\Unosquare.FFME.MediaElement.projitems" Label="Shared" />
-	<Import Project="..\Unosquare.FFME\Unosquare.FFME.projitems" Label="Shared" />
+	<ItemGroup>
+		<ProjectReference Include="..\Unosquare.FFME\Unosquare.FFME.csproj">
+			<Aliases>Core,global</Aliases>
+		</ProjectReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\Unosquare.FFME.MediaElement\**\*.cs" />
+	</ItemGroup>
 
 </Project>

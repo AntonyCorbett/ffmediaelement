@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<Choose>
+		<When Condition="'$(Configuration)' == 'debug'">
+			<PropertyGroup>
+				<TargetFrameworks>net8.0-windows</TargetFrameworks>
+			</PropertyGroup>
+		</When>
+		<Otherwise>
+			<PropertyGroup>
+				<TargetFrameworks>net8.0-windows;net48</TargetFrameworks>
+			</PropertyGroup>
+		</Otherwise>
+	</Choose>
+
+	<PropertyGroup>
+		<RootNamespace>Unosquare.FFME</RootNamespace>
+		<LangVersion>preview</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<WarningsNotAsErrors>$(WarningsNotAsErrors);CS8019</WarningsNotAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+		<Reference Include="System.Web" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FFmpeg.AutoGen" Version="8.1.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.203">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+</Project>

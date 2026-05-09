@@ -1,5 +1,6 @@
 ﻿namespace Unosquare.FFME.Platform;
 
+using FFmpeg.AutoGen;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -42,7 +43,7 @@ internal sealed class SoundTouch : IDisposable
         {
             // Include the ffmpeg directory in the search path
             var loadResult = NativeMethods.LoadLibrary(
-                Path.Combine(Library.FFmpegDirectory, SoundTouchLibrary));
+                Path.Combine(ffmpeg.RootPath, SoundTouchLibrary));
 
             if (loadResult == IntPtr.Zero)
             {

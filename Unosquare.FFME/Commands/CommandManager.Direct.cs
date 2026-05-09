@@ -286,11 +286,11 @@
                 State.UpdateSource(source);
 
                 // Register FFmpeg libraries if not already done
-                if (Library.LoadFFmpeg())
+                if (FFmpegLibrary.LoadFFmpeg())
                 {
                     // Log an init message
                     this.LogInfo(Aspects.EngineCommand,
-                        $"{nameof(Library)}.{nameof(Library.LoadFFmpeg)}: FFmpeg v{Library.FFmpegVersionInfo}");
+                        $"{nameof(FFmpegLibrary)}.{nameof(FFmpegLibrary.LoadFFmpeg)}: FFmpeg v{FFmpegLibrary.FFmpegVersionInfo}");
                 }
 
                 // Create a default stream container configuration object

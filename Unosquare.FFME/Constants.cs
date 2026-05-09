@@ -11,7 +11,7 @@
     /// <summary>
     /// Defaults and constants of the Media Engine.
     /// </summary>
-    internal static partial class Constants
+    internal static class Constants
     {
         /// <summary>
         /// Initializes static members of the <see cref="Constants"/> class.
@@ -144,6 +144,11 @@
         /// main component are deemed unrelated.
         /// </summary>
         internal static TimeSpan TimeSyncMaxOffset { get; } = TimeSpan.FromSeconds(10);
+
+        /// <summary>
+        /// Gets the period at which media state properties are updated.
+        /// </summary>
+        internal static TimeSpan PropertyUpdatesInterval { get; } = TimeSpan.FromMilliseconds(30);
 
         /// <summary>
         /// Gets the timing period for default scenarios.

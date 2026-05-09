@@ -310,7 +310,7 @@
         {
             var result = new List<string>(16);
 
-            foreach (var c in Library.AllCodecs)
+            foreach (var c in FFmpegLibrary.AllCodecs)
             {
                 if (ffmpeg.av_codec_is_decoder(c) == 0)
                     continue;

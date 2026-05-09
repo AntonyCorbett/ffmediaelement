@@ -117,7 +117,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             throw new ArgumentNullException($"{nameof(mediaSource)}");
 
         // Initialize the library (if not already done)
-        Library.LoadFFmpeg();
+        FFmpegLibrary.LoadFFmpeg();
 
         // Create the options object and setup some initial properties
         m_LoggingHandler = loggingHandler;
@@ -154,7 +154,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             throw new InvalidOperationException($"{nameof(inputStream)}.{nameof(inputStream.StreamUri)} cannot be null.");
 
         // Initialize the library (if not already done)
-        Library.LoadFFmpeg();
+        FFmpegLibrary.LoadFFmpeg();
 
         // Create the options object
         m_LoggingHandler = loggingHandler;

@@ -1,4 +1,4 @@
-﻿namespace Unosquare.FFME.Common
+namespace Unosquare.FFME.Common
 {
     using Primitives;
     using System;

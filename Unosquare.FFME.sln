@@ -25,9 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Support", "Support", "{8BF2
 		toc.yml = toc.yml
 	EndProjectSection
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Unosquare.FFME.MediaElement", "Unosquare.FFME.MediaElement\Unosquare.FFME.MediaElement.shproj", "{4F84C6A1-BA3A-4A1E-84EE-7A7AA214F317}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Unosquare.FFME", "Unosquare.FFME\Unosquare.FFME.shproj", "{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unosquare.FFME", "Unosquare.FFME\Unosquare.FFME.csproj", "{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{921C3152-82C5-4E30-AABC-3C0B0E91DE02}"
 	ProjectSection(SolutionItems) = preProject
@@ -109,6 +107,26 @@ Global
 		{B8E4C2D6-F1A3-4E9B-82C5-7D0F3A1E6B94}.Release|x64.Build.0 = Debug|Any CPU
 		{B8E4C2D6-F1A3-4E9B-82C5-7D0F3A1E6B94}.Release|x86.ActiveCfg = Debug|Any CPU
 		{B8E4C2D6-F1A3-4E9B-82C5-7D0F3A1E6B94}.Release|x86.Build.0 = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|x64.Build.0 = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Debug|x86.Build.0 = Debug|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|ARM.Build.0 = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|ARM64.Build.0 = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|x64.ActiveCfg = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|x64.Build.0 = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|x86.ActiveCfg = Release|Any CPU
+		{B14A1CD8-E4E8-44E1-805A-66D0FAFC6263}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,13 +134,7 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7E89E3EA-B5D6-4E75-8B7F-C1ED0D05D7D8}
 	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Unosquare.FFME.MediaElement\Unosquare.FFME.MediaElement.projitems*{4f84c6a1-ba3a-4a1e-84ee-7a7aa214f317}*SharedItemsImports = 13
-		Unosquare.FFME.MediaElement\Unosquare.FFME.MediaElement.projitems*{a6eb99a6-aae2-4e6e-ab9e-93992ce5b84d}*SharedItemsImports = 5
-		Unosquare.FFME\Unosquare.FFME.projitems*{a6eb99a6-aae2-4e6e-ab9e-93992ce5b84d}*SharedItemsImports = 5
-		Unosquare.FFME\Unosquare.FFME.projitems*{b14a1cd8-e4e8-44e1-805a-66d0fafc6263}*SharedItemsImports = 13
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
+GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
