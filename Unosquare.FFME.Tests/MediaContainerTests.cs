@@ -42,10 +42,10 @@ public sealed class MediaContainerTests
     // Initialize
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void Initialize_WithVideoSource_SetsIsInitializedAndPopulatesMediaInfo()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -56,10 +56,10 @@ public sealed class MediaContainerTests
         Assert.NotNull(container.Metadata);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Initialize_CalledTwice_ThrowsInvalidOperationException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -71,10 +71,10 @@ public sealed class MediaContainerTests
     // Open
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void Open_AfterDispose_ThrowsObjectDisposedException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var container = CreateVideoContainer();
         container.Initialize();
@@ -83,20 +83,20 @@ public sealed class MediaContainerTests
         Assert.Throws<ObjectDisposedException>(container.Open);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Open_BeforeInitialize_ThrowsInvalidOperationException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
 
         Assert.Throws<InvalidOperationException>(container.Open);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Open_AfterInitialize_VideoSource_SetsIsOpenAndCreatesVideoComponent()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -106,10 +106,10 @@ public sealed class MediaContainerTests
         Assert.True(container.Components.HasVideo);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Open_AfterInitialize_AudioSource_SetsIsOpenAndCreatesAudioComponent()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateAudioContainer();
         container.Initialize();
@@ -119,10 +119,10 @@ public sealed class MediaContainerTests
         Assert.True(container.Components.HasAudio);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Open_CalledTwice_ThrowsInvalidOperationException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -135,20 +135,20 @@ public sealed class MediaContainerTests
     // Read
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void Read_BeforeInitialize_ThrowsInvalidOperationException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
 
         Assert.Throws<InvalidOperationException>(() => container.Read());
     }
 
-    [SkippableFact]
+    [Fact]
     public void Read_AfterInitializeBeforeOpen_ThrowsInvalidOperationException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -156,10 +156,10 @@ public sealed class MediaContainerTests
         Assert.Throws<InvalidOperationException>(() => container.Read());
     }
 
-    [SkippableFact]
+    [Fact]
     public void Read_AfterOpen_ReturnsVideoMediaType()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -170,10 +170,10 @@ public sealed class MediaContainerTests
         Assert.Equal(MediaType.Video, mediaType);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Read_AfterDispose_ThrowsObjectDisposedException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var container = CreateVideoContainer();
         container.Initialize();
@@ -187,20 +187,20 @@ public sealed class MediaContainerTests
     // Decode
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void Decode_BeforeInitialize_ThrowsInvalidOperationException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
 
         Assert.Throws<InvalidOperationException>(container.Decode);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Decode_AfterInitializeBeforeOpen_ReturnsEmptyList()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -210,10 +210,10 @@ public sealed class MediaContainerTests
         Assert.Empty(frames);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Decode_AfterRead_ReturnsVideoFrames()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -231,10 +231,10 @@ public sealed class MediaContainerTests
         }
     }
 
-    [SkippableFact]
+    [Fact]
     public void Decode_AfterDispose_ThrowsObjectDisposedException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var container = CreateVideoContainer();
         container.Initialize();
@@ -248,10 +248,10 @@ public sealed class MediaContainerTests
     // Convert
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void Convert_VideoFrame_ProducesVideoBlockWithCorrectDimensions()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -261,7 +261,7 @@ public sealed class MediaContainerTests
         try
         {
             block = ConvertFirstFrame(container, MediaType.Video);
-            Skip.If(block is null, "No video frame produced by lavfi source.");
+            if (block is null) Assert.Skip("No video frame produced by lavfi source.");
 
             var videoBlock = Assert.IsType<VideoBlock>(block);
             Assert.Equal(64, videoBlock.PixelWidth);
@@ -276,10 +276,10 @@ public sealed class MediaContainerTests
         }
     }
 
-    [SkippableFact]
+    [Fact]
     public void Convert_AudioFrame_ProducesAudioBlockWithCorrectProperties()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateAudioContainer();
         container.Initialize();
@@ -289,7 +289,7 @@ public sealed class MediaContainerTests
         try
         {
             block = ConvertFirstFrame(container, MediaType.Audio);
-            Skip.If(block is null, "No audio frame produced by lavfi source.");
+            if (block is null) Assert.Skip("No audio frame produced by lavfi source.");
 
             var audioBlock = Assert.IsType<AudioBlock>(block);
             Assert.True(audioBlock.SampleRate > 0);
@@ -303,10 +303,10 @@ public sealed class MediaContainerTests
         }
     }
 
-    [SkippableFact]
+    [Fact]
     public void Convert_AfterDispose_ThrowsObjectDisposedException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var container = CreateVideoContainer();
         container.Initialize();
@@ -318,17 +318,17 @@ public sealed class MediaContainerTests
             container.Convert(null!, ref block, releaseInput: false, previousBlock: null));
     }
 
-    [SkippableFact]
+    [Fact]
     public void Convert_WithStaleFrame_ThrowsArgumentException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
         container.Open();
 
         var frames = ReadUntilFrames(container);
-        Skip.If(frames.Count == 0, "No frames produced by lavfi source.");
+        if (frames.Count == 0) Assert.Skip("No frames produced by lavfi source.");
 
         var staleFrame = frames[0];
         foreach (var f in frames) f.Dispose(); // disposes frames[0], making it stale
@@ -338,10 +338,10 @@ public sealed class MediaContainerTests
             container.Convert(staleFrame, ref block, releaseInput: false, previousBlock: null));
     }
 
-    [SkippableFact]
+    [Fact]
     public void Convert_WithNullInput_ThrowsArgumentNullException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -356,10 +356,10 @@ public sealed class MediaContainerTests
     // Full pipeline
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void FullPipeline_VideoSource_ExhaustsStreamAndProducesBlocks()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -389,20 +389,20 @@ public sealed class MediaContainerTests
     // Seek
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void Seek_BeforeInitialize_ThrowsInvalidOperationException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
 
         Assert.Throws<InvalidOperationException>(() => container.Seek(TimeSpan.Zero));
     }
 
-    [SkippableFact]
+    [Fact]
     public void Seek_AfterDispose_ThrowsObjectDisposedException()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var container = CreateVideoContainer();
         container.Initialize();
@@ -411,10 +411,10 @@ public sealed class MediaContainerTests
         Assert.Throws<ObjectDisposedException>(() => container.Seek(TimeSpan.Zero));
     }
 
-    [SkippableFact]
+    [Fact]
     public void Seek_ToMiddleOfStream_ReturnsFrameAtOrBeforeTarget()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         using var container = CreateVideoContainer();
         container.Initialize();
@@ -424,7 +424,7 @@ public sealed class MediaContainerTests
         var frame = container.Seek(target);
 
         // lavfi sources may not be seekable depending on the OS/build
-        Skip.If(frame is null, "lavfi source is not seekable; skipping seek test.");
+        if (frame is null) Assert.Skip("lavfi source is not seekable; skipping seek test.");
 
         try
         {
@@ -441,10 +441,10 @@ public sealed class MediaContainerTests
     // Dispose
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void Dispose_AfterOpen_SetsIsDisposedAndClosesContainer()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var container = CreateVideoContainer();
         container.Initialize();
@@ -457,10 +457,10 @@ public sealed class MediaContainerTests
         Assert.False(container.IsInitialized);
     }
 
-    [SkippableFact]
+    [Fact]
     public void Dispose_CalledTwice_DoesNotThrow()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var container = CreateVideoContainer();
         container.Initialize();

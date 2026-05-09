@@ -21,32 +21,32 @@ public sealed class LibraryTests
     // Initialization state
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void IsInitialized_AfterLoadFFmpeg_IsTrue()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         Assert.True(Library.IsInitialized);
     }
 
-    [SkippableFact]
+    [Fact]
     public void FFmpegVersionInfo_AfterLoad_IsNotNullOrEmpty()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         Assert.False(string.IsNullOrWhiteSpace(Library.FFmpegVersionInfo));
     }
 
-    [SkippableFact]
+    [Fact]
     public void LoadFFmpeg_CalledAgain_ReturnsTrue()
     {
         // LoadFFmpeg is idempotent — subsequent calls still return true
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         Assert.True(Library.LoadFFmpeg());
     }
 
-    [SkippableFact]
+    [Fact]
     public void FFmpegDirectory_AfterInit_CannotBeChanged()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         var original = Library.FFmpegDirectory;
         Library.FFmpegDirectory = "some/other/path";
         // Setting after init is a no-op
@@ -57,41 +57,41 @@ public sealed class LibraryTests
     // Codec / format enumeration
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void InputFormatNames_IsNotEmpty()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         Assert.NotEmpty(Library.InputFormatNames);
     }
 
-    [SkippableFact]
+    [Fact]
     public void InputFormatNames_ContainsCommonFormats()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         // FFmpeg's MP4 format is registered as "mov,mp4,m4a,3gp,3g2,mj2" not just "mp4"
         Assert.Contains(Library.InputFormatNames, n => n.Contains("mp4"));
         Assert.Contains(Library.InputFormatNames, n => n.Contains("matroska"));
     }
 
-    [SkippableFact]
+    [Fact]
     public void DecoderNames_IsNotEmpty()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         Assert.NotEmpty(Library.DecoderNames);
     }
 
-    [SkippableFact]
+    [Fact]
     public void DecoderNames_ContainsCommonCodecs()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         Assert.Contains("h264", Library.DecoderNames);
         Assert.Contains("aac", Library.DecoderNames);
     }
 
-    [SkippableFact]
+    [Fact]
     public void EncoderNames_IsNotEmpty()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
         Assert.NotEmpty(Library.EncoderNames);
     }
 
@@ -99,10 +99,10 @@ public sealed class LibraryTests
     // RetrieveMediaInfo
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void RetrieveMediaInfo_WithWavFile_ReturnsAudioStream()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var path = CreateTempWav();
         try
@@ -118,10 +118,10 @@ public sealed class LibraryTests
         }
     }
 
-    [SkippableFact]
+    [Fact]
     public void RetrieveMediaInfo_WithWavFile_PopulatesMetadata()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var path = CreateTempWav();
         try
@@ -141,10 +141,10 @@ public sealed class LibraryTests
     // LogLevel
     // -------------------------------------------------------------------------
 
-    [SkippableFact]
+    [Fact]
     public void FFmpegLogLevel_CanBeSetAndRead()
     {
-        Skip.IfNot(_ffmpeg.IsAvailable, SkipReason);
+        if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var original = Library.FFmpegLogLevel;
         Library.FFmpegLogLevel = FFmpeg.AutoGen.ffmpeg.AV_LOG_ERROR;

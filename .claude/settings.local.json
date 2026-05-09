@@ -19,7 +19,9 @@
       "Bash(sed -n '166,170p' \"C:/Users/anton/source/repos/AntonyCorbett/ffmediaelement/Unosquare.FFME.Windows/Rendering/SubtitlesControl.cs\")",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\anton\\\\source\\\\repos\\\\AntonyCorbett\\\\ffmediaelement\" -Directory)",
       "Bash(Select-Object Name)",
-      "Bash(dotnet test *)"
+      "Bash(dotnet test *)",
+      "Bash(dotnet package *)",
+      "Bash(dotnet restore *)"
     ]
   }
 }
