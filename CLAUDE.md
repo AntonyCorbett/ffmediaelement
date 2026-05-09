@@ -8,10 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Restore packages
 dotnet restore
 
-# Build the library (Debug — net8.0-windows only)
+# Build the library
 dotnet build Unosquare.FFME.Windows/Unosquare.FFME.Windows.csproj -c Debug
-
-# Build the library (Release — net8.0-windows + net48)
 dotnet build Unosquare.FFME.Windows/Unosquare.FFME.Windows.csproj -c Release
 
 # Build the sample player
@@ -24,7 +22,20 @@ dotnet run --project Unosquare.FFME.Windows.Sample/Unosquare.FFME.Windows.Sample
 dotnet pack Unosquare.FFME.Windows/Unosquare.FFME.Windows.csproj -c Release
 ```
 
-There are no automated tests in this repository.
+## Automated Tests
+
+The `Unosquare.FFME.Tests` project contains xunit tests covering primitives, closed caption parsing, the video seek index, playlist serialization, and the `MediaContainer` pipeline.
+
+Tests that exercise FFmpeg (opening streams, decoding frames) are decorated with `[SkippableFact]` and are skipped unless the `FFME_FFMPEG_DIR` environment variable points to the FFmpeg shared binary directory.
+
+```powershell
+# Run pure unit tests (no FFmpeg required)
+dotnet test Unosquare.FFME.Tests/Unosquare.FFME.Tests.csproj
+
+# Run all tests including FFmpeg integration tests
+$env:FFME_FFMPEG_DIR = "C:\path\to\ffmpeg\shared"
+dotnet test Unosquare.FFME.Tests/Unosquare.FFME.Tests.csproj
+```
 
 ## Runtime Requirement
 
@@ -106,4 +117,4 @@ Platform renderers in `Rendering/`:
 - `LangVersion=preview` — latest C# preview features are in use
 - `TreatWarningsAsErrors=true` — keep this; only `CS8019` is excluded (see copilot-instructions)
 - `AllowUnsafeBlocks=true` — required for FFmpeg P/Invoke
-- Debug builds target `net8.0-windows` only; Release builds dual-target `net8.0-windows` and `net48`
+- All builds target `net8.0-windows`
