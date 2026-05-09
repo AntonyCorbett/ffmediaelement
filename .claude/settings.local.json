@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Name -Recurse -Include *.sln, *.csproj)",
+      "Bash(Sort-Object)",
+      "Bash(Select-String *)"
+    ]
+  }
+}
