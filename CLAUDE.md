@@ -117,4 +117,4 @@ Platform renderers in `Rendering/`:
 - `LangVersion=preview` — latest C# preview features are in use
 - `TreatWarningsAsErrors=true` — keep this; only `CS8019` is excluded (see copilot-instructions)
 - `AllowUnsafeBlocks=true` — required for FFmpeg P/Invoke
-- All builds target `net8.0-windows`
+- All builds target `net10.0-windows`
