@@ -2,27 +2,45 @@
 
 ## Solution Overview
 
-`Unosquare.FFME.sln` contains four projects targeting `net8.0-windows` (Debug) and `net8.0-windows` + `net48` (Release).
+`Unosquare.FFME.sln` contains four compiled projects and one source-only folder, all targeting `net8.0-windows`.
 
 | Project | Type | Output |
 |---|---|---|
-| `Unosquare.FFME` | Shared project (`.shproj`) | No DLL — compiled into consumers |
-| `Unosquare.FFME.MediaElement` | Shared project (`.shproj`) | No DLL — compiled into consumers |
+| `Unosquare.FFME` | Class library | `Unosquare.FFME.dll` (core engine, no WPF) |
 | `Unosquare.FFME.Windows` | Class library | `ffme.win.dll` (the NuGet package) |
 | `Unosquare.FFME.Windows.Sample` | WPF application | `ffmeplay.win.exe` |
+| `Unosquare.FFME.Tests` | xUnit test project | `Unosquare.FFME.Tests.dll` |
 
-The two shared projects (`.shproj`) are textually imported into `Unosquare.FFME.Windows` at build time using `<Import Project="..." />`. They exist so the core logic can be shared with hypothetical future platform targets without referencing a separate assembly.
+`Unosquare.FFME.MediaElement/` is a source-only folder with no project file. Its `.cs` files are textually compiled into `Unosquare.FFME.Windows` via `<Compile Include="..\Unosquare.FFME.MediaElement\**\*.cs" />`. It holds the abstract `MediaElement` base, event args, and platform interfaces that are not WPF-specific.
+
+### NuGet dependencies
+
+| Package | Version | Used by |
+|---|---|---|
+| `FFmpeg.AutoGen` | 8.1.0 | Core, Windows lib, Tests |
+| `Microsoft.CodeAnalysis.NetAnalyzers` | 10.0.203 | Core, Windows lib, Sample |
+| `Microsoft.NET.Test.Sdk` | 18.5.1 | Tests |
+| `xunit.v3` | 3.2.2 | Tests |
+| `xunit.runner.visualstudio` | 3.1.5 | Tests |
+
+No NAudio dependency. Audio output is handled by a custom WaveOut wrapper in `Rendering/Wave/`.
+
+### Compiler settings (all projects)
+
+- `LangVersion=preview`
+- `TreatWarningsAsErrors=true`
+- `AllowUnsafeBlocks=true` (required for FFmpeg P/Invoke)
+- `WarningsNotAsErrors`: `CS8019` (unused using), `CS0436` (type conflict from source inclusion) in the Windows lib
 
 ---
 
 ## Three-Layer Architecture
 
-The entire system is structured as three layers, each wrapping the one below.
-
 ```
 ┌──────────────────────────────────────────────┐
 │  Layer 3 — MediaElement (WPF control)        │
-│  Unosquare.FFME.Windows/ + MediaElement/     │
+│  Unosquare.FFME.MediaElement/ (source only)  │
+│  Unosquare.FFME.Windows/                     │
 ├──────────────────────────────────────────────┤
 │  Layer 2 — MediaEngine (playback control)    │
 │  Unosquare.FFME/Engine/                      │
@@ -38,31 +56,35 @@ The entire system is structured as three layers, each wrapping the one below.
 
 **Location:** `Unosquare.FFME/Container/`
 
-Wraps FFmpeg. Converts compressed bytes from a source (file, URL, or custom `IMediaInputStream`) into format-normalized `MediaBlock` objects that the engine can render without knowing anything about codecs.
-
-The pipeline per frame is: **Read packet → Decode frame → Convert to block**
+Wraps FFmpeg. Converts compressed source bytes into format-normalised `MediaBlock` objects. The pipeline per frame is: **Read packet → Decode frame → Convert to block**.
 
 ### Key classes
 
 | Class | Role |
 |---|---|
-| `MediaContainer.cs` | Top-level wrapper; opens streams, exposes `Read`, `Decode`, `Convert` |
-| `MediaComponentSet.cs` | Collection of all active `MediaComponent` objects (one per stream) |
-| `MediaComponent.cs` | Per-stream handler: packet queue, frame decoding, block conversion |
-| `MediaBlockBuffer.cs` | Per-stream circular buffer of decoded `MediaBlock` objects |
-| `PacketQueue.cs` | Circular buffer of compressed `MediaPacket` objects |
-| `HardwareAccelerator.cs` | Optional GPU decode (NVIDIA/Intel/AMD), falls back to software |
+| `MediaContainer` | Top-level wrapper; opens streams, exposes `Read`, `Decode`, `Convert` |
+| `MediaComponentSet` | Collection of all active per-stream `MediaComponent` instances |
+| `MediaComponent` | Base class: packet queue, frame decoding, block conversion |
+| `AudioComponent`, `VideoComponent`, `SubtitleComponent` | Per-type subclasses of `MediaComponent` |
+| `DataComponentSet` | Handles non-media (data) packet callbacks |
+| `MediaBlock` / `AudioBlock` / `VideoBlock` / `SubtitleBlock` | Decoded, format-normalised output objects |
+| `MediaFrame` / `AudioFrame` / `VideoFrame` / `SubtitleFrame` | Intermediate decoded frames before conversion to blocks |
+| `MediaBlockBuffer` | Per-stream circular buffer of `MediaBlock` objects |
+| `PacketQueue` | Circular buffer of compressed `MediaPacket` objects |
+| `HardwareAccelerator` | Optional GPU decode (NVIDIA/Intel/AMD); falls back to software |
 
 ### FFmpeg interop
 
-FFmpeg is accessed via **FFmpeg.AutoGen** (NuGet v8.1.0), which auto-generates P/Invoke signatures for FFmpeg 7.0. `AllowUnsafeBlocks` is required. Utility helpers live in `Unosquare.FFME/FFmpeg/`:
+FFmpeg is accessed via **FFmpeg.AutoGen** (v8.1.0), which auto-generates P/Invoke signatures for FFmpeg 7.0. Utility helpers in `Unosquare.FFME/FFmpeg/`:
 
-- `FFInterop.cs` — string marshalling, error code decoding, option enumeration
-- `FFAudioParams.cs` — audio format descriptor wrapper
-- `FFDictionary.cs` — `AVDictionary` wrapper
-- `FFBPrint.cs` — `AVBPrint` wrapper
+| File | Role |
+|---|---|
+| `FFInterop.cs` | String marshalling, error decoding, option enumeration |
+| `FFAudioParams.cs` | Audio format descriptor wrapper |
+| `FFDictionary.cs` / `FFDictionaryEntry.cs` | `AVDictionary` wrapper |
+| `FFBPrint.cs` | `AVBPrint` wrapper |
 
-The static `Library` class (in `Unosquare.FFME.Windows/`) must be initialized before any media operation:
+The static `Library` class (in `Unosquare.FFME.Windows/`) must be initialised before any media operation:
 
 ```csharp
 Library.FFmpegDirectory = @"C:\ffmpeg";
@@ -75,152 +97,213 @@ Library.LoadFFmpeg();
 
 **Location:** `Unosquare.FFME/Engine/`
 
-Controls playback state and drives three background workers. It never touches WPF — platform concerns are injected via `IMediaConnector`.
+Controls playback state and drives background workers. Never touches WPF — platform concerns are injected via `IMediaConnector`.
 
-### State machine
+### MediaEngine (partial class)
 
-`MediaEngineState.cs` owns all playback state: position, duration, buffer levels, component indices, playback state enum, etc. It implements `INotifyPropertyChanged`. The WPF layer polls it every 15 ms.
+| File | Content |
+|---|---|
+| `MediaEngine.cs` | Construction, properties, `IDisposable` |
+| `MediaEngine.Connector.cs` | `IMediaConnector` callback dispatch |
+| `MediaEngine.Controller.cs` | Playback control API (`Open`, `Close`, `Play`, etc.) |
+| `MediaEngine.Workers.cs` | Worker lifecycle (creates `MediaWorkerSet`, starts/stops workers) |
 
-### Three background workers
+### State
 
-All extend `IntervalWorkerBase` → `WorkerBase` (`Unosquare.FFME/Primitives/`). Each is an adaptive-timing background loop.
+`MediaEngineState.cs` owns all playback state (position, duration, buffer levels, playback state enum, stream metadata, etc.). It extends `ViewModelBase` which implements `INotifyPropertyChanged`. Thread safety uses `volatile int`/`volatile bool` for flags, and `Volatile.Read`/`Volatile.Write` on `long` ticks for timing values — no `Atomic*` wrapper types.
+
+Key notification methods:
+- `ReportBufferingStatus()` — fires change notifications for buffering/download properties
+- `ReportCommandStatus()` — fires for `IsSeeking`, `IsClosing`, `IsOpening`, `IsChanging`
+- `ReportTimingStatus()` — fires for `IsPlaying`, `IsPaused`
+
+### Background workers
+
+All four workers extend `WorkerBase` (`Primitives/WorkerBase.cs`):
+
+- Each worker runs on a **dedicated background `Thread`** (not a Task or Channel).
+- Pause/resume are controlled by a `SemaphoreSlim` run gate.
+- Stop uses a `CancellationTokenSource`.
+- A `ManualResetEventSlim` allows other workers to signal an early wakeup via `RequestWakeup()`.
+- `GetCycleDelay()` controls the inter-cycle sleep; the default is `Constants.DefaultTimingPeriod` (15 ms).
+
+The three media workers are managed together by `MediaWorkerSet`:
 
 ```
 PacketReadingWorker   →   reads compressed packets from MediaContainer
         ↓
 FrameDecodingWorker   →   decodes packets into MediaBlocks, fills MediaBlockBuffer
         ↓
-BlockRenderingWorker  →   reads blocks at clock-appropriate times, calls renderers
+BlockRenderingWorker  →   reads blocks at clock-appropriate times, calls platform renderers
 ```
 
-- **`PacketReadingWorker.cs`** — keeps ~1 second of compressed data buffered; pauses when buffers are full, resumes when they drain.
-- **`FrameDecodingWorker.cs`** — reads from packet queues, decodes via FFmpeg, writes normalized blocks to `MediaBlockBuffer`.
-- **`BlockRenderingWorker.cs`** (31 KB, the most complex worker) — drives the real-time rendering loop; reads from `MediaBlockBuffer`, calls the platform `IMediaRenderer` per media type, manages clock synchronisation and seek recovery.
+- **`PacketReadingWorker`** — keeps ~1 second of compressed data buffered; pauses when buffers are full.
+- **`FrameDecodingWorker`** — reads from packet queues, decodes via FFmpeg, writes normalised blocks to `MediaBlockBuffer`.
+- **`BlockRenderingWorker`** — the most complex worker; drives real-time rendering, calls `IMediaRenderer` per media type, manages clock sync and seek recovery. Overrides `StartWorkerThread()` to use a `ThreadPriority.Highest` thread.
 
 ### Command manager
 
-`Commands/CommandManager.*.cs` — five partial class files, three command queues:
+`CommandManager` is itself a `WorkerBase` (a fourth background loop). Its partial class files:
 
-| Queue | Commands | Behaviour |
-|---|---|---|
-| Direct | `Open`, `Close`, `ChangeMedia` | Exclusive; blocks until complete |
-| Priority | `Play`, `Pause`, `Stop` | Queued; processed before seeks |
-| Seek | `Seek`, `StepForward`, `StepBackward` | Coalesced — a pending seek is replaced by a later one |
+| File | Content |
+|---|---|
+| `CommandManager.cs` | Core loop; dispatches from the three queues |
+| `CommandManager.Direct.cs` | `Open`, `Close`, `ChangeMedia` — exclusive, blocks until complete |
+| `CommandManager.Priority.cs` | `Play`, `Pause`, `Stop` — queued, processed before seeks |
+| `CommandManager.Seek.cs` | `Seek`, `StepForward`, `StepBackward` — coalesced (a pending seek is replaced by a later one) |
+| `CommandManager.Enums.cs` | Command type enumerations |
 
 All commands return `Task<bool>`. Exceptions are caught and posted as `MediaFailed` events.
 
 ### Timing
 
-`TimingController.cs` maintains independent `RealtimeClock` instances per media type. The clocks are started/stopped/adjusted by the rendering worker based on buffer levels and seek operations. Workers use these clocks, not wall-clock comparisons, to decide when to render a block.
+`TimingController.cs` maintains independent `RealtimeClock` instances per media type. Clocks are started/stopped/adjusted by the rendering worker based on buffer state and seek operations. Workers use these, not wall-clock comparisons.
+
+### Constants
+
+All tuning values live in `Unosquare.FFME/Constants.cs`:
+
+| Constant | Value |
+|---|---|
+| `DefaultTimingPeriod` | 15 ms (worker cycle delay) |
+| `PropertyUpdatesInterval` | 30 ms |
+| `MinVideoFrameDuration` | 10 ms |
+| `MaxVideoFrameDuration` | 50 ms |
+| `MinVideoBlocks` | 8 |
+| `MinAudioBlocks` | 48 (~1 s at 48 kHz) |
+| `MinSubtitleBlocks` | 4 |
+| Audio format | S16, 48 kHz, 2 channels |
+| Video pixel format | BGRA 32-bit |
+| Live stream buffer target | 500–1000 ms |
 
 ---
 
 ## Layer 3 — MediaElement (WPF)
 
-**Location:** `Unosquare.FFME.MediaElement/` (abstract base) + `Unosquare.FFME.Windows/` (WPF implementation)
+### Source-only base (`Unosquare.FFME.MediaElement/`)
 
-### MediaElement partial classes
+Contains the platform-agnostic base code compiled into the Windows lib. Not a buildable project on its own.
+
+| Folder / File | Content |
+|---|---|
+| `MediaElement.cs` | Abstract base; commands (`Open`, `Close`, `Play`, etc.) |
+| `MediaElement.Events.cs` | Abstract event declarations |
+| `MediaElement.Properties.cs` | Abstract property declarations |
+| `Platform/IGuiContext.cs` | Thread-dispatch abstraction |
+| `Platform/IPropertyProxy.cs` | Dependency-property write abstraction |
+| `Platform/MediaConnector.cs` | Base `IMediaConnector` implementation |
+| `Platform/PropertyProxy.cs`, `ClassProxy.cs`, `PropertyMapper.cs` | DependencyProperty reflection helpers |
+| `Common/` | 14 event-args types (`MediaOpenedEventArgs`, `PositionChangedEventArgs`, etc.) |
+
+### WPF implementation (`Unosquare.FFME.Windows/`)
+
+#### MediaElement partial classes
 
 | File | Content |
 |---|---|
-| `MediaElement.cs` | Core logic; owns `MediaEngine`; runs 15 ms `DispatcherTimer` to sync state |
-| `MediaElement.Properties.cs` | All WPF dependency properties |
-| `MediaElement.Events.cs` | All event declarations |
+| `MediaElement.cs` | Owns `MediaEngine`; wires up state change flow; 15 ms `DispatcherTimer` |
+| `MediaElement.Events.cs` | WPF-specific event declarations |
+| `MediaElement.Properties.cs` | All WPF `DependencyProperty` definitions |
 
-The `Source` dependency property is notification-only — setting it does not trigger `Open`. Always call `await Media.Open(uri)` explicitly.
+#### State update flow
 
-### Platform bridge
+`MediaEngineState` raises `INotifyPropertyChanged` from worker threads. `MediaElement` subscribes at construction:
 
-`Platform/MediaConnector.cs` implements `IMediaConnector` — the callback bridge from `MediaEngine` to the WPF element (state change notifications, renderer dispatch, command results).
+```csharp
+MediaCore.State.PropertyChanged += (_, e) => _propertyUpdates.Add(e.PropertyName);
+```
 
-`Platform/GuiContext.cs` wraps `Dispatcher` to marshal calls onto the UI thread from worker threads.
+Changed property names accumulate in a `ConcurrentBag<string>`. A `DispatcherTimer` at `DispatcherPriority.DataBind` fires every **15 ms** and drains the bag in `CoerceMediaCoreState`, updating WPF dependency properties on the UI thread. The timer is a no-op when the bag is empty.
 
-### Renderers (`Rendering/`)
+#### Platform bridge (`Platform/`)
+
+| File | Role |
+|---|---|
+| `MediaConnector.cs` | Implements `IMediaConnector`; bridges `MediaEngine` callbacks to WPF events |
+| `GuiContext.cs` | Wraps `Dispatcher` for thread-safe UI marshalling |
+| `GuiContextType.cs` | Enum: `WPF` or `WinForms` |
+| `SoundTouch.cs` | P/Invoke wrapper for `SoundTouch.dll`; loaded dynamically via `NativeLibrary.Load` from the FFmpeg directory |
+
+#### Renderers (`Rendering/`)
 
 | File(s) | Responsibility |
 |---|---|
-| `AudioRenderer.cs` | NAudio-based output; integrates SoundTouch for pitch-preserving speed changes |
-| `VideoRenderer.cs`, `InteropVideoRenderer.cs`, `ImageHost.cs` | Writes decoded RGB frames to a WPF `WriteableBitmap` |
-| `SubtitleRenderer.cs`, `SubtitlesControl.cs` | Text overlay |
-| `ClosedCaptionsControl.cs`, `ClosedCaptionsBuffer.cs` | CEA-608 caption parsing and display |
+| `AudioRenderer.cs` | Audio output via the custom `Wave/` layer; integrates SoundTouch for pitch-preserving speed changes |
+| `Wave/` (10 files) | Custom WaveOut implementation: `DirectSoundPlayer`, `LegacyAudioPlayer`, `WaveOutBuffer`, formats, interop |
+| `VideoRendererBase.cs`, `VideoRenderer.cs`, `InteropVideoRenderer.cs`, `ImageHost.cs`, `ElementHostBase.cs` | Writes decoded BGRA frames to a WPF `WriteableBitmap`; `ImageHost` optionally runs on its own `Dispatcher` thread for multi-threaded video |
+| `SubtitleRenderer.cs`, `SubtitlesControl.cs` | Text subtitle overlay |
+| `ClosedCaptionsControl.cs`, `ClosedCaptionsBuffer.cs`, `ClosedCaptionsCell.cs`, `ClosedCaptionsCellState.cs` | CEA-608 caption display |
 
-`Platform/SoundTouch.cs` loads `SoundTouch.dll` dynamically at runtime by probing the FFmpeg binary directory. If absent, speed changes alter pitch — no error is thrown.
+#### Common (`Common/`)
+
+Event-args types for rendering callbacks (`RenderingVideoEventArgs`, `RenderingAudioEventArgs`, `RenderingSubtitlesEventArgs`) and supporting types (`BitmapDataBuffer`, `RendererOptions`, `AudioDeviceInfo`).
 
 ---
 
 ## Threading Primitives (`Unosquare.FFME/Primitives/`)
 
-Custom thread-safe types used throughout the hot path instead of `lock`:
-
-| Type | Backed by |
+| Type | Role |
 |---|---|
-| `AtomicBoolean`, `AtomicInteger`, `AtomicLong`, `AtomicDouble` | `Interlocked` |
-| `AtomicDateTime`, `AtomicTimeSpan` | `Interlocked` on the underlying `long` ticks |
-| `AtomicTypeBase<T>` | Generic base for the above |
-| `CircularBuffer` | Byte-level ring buffer (used for audio) |
+| `WorkerBase` | Abstract background worker; dedicated `Thread`, `SemaphoreSlim` gate, `CancellationTokenSource` stop, `ManualResetEventSlim` wakeup |
+| `IWorker` | Worker lifecycle interface (`StartAsync`, `PauseAsync`, `ResumeAsync`, `StopAsync`) |
+| `WorkerState` | Enum: `Created`, `Running`, `Paused`, `Stopped` |
+| `CircularBuffer` | Byte-level ring buffer used for audio sample queuing |
 | `MediaTypeDictionary<T>` | Fixed-size dictionary keyed by `MediaType` enum (Audio/Video/Subtitle/Data) |
 | `RealtimeClock` | High-resolution elapsed-time clock with pause/resume |
-| `WorkerBase` / `IntervalWorkerBase` | Abstract background thread base with lifecycle management |
+| `VerticalSyncContext` | VSync timing support for the rendering worker |
+| `SyncLockerFactory` / `ISyncLocker` | Reader-writer lock abstraction used on the container's read and decode sync roots |
 
-`SyncLockerFactory` / `ISyncLocker` provide a unified reader-writer lock abstraction used on the container's read and decode sync roots.
-
----
-
-## Sample Application
-
-`Unosquare.FFME.Windows.Sample/` is a fully-featured reference player. It demonstrates:
-
-- Playlist management (`ViewModels/`)
-- Stream selection (cycle audio/video/subtitle streams at runtime)
-- Hardware acceleration toggling
-- FFmpeg video/audio filtergraph application
-- Screenshot capture and packet recording (no re-encoding)
-- Closed caption channel selection
-
-**This is the best place to look for usage examples** — the unit test gap (see below) makes it the de-facto behavioural reference.
+The `Atomic*` wrapper types (`AtomicBoolean`, `AtomicInteger`, etc.) have been removed. Shared mutable state now uses `volatile` fields or direct `Interlocked` calls at the point of use.
 
 ---
 
-## Modernisation Notes
+## Tests (`Unosquare.FFME.Tests/`)
 
-### What is already modern
-- Targets .NET 8 (alongside net48 in Release)
-- FFmpeg 7.0 (recently upgraded)
-- SDK-style `.csproj` throughout
-- `TreatWarningsAsErrors`, Roslyn analyzers, `LangVersion=preview`
+xUnit v3 project. Tests that exercise FFmpeg are skipped unless `FFME_FFMPEG_DIR` points to the FFmpeg shared-binary directory; they use FFmpeg's built-in `lavfi` virtual input device (no media files needed).
 
-### High-priority improvements
+| File | Covers |
+|---|---|
+| `PrimitivesTests.cs` | `WorkerBase` lifecycle (start, pause, resume, stop, dispose) |
+| `ClosedCaptionsTests.cs` | CEA-608 packet parsing |
+| `VideoSeekIndexTests.cs` | Seek index build and lookup |
+| `PlaylistTests.cs` | Playlist serialisation/deserialisation |
+| `MediaContainerTests.cs` | Full `Open` → `Read` → `Decode` → `Convert` pipeline (FFmpeg required) |
+| `LibraryTests.cs` | Library initialisation |
+| `Fixtures/FfmpegFixture.cs` | Shared class fixture that loads FFmpeg once per test run |
 
-**1. Add a test project**  
-There are zero automated tests. The safest first step before any refactoring is adding an xUnit project that exercises `MediaContainer` directly (no WPF required). The container's `Open` / `Read` / `Decode` / `Convert` methods are pure-ish and testable with a local media file.
+---
 
-**2. Replace SoundTouch dynamic loading**  
-`Platform/SoundTouch.cs` probes the FFmpeg directory for `SoundTouch.dll` at runtime using `NativeLibrary.Load`. This is fragile — deployment is manual and errors are silent. Options:
-- Add [SoundTouch.NET](https://www.nuget.org/packages/SoundTouch.NET/) as a NuGet dependency
-- Or remove pitch correction entirely if not needed
+## Sample Application (`Unosquare.FFME.Windows.Sample/`)
 
-**3. Consolidate the shared project pattern**  
-`.shproj` was a workaround for the era before multi-targeting. The two shared projects (`Unosquare.FFME`, `Unosquare.FFME.MediaElement`) could be converted to ordinary class libraries (targeting `netstandard2.0` or `net8.0`), which would give them proper build outputs, enable testing in isolation, and remove the need for the source-level `Import` hack. This is a medium-effort refactor with high long-term payoff.
+A fully-featured reference player demonstrating all major library features.
 
-**4. Modernise the worker threading model**  
-`WorkerBase` / `IntervalWorkerBase` pre-date `System.Threading.Channels` and structured async. The three workers could be reimplemented as `Channel`-based producers/consumers, making back-pressure and cancellation more idiomatic. The `Atomic*` types could mostly be replaced with `volatile` fields or `Interlocked` calls at their use sites — there's no need for the wrapper hierarchy in modern C#.
+| Area | Files |
+|---|---|
+| Entry / main window | `App.xaml.cs`, `MainWindow.xaml.cs`, `MainWindow.MediaEvents.cs`, `MainWindow.MediaRendering.cs` |
+| Commands | `AppCommands.cs` |
+| ViewModels (MVVM) | `RootViewModel.cs`, `ControllerViewModel.cs`, `PlaylistViewModel.cs`, `AttachedViewModel.cs` |
+| UI controls | `Controls/ControllerPanelControl`, `PlaylistPanelControl`, `PropertiesPanelControl` |
+| Foundation utilities | `FileInputStream.cs` (custom `IMediaInputStream`), `ThumbnailGenerator.cs`, `TransportStreamRecorder.cs`, `ReactiveExtensions.cs`, `DeferredAction.cs`, `DelegateCommand.cs` |
+| Playlist | `CustomPlaylistEntry.cs`, `CustomPlaylistEntryCollection.cs` |
 
-**5. Push state changes rather than polling**  
-The 15 ms `DispatcherTimer` in `MediaElement.cs` that syncs `MediaEngineState` to WPF dependency properties is a polling loop. A more modern approach would have `MediaEngineState` raise `INotifyPropertyChanged` events that propagate through `IObservable<T>` or `BindingSource` notifications, eliminating the timer entirely.
+**This is the best place to look for usage examples** — the sample exercises playlist management, stream selection (audio/video/subtitle cycle), hardware acceleration toggling, FFmpeg filtergraph application, screenshot capture, and packet recording.
 
-**6. Upgrade NuGet dependencies**  
-- `FFmpeg.AutoGen` v8.1.0 — check for a newer release aligned with FFmpeg 7.x
-- `Microsoft.CodeAnalysis.NetAnalyzers` — keep at latest
-- NAudio — check current version; the `AudioRenderer` may benefit from updated APIs
+---
 
-**7. Drop net48 if your consuming application doesn't need it**  
-Dual-targeting adds complexity. If your WPF app targets .NET 8+, removing `net48` from the Release build simplifies the build, eliminates conditional reference groups in the `.csproj`, and allows use of APIs not available on .NET Framework.
+## Remaining Improvement Areas
 
-**8. Centralise magic numbers**  
-Values like the 15 ms dispatcher interval, the ~1-second packet buffer target, and audio buffer sizes are scattered as literals. Gathering them into a static `MediaEngineOptions` or `PlaybackConfiguration` class makes tuning and testing much easier.
+**1. Eliminate the DispatcherTimer for state updates**
+`MediaEngineState` already raises `INotifyPropertyChanged` from worker threads. The next step is driving WPF dependency property updates directly from those events via `Dispatcher.InvokeAsync`, removing the 15 ms timer. The trade-off is losing the natural coalescing the timer provides for high-frequency updates (e.g. `Position` during playback).
 
-### Low-priority / cosmetic
+**2. Replace SoundTouch dynamic loading**
+`Platform/SoundTouch.cs` loads `SoundTouch.dll` at runtime via `NativeLibrary.Load` by probing the FFmpeg directory. Deployment is manual and failures are silent. Options: add SoundTouch.NET as a NuGet dependency, or remove pitch correction if not needed.
 
-- The `Analyzers.ruleset` file at the root is the old-style suppression format; modern suppressions go in `.editorconfig` or `GlobalSuppressions.cs`
-- `appveyor.yml` references AppVeyor CI which is tied to the original Unosquare account — replace or remove if you set up your own CI
-- Several XML doc comments are incomplete or use placeholder text from the original authors
+**3. Consolidate the MediaElement source-inclusion pattern**
+`Unosquare.FFME.MediaElement/` has no project file and is textually included into the Windows lib. Converting it to a proper class library (`net8.0` or `netstandard2.0`) would give it its own build output, make it independently testable, and remove the source-inclusion workaround.
+
+**4. Modernise the worker threading model**
+`WorkerBase` / the three workers pre-date `System.Threading.Channels`. Reimplementing as `Channel`-based producers/consumers would make back-pressure and cancellation more idiomatic.
+
+**5. Upgrade NuGet dependencies**
+- `FFmpeg.AutoGen` v8.1.0 — check for a release aligned with FFmpeg 7.x
+- NAudio is no longer a dependency; the custom `Wave/` layer serves the same purpose
