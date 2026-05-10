@@ -98,7 +98,7 @@
         {
             var pictureIndex = pictureNumber - 1;
             var frameIndex = Convert.ToInt32(pictureIndex >= int.MaxValue ? pictureIndex % int.MaxValue : pictureIndex);
-            var timeCodeInfo = (AVTimecode*)ffmpeg.av_malloc((ulong)Marshal.SizeOf(typeof(AVTimecode)));
+            var timeCodeInfo = (AVTimecode*)ffmpeg.av_malloc((ulong)Marshal.SizeOf<AVTimecode>());
             ffmpeg.av_timecode_init(timeCodeInfo, frameRate, 0, 0, null);
             var isNtsc = frameRate.num == 30000 && frameRate.den == 1001;
             var adjustedFrameNumber = isNtsc ?

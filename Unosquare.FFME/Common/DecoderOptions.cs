@@ -9,8 +9,10 @@
     /// </summary>
     public sealed class DecoderOptions
     {
-        private readonly Dictionary<string, string> GlobalOptions = new(64);
-        private readonly Dictionary<int, Dictionary<string, string>> PrivateOptions = new();
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
+        private readonly Dictionary<string, string> _globalOptions = new(64);
+#pragma warning restore IDE0028        
+        private readonly Dictionary<int, Dictionary<string, string>> _privateOptions = [];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DecoderOptions"/> class.
@@ -76,8 +78,8 @@
         /// <returns>The value of the option.</returns>
         public string this[string globalOptionName]
         {
-            get => GlobalOptions.ContainsKey(globalOptionName) ? GlobalOptions[globalOptionName] : null;
-            set => GlobalOptions[globalOptionName] = value;
+            get => _globalOptions.GetValueOrDefault(globalOptionName, null);
+            set => _globalOptions[globalOptionName] = value;
         }
 
         /// <summary>
@@ -91,16 +93,20 @@
         {
             get
             {
-                if (PrivateOptions.ContainsKey(streamIndex) == false) return null;
-                return PrivateOptions[streamIndex].ContainsKey(privateOptionName) ?
-                    PrivateOptions[streamIndex][privateOptionName] : null;
+                if (!_privateOptions.TryGetValue(streamIndex, out Dictionary<string, string> option))
+                {
+                    return null;
+                }
+                return option.GetValueOrDefault(privateOptionName, null);
             }
             set
             {
-                if (PrivateOptions.ContainsKey(streamIndex) == false)
-                    PrivateOptions[streamIndex] = new();
-
-                PrivateOptions[streamIndex][privateOptionName] = value;
+                if (!_privateOptions.TryGetValue(streamIndex, out var option))
+                {
+                    option = [];
+                    _privateOptions[streamIndex] = option;
+                }
+                option[privateOptionName] = value;
             }
         }
 
@@ -108,12 +114,12 @@
         /// Gets the combined global and private stream codec options as a dictionary.
         /// </summary>
         /// <param name="streamIndex">Index of the stream.</param>
-        /// <returns>An options dictionary.</returns>
+        /// <returns>An Options dictionary.</returns>
         internal FFDictionary GetStreamCodecOptions(int streamIndex)
         {
-            var result = new Dictionary<string, string>(GlobalOptions);
+            var result = new Dictionary<string, string>(_globalOptions);
 
-            if (PrivateOptions.TryGetValue(streamIndex, out var privateOptions))
+            if (_privateOptions.TryGetValue(streamIndex, out var privateOptions))
             {
                 foreach (var kvp in privateOptions)
                     result[kvp.Key] = kvp.Value;

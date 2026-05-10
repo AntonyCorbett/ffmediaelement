@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Engine
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Engine
 {
     using Primitives;
     using System;
@@ -11,7 +13,7 @@
     /// <seealso cref="IDisposable" />
     internal sealed class MediaWorkerSet : IDisposable
     {
-        private readonly object SyncLock = new object();
+        private readonly Lock SyncLock = new();
         private readonly IMediaWorker[] Workers = new IMediaWorker[3];
         private bool m_IsDisposed;
 

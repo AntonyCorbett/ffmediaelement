@@ -42,7 +42,9 @@
         /// <summary>
         /// Provides access to the seek entries.
         /// </summary>
-        public List<VideoSeekIndexEntry> Entries { get; } = new List<VideoSeekIndexEntry>(2048);
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
+        public List<VideoSeekIndexEntry> Entries { get; } = new(2048);
+#pragma warning restore IDE0028
 
         /// <summary>
         /// Gets the stream index this seeking index belongs to.
@@ -243,7 +245,7 @@
         /// <summary>
         /// A comparer for <see cref="VideoSeekIndexEntry"/>.
         /// </summary>
-        private class VideoSeekIndexEntryComparer : IComparer<VideoSeekIndexEntry>
+        private sealed class VideoSeekIndexEntryComparer : IComparer<VideoSeekIndexEntry>
         {
             /// <inheritdoc />
             public int Compare(VideoSeekIndexEntry x, VideoSeekIndexEntry y) =>

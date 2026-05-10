@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Container
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Container
 {
     using Common;
     using System;
@@ -19,35 +21,35 @@
         /// <summary>
         /// The blocks that are available to be filled.
         /// </summary>
-        private readonly Queue<MediaBlock> PoolBlocks;
+        private readonly Queue<MediaBlock> _poolBlocks;
 
         /// <summary>
         /// The blocks that are available for rendering.
         /// </summary>
-        private readonly List<MediaBlock> PlaybackBlocks;
+        private readonly List<MediaBlock> _playbackBlocks;
 
         /// <summary>
         /// Controls multiple reads and exclusive writes.
         /// </summary>
-        private readonly object SyncLock = new();
+        private readonly Lock _syncLock = new();
 
-        private bool IsNonMonotonic;
-        private TimeSpan m_RangeStartTime;
-        private TimeSpan m_RangeEndTime;
-        private TimeSpan m_RangeMidTime;
-        private TimeSpan m_RangeDuration;
-        private TimeSpan m_AverageBlockDuration;
-        private TimeSpan m_MonotonicDuration;
-        private int m_Count;
-        private long m_RangeBitRate;
-        private double m_CapacityPercent;
-        private bool m_IsMonotonic;
-        private bool m_IsFull;
-        private bool m_IsDisposed;
+        private bool _isNonMonotonic;
+        private TimeSpan _rangeStartTime;
+        private TimeSpan _rangeEndTime;
+        private TimeSpan _rangeMidTime;
+        private TimeSpan _rangeDuration;
+        private TimeSpan _averageBlockDuration;
+        private TimeSpan _monotonicDuration;
+        private int _count;
+        private long _rangeBitRate;
+        private double _capacityPercent;
+        private bool _isMonotonic;
+        private bool _isFull;
+        private bool _isDisposed;
 
         // Fast Last Lookup.
-        private long LastLookupTimeTicks = TimeSpan.MinValue.Ticks;
-        private int LastLookupIndex = -1;
+        private long _lastLookupTimeTicks = TimeSpan.MinValue.Ticks;
+        private int _lastLookupIndex = -1;
 
         #endregion
 
@@ -62,12 +64,15 @@
         {
             Capacity = capacity;
             MediaType = mediaType;
-            PoolBlocks = new Queue<MediaBlock>(capacity + 1); // +1 to be safe and not degrade performance
-            PlaybackBlocks = new List<MediaBlock>(capacity + 1); // +1 to be safe and not degrade performance
+            _poolBlocks = new Queue<MediaBlock>(capacity + 1); // +1 to be safe and not degrade performance
+
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
+            _playbackBlocks = new List<MediaBlock>(capacity + 1); // +1 to be safe and not degrade performance
+#pragma warning restore IDE0028
 
             // allocate the blocks
             for (var i = 0; i < capacity; i++)
-                PoolBlocks.Enqueue(CreateBlock(mediaType));
+                _poolBlocks.Enqueue(CreateBlock(mediaType));
         }
 
         #endregion
@@ -87,7 +92,7 @@
         /// <summary>
         /// Gets a value indicating whether this instance is disposed.
         /// </summary>
-        public bool IsDisposed { get { lock (SyncLock) return m_IsDisposed; } }
+        public bool IsDisposed { get { lock (_syncLock) return _isDisposed; } }
 
         #endregion
 
@@ -96,57 +101,57 @@
         /// <summary>
         /// Gets the start time of the first block.
         /// </summary>
-        public TimeSpan RangeStartTime { get { lock (SyncLock) return m_RangeStartTime; } }
+        public TimeSpan RangeStartTime { get { lock (_syncLock) return _rangeStartTime; } }
 
         /// <summary>
         /// Gets the middle time of the range.
         /// </summary>
-        public TimeSpan RangeMidTime { get { lock (SyncLock) return m_RangeMidTime; } }
+        public TimeSpan RangeMidTime { get { lock (_syncLock) return _rangeMidTime; } }
 
         /// <summary>
         /// Gets the end time of the last block.
         /// </summary>
-        public TimeSpan RangeEndTime { get { lock (SyncLock) return m_RangeEndTime; } }
+        public TimeSpan RangeEndTime { get { lock (_syncLock) return _rangeEndTime; } }
 
         /// <summary>
         /// Gets the range of time between the first block and the end time of the last block.
         /// </summary>
-        public TimeSpan RangeDuration { get { lock (SyncLock) return m_RangeDuration; } }
+        public TimeSpan RangeDuration { get { lock (_syncLock) return _rangeDuration; } }
 
         /// <summary>
         /// Gets the compressed data bit rate from which media blocks were created.
         /// </summary>
-        public long RangeBitRate { get { lock (SyncLock) return m_RangeBitRate; } }
+        public long RangeBitRate { get { lock (_syncLock) return _rangeBitRate; } }
 
         /// <summary>
         /// Gets the average duration of the currently available playback blocks.
         /// </summary>
-        public TimeSpan AverageBlockDuration { get { lock (SyncLock) return m_AverageBlockDuration; } }
+        public TimeSpan AverageBlockDuration { get { lock (_syncLock) return _averageBlockDuration; } }
 
         /// <summary>
         /// Gets a value indicating whether all the durations of the blocks are equal.
         /// </summary>
-        public bool IsMonotonic { get { lock (SyncLock) return m_IsMonotonic; } }
+        public bool IsMonotonic { get { lock (_syncLock) return _isMonotonic; } }
 
         /// <summary>
         /// Gets the duration of the blocks. If the blocks are not monotonic returns zero.
         /// </summary>
-        public TimeSpan MonotonicDuration { get { lock (SyncLock) return m_MonotonicDuration; } }
+        public TimeSpan MonotonicDuration { get { lock (_syncLock) return _monotonicDuration; } }
 
         /// <summary>
         /// Gets the number of available playback blocks.
         /// </summary>
-        public int Count { get { lock (SyncLock) return m_Count; } }
+        public int Count { get { lock (_syncLock) return _count; } }
 
         /// <summary>
         /// Gets the usage percent from 0.0 to 1.0.
         /// </summary>
-        public double CapacityPercent { get { lock (SyncLock) return m_CapacityPercent; } }
+        public double CapacityPercent { get { lock (_syncLock) return _capacityPercent; } }
 
         /// <summary>
         /// Gets a value indicating whether the playback blocks are all allocated.
         /// </summary>
-        public bool IsFull { get { lock (SyncLock) return m_IsFull; } }
+        public bool IsFull { get { lock (_syncLock) return _isFull; } }
 
         #endregion
 
@@ -162,7 +167,7 @@
         /// <returns>The media block.</returns>
         public MediaBlock this[int index]
         {
-            get { lock (SyncLock) return PlaybackBlocks[index]; }
+            get { lock (_syncLock) return _playbackBlocks[index]; }
         }
 
         /// <summary>
@@ -177,10 +182,10 @@
         {
             get
             {
-                lock (SyncLock)
+                lock (_syncLock)
                 {
                     var index = IndexOf(positionTicks);
-                    return index >= 0 ? PlaybackBlocks[index] : null;
+                    return index >= 0 ? _playbackBlocks[index] : null;
                 }
             }
         }
@@ -198,7 +203,7 @@
         /// <returns>The percent of the range.</returns>
         public double GetRangePercent(TimeSpan position)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 return RangeDuration.Ticks != 0 ?
                     Convert.ToDouble(position.Ticks - RangeStartTime.Ticks) / RangeDuration.Ticks : 0d;
@@ -213,7 +218,7 @@
         /// <returns>The previous (if any) and next (if any) blocks.</returns>
         public MediaBlock[] Neighbors(MediaBlock current)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 var result = new MediaBlock[3];
                 if (current == null) return result;
@@ -234,7 +239,7 @@
         /// <returns>The previous (if any) and next (if any) blocks.</returns>
         public MediaBlock[] Neighbors(TimeSpan position)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 var current = this[position.Ticks];
                 return Neighbors(current);
@@ -251,7 +256,7 @@
         {
             if (current == null) return null;
 
-            lock (SyncLock)
+            lock (_syncLock)
                 return current.Next;
         }
 
@@ -263,7 +268,7 @@
         public MediaBlock ContinuousNext(MediaBlock current)
         {
             if (current == null) return null;
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 // capture the next frame
                 var next = current.Next;
@@ -292,7 +297,7 @@
         {
             if (current == null) return null;
 
-            lock (SyncLock)
+            lock (_syncLock)
                 return current.Previous;
         }
 
@@ -305,9 +310,9 @@
         /// </returns>
         public bool IsInRange(TimeSpan renderTime)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
-                if (PlaybackBlocks.Count == 0) return false;
+                if (_playbackBlocks.Count == 0) return false;
                 return renderTime.Ticks >= RangeStartTime.Ticks && renderTime.Ticks <= RangeEndTime.Ticks;
             }
         }
@@ -323,37 +328,37 @@
         /// <returns>The media block's index.</returns>
         public int IndexOf(long renderTimeTicks)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
-                if (LastLookupTimeTicks != TimeSpan.MinValue.Ticks && renderTimeTicks == LastLookupTimeTicks)
-                    return LastLookupIndex;
+                if (_lastLookupTimeTicks != TimeSpan.MinValue.Ticks && renderTimeTicks == _lastLookupTimeTicks)
+                    return _lastLookupIndex;
 
-                LastLookupTimeTicks = renderTimeTicks;
-                LastLookupIndex = PlaybackBlocks.Count > 0 && renderTimeTicks <= PlaybackBlocks[0].StartTime.Ticks ? 0 :
-                    PlaybackBlocks.StartIndexOf(LastLookupTimeTicks);
+                _lastLookupTimeTicks = renderTimeTicks;
+                _lastLookupIndex = _playbackBlocks.Count > 0 && renderTimeTicks <= _playbackBlocks[0].StartTime.Ticks ? 0 :
+                    _playbackBlocks.StartIndexOf(_lastLookupTimeTicks);
 
-                return LastLookupIndex;
+                return _lastLookupIndex;
             }
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
-                if (m_IsDisposed) return;
-                m_IsDisposed = true;
+                if (_isDisposed) return;
+                _isDisposed = true;
 
-                while (PoolBlocks.Count > 0)
+                while (_poolBlocks.Count > 0)
                 {
-                    var block = PoolBlocks.Dequeue();
+                    var block = _poolBlocks.Dequeue();
                     block.Dispose();
                 }
 
-                for (var i = PlaybackBlocks.Count - 1; i >= 0; i--)
+                for (var i = _playbackBlocks.Count - 1; i >= 0; i--)
                 {
-                    var block = PlaybackBlocks[i];
-                    PlaybackBlocks.RemoveAt(i);
+                    var block = _playbackBlocks[i];
+                    _playbackBlocks.RemoveAt(i);
                     block.Dispose();
                 }
 
@@ -373,43 +378,43 @@
         {
             if (source == null) return null;
 
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 try
                 {
                     // Check if we already have a block at the given time
                     if (IsInRange(source.StartTime) && source.HasValidStartTime)
                     {
-                        var repeatedBlock = PlaybackBlocks.FirstOrDefault(f => f.StartTime.Ticks == source.StartTime.Ticks);
+                        var repeatedBlock = _playbackBlocks.FirstOrDefault(f => f.StartTime.Ticks == source.StartTime.Ticks);
                         if (repeatedBlock != null)
                         {
-                            PlaybackBlocks.Remove(repeatedBlock);
-                            PoolBlocks.Enqueue(repeatedBlock);
+                            _playbackBlocks.Remove(repeatedBlock);
+                            _poolBlocks.Enqueue(repeatedBlock);
                         }
                     }
 
                     // if there are no available blocks, make room!
-                    if (PoolBlocks.Count <= 0)
+                    if (_poolBlocks.Count <= 0)
                     {
                         // Remove the first block from playback
-                        var firstBlock = PlaybackBlocks[0];
-                        PlaybackBlocks.RemoveAt(0);
-                        PoolBlocks.Enqueue(firstBlock);
+                        var firstBlock = _playbackBlocks[0];
+                        _playbackBlocks.RemoveAt(0);
+                        _poolBlocks.Enqueue(firstBlock);
                     }
 
                     // Get a block reference from the pool and convert it!
-                    var targetBlock = PoolBlocks.Dequeue();
-                    var lastBlock = PlaybackBlocks.Count > 0 ? PlaybackBlocks[PlaybackBlocks.Count - 1] : null;
+                    var targetBlock = _poolBlocks.Dequeue();
+                    var lastBlock = _playbackBlocks.Count > 0 ? _playbackBlocks[^1] : null;
 
-                    if (container.Convert(source, ref targetBlock, true, lastBlock) == false)
+                    if (!container.Convert(source, ref targetBlock, true, lastBlock))
                     {
                         // return the converted block to the pool
-                        PoolBlocks.Enqueue(targetBlock);
+                        _poolBlocks.Enqueue(targetBlock);
                         return null;
                     }
 
                     // Add the target block to the playback blocks
-                    PlaybackBlocks.Add(targetBlock);
+                    _playbackBlocks.Add(targetBlock);
 
                     // return the new target block
                     return targetBlock;
@@ -428,13 +433,13 @@
         /// </summary>
         internal void Clear()
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 // return all the blocks to the block pool
-                foreach (var block in PlaybackBlocks)
-                    PoolBlocks.Enqueue(block);
+                foreach (var block in _playbackBlocks)
+                    _poolBlocks.Enqueue(block);
 
-                PlaybackBlocks.Clear();
+                _playbackBlocks.Clear();
                 UpdateCollectionProperties();
             }
         }
@@ -445,10 +450,10 @@
         /// <returns>The formatted string.</returns>
         internal string Debug()
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
-                return $"{MediaType,-12} - CAP: {Capacity,10} | FRE: {PoolBlocks.Count,7} | " +
-                    $"USD: {PlaybackBlocks.Count,4} |  RNG: {RangeStartTime.Format(),8} to {RangeEndTime.Format().Trim()}";
+                return $"{MediaType,-12} - CAP: {Capacity,10} | FRE: {_poolBlocks.Count,7} | " +
+                    $"USD: {_playbackBlocks.Count,4} |  RNG: {RangeStartTime.Format(),8} to {RangeEndTime.Format().Trim()}";
             }
         }
 
@@ -461,7 +466,7 @@
         /// <returns>A discrete frame position.</returns>
         internal TimeSpan? GetSnapPosition(TimeSpan position)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 if (IsMonotonic == false)
                     return this[position.Ticks]?.StartTime;
@@ -495,7 +500,7 @@
         }
 
         /// <summary>
-        /// Updates the <see cref="PlaybackBlocks"/> collection properties.
+        /// Updates the <see cref="_playbackBlocks"/> collection properties.
         /// This method must be called whenever the collection is modified.
         /// The reason this exists is to avoid computing and iterating over these values every time they are read.
         /// </summary>
@@ -503,60 +508,60 @@
         private void UpdateCollectionProperties()
         {
             // Update the playback blocks sorting
-            if (PlaybackBlocks.Count > 0)
+            if (_playbackBlocks.Count > 0)
             {
-                var maxBlockIndex = PlaybackBlocks.Count - 1;
+                var maxBlockIndex = _playbackBlocks.Count - 1;
 
                 // Perform the sorting and assignment of Previous and Next blocks
-                PlaybackBlocks.Sort();
-                PlaybackBlocks[0].Index = 0;
-                PlaybackBlocks[0].Previous = null;
-                PlaybackBlocks[0].Next = maxBlockIndex > 0 ? PlaybackBlocks[1] : null;
+                _playbackBlocks.Sort();
+                _playbackBlocks[0].Index = 0;
+                _playbackBlocks[0].Previous = null;
+                _playbackBlocks[0].Next = maxBlockIndex > 0 ? _playbackBlocks[1] : null;
 
                 for (var blockIndex = 1; blockIndex <= maxBlockIndex; blockIndex++)
                 {
-                    PlaybackBlocks[blockIndex].Index = blockIndex;
-                    PlaybackBlocks[blockIndex].Previous = PlaybackBlocks[blockIndex - 1];
-                    PlaybackBlocks[blockIndex].Next = blockIndex + 1 <= maxBlockIndex ? PlaybackBlocks[blockIndex + 1] : null;
+                    _playbackBlocks[blockIndex].Index = blockIndex;
+                    _playbackBlocks[blockIndex].Previous = _playbackBlocks[blockIndex - 1];
+                    _playbackBlocks[blockIndex].Next = blockIndex + 1 <= maxBlockIndex ? _playbackBlocks[blockIndex + 1] : null;
                 }
             }
 
-            LastLookupIndex = -1;
-            LastLookupTimeTicks = TimeSpan.MinValue.Ticks;
+            _lastLookupIndex = -1;
+            _lastLookupTimeTicks = TimeSpan.MinValue.Ticks;
 
-            m_Count = PlaybackBlocks.Count;
-            m_RangeStartTime = PlaybackBlocks.Count == 0 ? TimeSpan.Zero : PlaybackBlocks[0].StartTime;
-            m_RangeEndTime = PlaybackBlocks.Count == 0 ? TimeSpan.Zero : PlaybackBlocks[PlaybackBlocks.Count - 1].EndTime;
-            m_RangeDuration = TimeSpan.FromTicks(RangeEndTime.Ticks - RangeStartTime.Ticks);
-            m_RangeMidTime = TimeSpan.FromTicks(m_RangeStartTime.Ticks + (m_RangeDuration.Ticks / 2));
-            m_CapacityPercent = Convert.ToDouble(m_Count) / Capacity;
-            m_IsFull = m_Count >= Capacity;
-            m_RangeBitRate = m_RangeDuration.TotalSeconds <= 0 || m_Count <= 1 ? 0 :
-                Convert.ToInt64(8d * PlaybackBlocks.Sum(m => m.CompressedSize) / m_RangeDuration.TotalSeconds);
+            _count = _playbackBlocks.Count;
+            _rangeStartTime = _playbackBlocks.Count == 0 ? TimeSpan.Zero : _playbackBlocks[0].StartTime;
+            _rangeEndTime = _playbackBlocks.Count == 0 ? TimeSpan.Zero : _playbackBlocks[^1].EndTime;
+            _rangeDuration = TimeSpan.FromTicks(RangeEndTime.Ticks - RangeStartTime.Ticks);
+            _rangeMidTime = TimeSpan.FromTicks(_rangeStartTime.Ticks + (_rangeDuration.Ticks / 2));
+            _capacityPercent = Convert.ToDouble(_count) / Capacity;
+            _isFull = _count >= Capacity;
+            _rangeBitRate = _rangeDuration.TotalSeconds <= 0 || _count <= 1 ? 0 :
+                Convert.ToInt64(8d * _playbackBlocks.Sum(m => m.CompressedSize) / _rangeDuration.TotalSeconds);
 
             // don't compute an average if we don't have blocks
-            if (m_Count <= 0)
+            if (_count <= 0)
             {
-                m_AverageBlockDuration = default;
+                _averageBlockDuration = TimeSpan.Zero;
                 return;
             }
 
             // Don't compute if we've already determined that it's non-monotonic
-            if (IsNonMonotonic)
+            if (_isNonMonotonic)
             {
-                m_AverageBlockDuration = TimeSpan.FromTicks(
-                    Convert.ToInt64(PlaybackBlocks.Average(b => Convert.ToDouble(b.Duration.Ticks))));
+                _averageBlockDuration = TimeSpan.FromTicks(
+                    Convert.ToInt64(_playbackBlocks.Average(b => Convert.ToDouble(b.Duration.Ticks))));
 
                 return;
             }
 
             // Monotonic verification
-            var lastBlockDuration = PlaybackBlocks[m_Count - 1].Duration;
-            IsNonMonotonic = PlaybackBlocks.Any(b => b.Duration.Ticks != lastBlockDuration.Ticks);
-            m_IsMonotonic = !IsNonMonotonic;
-            m_MonotonicDuration = m_IsMonotonic ? lastBlockDuration : default;
-            m_AverageBlockDuration = m_IsMonotonic ? lastBlockDuration : TimeSpan.FromTicks(
-                Convert.ToInt64(PlaybackBlocks.Average(b => Convert.ToDouble(b.Duration.Ticks))));
+            var lastBlockDuration = _playbackBlocks[^1].Duration;
+            _isNonMonotonic = _playbackBlocks.Any(b => b.Duration.Ticks != lastBlockDuration.Ticks);
+            _isMonotonic = !_isNonMonotonic;
+            _monotonicDuration = _isMonotonic ? lastBlockDuration : TimeSpan.Zero;
+            _averageBlockDuration = _isMonotonic ? lastBlockDuration : TimeSpan.FromTicks(
+                Convert.ToInt64(_playbackBlocks.Average(b => Convert.ToDouble(b.Duration.Ticks))));
         }
 
         #endregion

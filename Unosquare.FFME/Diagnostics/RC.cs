@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Diagnostics
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Diagnostics
 {
     using FFmpeg.AutoGen;
     using System;
@@ -15,7 +17,7 @@
         /// <summary>
         /// The synchronization lock.
         /// </summary>
-        private static readonly object SyncLock = new();
+        private static readonly Lock SyncLock = new();
 
         /// <summary>
         /// The current reference counter instance.
@@ -25,7 +27,7 @@
         /// <summary>
         /// The instances.
         /// </summary>
-        private readonly Dictionary<IntPtr, ReferenceEntry> Instances = new();
+        private readonly Dictionary<IntPtr, ReferenceEntry> Instances = [];
 
         /// <summary>
         /// The types of tracked unmanaged types.

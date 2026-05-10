@@ -33,18 +33,18 @@
         public TimeSpan Duration;
 
         /// <inheritdoc />
-        public bool Equals(PacketBufferState other) =>
-                    Length == other.Length &&
-                    Count == other.Count &&
-                    CountThreshold == other.CountThreshold &&
-                    HasEnoughPackets == other.HasEnoughPackets;
+        public readonly bool Equals(PacketBufferState other) =>
+            Length == other.Length &&
+            Count == other.Count &&
+            CountThreshold == other.CountThreshold &&
+            HasEnoughPackets == other.HasEnoughPackets;
 
         /// <inheritdoc />
-        public override bool Equals(object obj) =>
+        public override readonly bool Equals(object obj) =>
             obj is PacketBufferState state && Equals(state);
 
         /// <inheritdoc />
-        public override int GetHashCode() =>
+        public override readonly int GetHashCode() =>
             throw new NotSupportedException($"{nameof(PacketBufferState)} does not support hashing.");
     }
 }

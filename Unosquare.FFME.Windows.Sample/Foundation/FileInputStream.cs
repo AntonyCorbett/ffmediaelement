@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Windows.Sample.Foundation;
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Windows.Sample.Foundation;
 
 using Common;
 using FFmpeg.AutoGen;
@@ -14,7 +16,7 @@ using System.Runtime.InteropServices;
 public sealed unsafe class FileInputStream : IMediaInputStream
 {
     private readonly FileStream BackingStream;
-    private readonly object ReadLock = new();
+    private readonly Lock ReadLock = new();
     private readonly byte[] ReadBuffer;
 
     /// <summary>

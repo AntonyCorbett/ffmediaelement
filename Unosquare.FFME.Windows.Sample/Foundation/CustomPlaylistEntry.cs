@@ -12,7 +12,7 @@
     /// <seealso cref="PlaylistEntry" />
     public sealed class CustomPlaylistEntry : PlaylistEntry
     {
-        private static readonly Dictionary<string, string> PropertyMap = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> PropertyMap = new()
         {
             { nameof(Thumbnail), "ffme-thumbnail" },
             { nameof(Format), "info-format" },

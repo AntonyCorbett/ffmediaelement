@@ -161,8 +161,7 @@
         {
             get
             {
-                if (m_MediaElement == null)
-                    m_MediaElement = (Application.Current.MainWindow as MainWindow)?.Media;
+                m_MediaElement ??= (Application.Current.MainWindow as MainWindow)?.Media;
 
                 return m_MediaElement;
             }

@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Container
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Container
 {
     using Common;
     using Diagnostics;
@@ -21,7 +23,7 @@
         /// <summary>
         /// Related to issue 94, looks like FFmpeg requires exclusive access when calling avcodec_open2().
         /// </summary>
-        private static readonly object CodecLock = new();
+        private static readonly Lock CodecLock = new();
 
         /// <summary>
         /// The logging handler.

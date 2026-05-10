@@ -14,7 +14,7 @@
     {
         #region State Variables
 
-        private static readonly object DevicesEnumLock = new object();
+        private static readonly Lock DevicesEnumLock = new();
         private readonly AutoResetEvent DriverCallbackEvent = new AutoResetEvent(false);
 
         private IntPtr DeviceHandle;

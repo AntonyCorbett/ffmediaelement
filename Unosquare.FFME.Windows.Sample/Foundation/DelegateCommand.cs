@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Windows.Sample.Foundation
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Windows.Sample.Foundation
 {
     using System;
     using System.Diagnostics;
@@ -15,7 +17,7 @@
     {
         #region Property backing fields
 
-        private readonly object SyncLock = new object();
+        private readonly Lock SyncLock = new();
         private readonly Func<object, bool> m_CanExecute;
         private readonly Action<object> ExecuteAction;
         private bool m_IsExecuting;

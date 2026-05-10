@@ -48,7 +48,7 @@
         /// <summary>
         /// Gets the extended attributes.
         /// </summary>
-        public PlaylistEntryAttributeDictionary Attributes { get; } = new PlaylistEntryAttributeDictionary();
+        public PlaylistEntryAttributeDictionary Attributes { get; } = [];
 
         /// <summary>
         /// Checks if a property already matches a desired value.  Sets the property and

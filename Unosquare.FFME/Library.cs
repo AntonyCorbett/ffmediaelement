@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME;
+﻿using System.Threading;
+
+namespace Unosquare.FFME;
 
 using Common;
 using Container;
@@ -18,7 +20,7 @@ internal static class FFmpegLibrary
     private static readonly string NotInitializedErrorMessage =
         $"{nameof(FFmpeg)} library not initialized. Set the {nameof(FFmpegDirectory)} and call {nameof(LoadFFmpeg)}";
 
-    private static readonly object SyncLock = new();
+    private static readonly Lock SyncLock = new();
     private static IReadOnlyList<string> m_InputFormatNames;
     private static IReadOnlyList<OptionMetadata> m_GlobalInputFormatOptions;
     private static IReadOnlyDictionary<string, IReadOnlyList<OptionMetadata>> m_InputFormatOptions;

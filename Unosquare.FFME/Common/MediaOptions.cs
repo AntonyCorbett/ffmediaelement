@@ -23,14 +23,16 @@
         /// Provides access to the global and per-stream decoder options
         /// See https://www.ffmpeg.org/ffmpeg-codecs.html#Codec-Options.
         /// </summary>
-        public DecoderOptions DecoderParams { get; } = new DecoderOptions();
+        public DecoderOptions DecoderParams { get; } = new();
 
         /// <summary>
         /// A dictionary of stream indexes and force decoder codec names.
         /// This is equivalent to the -codec Main option.
         /// See: https://www.ffmpeg.org/ffmpeg-all.html#Main-options (-codec option).
         /// </summary>
-        public Dictionary<int, string> DecoderCodec { get; } = new Dictionary<int, string>(32);
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
+        public Dictionary<int, string> DecoderCodec { get; } = new(32);
+#pragma warning restore IDE0028
 
         /// <summary>
         /// Gets or sets the amount of time to offset the subtitles by

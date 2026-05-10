@@ -29,7 +29,7 @@
         /// <returns>An awaitable task.</returns>
         private Task<bool> QueuePriorityCommand(PriorityCommandType command)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 if (IsDisposed || IsDisposing || !State.IsOpen || IsDirectCommandPending || IsPriorityCommandPending)
                     return Task.FromResult(false);
@@ -54,7 +54,7 @@
         /// </summary>
         private void ClearPriorityCommands()
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 PendingPriorityCommand = PriorityCommandType.None;
                 PriorityCommandCompleted.Set();

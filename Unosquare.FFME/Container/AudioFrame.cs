@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Container;
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Container;
 
 using Common;
 using FFmpeg.AutoGen;
@@ -14,8 +16,8 @@ internal sealed unsafe class AudioFrame : MediaFrame
 {
     #region Private Members
 
-    private readonly object DisposeLock = new();
-    private bool IsDisposed;
+    private readonly Lock _disposeLock = new();
+    private bool _isDisposed;
 
     #endregion
 
@@ -61,16 +63,16 @@ internal sealed unsafe class AudioFrame : MediaFrame
     /// <inheritdoc />
     public override void Dispose()
     {
-        lock (DisposeLock)
+        lock (_disposeLock)
         {
-            if (IsDisposed)
+            if (_isDisposed)
                 return;
 
             if (InternalPointer != IntPtr.Zero)
                 ReleaseAVFrame(Pointer);
 
             InternalPointer = IntPtr.Zero;
-            IsDisposed = true;
+            _isDisposed = true;
         }
     }
 

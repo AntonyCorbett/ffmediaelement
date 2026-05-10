@@ -1,4 +1,6 @@
-﻿namespace FFmpeg.AutoGen;
+﻿using System.Threading;
+
+namespace FFmpeg.AutoGen;
 
 using System;
 using System.Collections.Generic;
@@ -17,10 +19,14 @@ internal static unsafe class FFInterop
 {
     #region Private Declarations
 
-    private static readonly object FFmpegLogBufferSyncLock = new();
+    private static readonly Lock FFmpegLogBufferSyncLock = new();
+
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
     private static readonly List<string> FFmpegLogBuffer = new(1024);
-    private static readonly IReadOnlyDictionary<int, MediaLogMessageType> FFmpegLogLevels =
-        new Dictionary<int, MediaLogMessageType>
+#pragma warning restore IDE0028
+
+    private static readonly Dictionary<int, MediaLogMessageType> FFmpegLogLevels =
+        new()
         {
             { ffmpeg.AV_LOG_DEBUG, MediaLogMessageType.Debug },
             { ffmpeg.AV_LOG_ERROR, MediaLogMessageType.Error },
@@ -228,7 +234,7 @@ internal static unsafe class FFInterop
             if (FFmpegLogLevels.TryGetValue(level, out var type))
                 messageType = type;
 
-            if (!line.EndsWith("\n", StringComparison.Ordinal)) return;
+            if (!line.EndsWith('\n')) return;
             line = string.Join(string.Empty, FFmpegLogBuffer);
             line = line.TrimEnd();
             FFmpegLogBuffer.Clear();

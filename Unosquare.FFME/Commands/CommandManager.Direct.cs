@@ -86,7 +86,7 @@
                 return Task.FromResult(false);
             }
 
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 // Check the basic conditions for a direct command to execute
                 if (IsDirectCommandPending || command == DirectCommandType.None)

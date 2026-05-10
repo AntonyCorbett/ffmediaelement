@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Container
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Container
 {
     using Common;
     using Primitives;
@@ -17,20 +19,20 @@
         #region Private Declarations
 
         // Synchronization locks
-        private readonly object ComponentSyncLock = new();
-        private readonly object BufferSyncLock = new();
-        private volatile bool m_IsDisposed;
+        private readonly Lock _componentSyncLock = new();
+        private readonly Lock _bufferSyncLock = new();
+        private volatile bool _isDisposed;
 
-        private IReadOnlyList<MediaComponent> m_All = new List<MediaComponent>(0);
-        private IReadOnlyList<MediaType> m_MediaTypes = new List<MediaType>(0);
+        private IReadOnlyList<MediaComponent> _all = [];
+        private IReadOnlyList<MediaType> _mediaTypes = [];
 
-        private int m_Count;
-        private MediaType m_SeekableMediaType = MediaType.None;
-        private MediaComponent m_Seekable;
-        private AudioComponent m_Audio;
-        private VideoComponent m_Video;
-        private SubtitleComponent m_Subtitle;
-        private PacketBufferState BufferState;
+        private int _count;
+        private MediaType _seekableMediaType = MediaType.None;
+        private MediaComponent _seekable;
+        private AudioComponent _audio;
+        private VideoComponent _video;
+        private SubtitleComponent _subtitle;
+        private PacketBufferState _bufferState;
 
         #endregion
 
@@ -64,14 +66,14 @@
         /// <summary>
         /// Gets a value indicating whether this instance is disposed.
         /// </summary>
-        public bool IsDisposed => m_IsDisposed;
+        public bool IsDisposed => _isDisposed;
 
         /// <summary>
         /// Gets the registered component count.
         /// </summary>
         public int Count
         {
-            get { lock (ComponentSyncLock) return m_Count; }
+            get { lock (_componentSyncLock) return _count; }
         }
 
         /// <summary>
@@ -79,7 +81,7 @@
         /// </summary>
         public IReadOnlyList<MediaType> MediaTypes
         {
-            get { lock (ComponentSyncLock) return m_MediaTypes; }
+            get { lock (_componentSyncLock) return _mediaTypes; }
         }
 
         /// <summary>
@@ -87,7 +89,7 @@
         /// </summary>
         public IReadOnlyList<MediaComponent> All
         {
-            get { lock (ComponentSyncLock) return m_All; }
+            get { lock (_componentSyncLock) return _all; }
         }
 
         /// <summary>
@@ -95,7 +97,7 @@
         /// </summary>
         public MediaType SeekableMediaType
         {
-            get { lock (ComponentSyncLock) return m_SeekableMediaType; }
+            get { lock (_componentSyncLock) return _seekableMediaType; }
         }
 
         /// <summary>
@@ -104,7 +106,7 @@
         /// </summary>
         public MediaComponent Seekable
         {
-            get { lock (ComponentSyncLock) return m_Seekable; }
+            get { lock (_componentSyncLock) return _seekable; }
         }
 
         /// <summary>
@@ -113,7 +115,7 @@
         /// </summary>
         public VideoComponent Video
         {
-            get { lock (ComponentSyncLock) return m_Video; }
+            get { lock (_componentSyncLock) return _video; }
         }
 
         /// <summary>
@@ -122,7 +124,7 @@
         /// </summary>
         public AudioComponent Audio
         {
-            get { lock (ComponentSyncLock) return m_Audio; }
+            get { lock (_componentSyncLock) return _audio; }
         }
 
         /// <summary>
@@ -131,7 +133,7 @@
         /// </summary>
         public SubtitleComponent Subtitles
         {
-            get { lock (ComponentSyncLock) return m_Subtitle; }
+            get { lock (_componentSyncLock) return _subtitle; }
         }
 
         /// <summary>
@@ -139,7 +141,7 @@
         /// </summary>
         public bool HasVideo
         {
-            get { lock (ComponentSyncLock) return m_Video != null; }
+            get { lock (_componentSyncLock) return _video != null; }
         }
 
         /// <summary>
@@ -147,7 +149,7 @@
         /// </summary>
         public bool HasAudio
         {
-            get { lock (ComponentSyncLock) return m_Audio != null; }
+            get { lock (_componentSyncLock) return _audio != null; }
         }
 
         /// <summary>
@@ -155,7 +157,7 @@
         /// </summary>
         public bool HasSubtitles
         {
-            get { lock (ComponentSyncLock) return m_Subtitle != null; }
+            get { lock (_componentSyncLock) return _subtitle != null; }
         }
 
         /// <summary>
@@ -164,7 +166,7 @@
         /// </summary>
         public long BufferLength
         {
-            get { lock (BufferSyncLock) return BufferState.Length; }
+            get { lock (_bufferSyncLock) return _bufferState.Length; }
         }
 
         /// <summary>
@@ -172,7 +174,7 @@
         /// </summary>
         public int BufferCount
         {
-            get { lock (BufferSyncLock) return BufferState.Count; }
+            get { lock (_bufferSyncLock) return _bufferState.Count; }
         }
 
         /// <summary>
@@ -182,7 +184,7 @@
         /// </summary>
         public TimeSpan BufferDuration
         {
-            get { lock (BufferSyncLock) return BufferState.Duration; }
+            get { lock (_bufferSyncLock) return _bufferState.Duration; }
         }
 
         /// <summary>
@@ -190,7 +192,7 @@
         /// </summary>
         public int BufferCountThreshold
         {
-            get { lock (BufferSyncLock) return BufferState.CountThreshold; }
+            get { lock (_bufferSyncLock) return _bufferState.CountThreshold; }
         }
 
         /// <summary>
@@ -199,7 +201,7 @@
         /// </summary>
         public bool HasEnoughPackets
         {
-            get { lock (BufferSyncLock) return BufferState.HasEnoughPackets; }
+            get { lock (_bufferSyncLock) return _bufferState.HasEnoughPackets; }
         }
 
         /// <summary>
@@ -215,13 +217,13 @@
         {
             get
             {
-                lock (ComponentSyncLock)
+                lock (_componentSyncLock)
                 {
                     return mediaType switch
                     {
-                        MediaType.Audio => m_Audio,
-                        MediaType.Video => m_Video,
-                        MediaType.Subtitle => m_Subtitle,
+                        MediaType.Audio => _audio,
+                        MediaType.Video => _video,
+                        MediaType.Subtitle => _subtitle,
                         _ => null,
                     };
                 }
@@ -323,8 +325,8 @@
                 state.Duration = TimeSpan.MinValue;
 
             // Update the buffer state
-            lock (BufferSyncLock)
-                BufferState = state;
+            lock (_bufferSyncLock)
+                _bufferState = state;
 
             // Send the callback
             OnPacketQueueChanged?.Invoke(operation, packet, mediaType, state);
@@ -340,31 +342,30 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AddComponent(MediaComponent component)
         {
-            lock (ComponentSyncLock)
+            lock (_componentSyncLock)
             {
-                if (component == null)
-                    throw new ArgumentNullException(nameof(component));
+                ArgumentNullException.ThrowIfNull(component);
 
                 var errorMessage = $"A component for '{component.MediaType}' is already registered.";
                 switch (component.MediaType)
                 {
                     case MediaType.Audio:
-                        if (m_Audio != null)
+                        if (_audio != null)
                             throw new ArgumentException(errorMessage);
 
-                        m_Audio = component as AudioComponent;
+                        _audio = component as AudioComponent;
                         break;
                     case MediaType.Video:
-                        if (m_Video != null)
+                        if (_video != null)
                             throw new ArgumentException(errorMessage);
 
-                        m_Video = component as VideoComponent;
+                        _video = component as VideoComponent;
                         break;
                     case MediaType.Subtitle:
-                        if (m_Subtitle != null)
+                        if (_subtitle != null)
                             throw new ArgumentException(errorMessage);
 
-                        m_Subtitle = component as SubtitleComponent;
+                        _subtitle = component as SubtitleComponent;
                         break;
                     default:
                         throw new NotSupportedException($"Unable to register component with {nameof(MediaType)} '{component.MediaType}'");
@@ -382,23 +383,23 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void RemoveComponent(MediaType mediaType)
         {
-            lock (ComponentSyncLock)
+            lock (_componentSyncLock)
             {
                 var component = default(MediaComponent);
                 if (mediaType == MediaType.Audio)
                 {
-                    component = m_Audio;
-                    m_Audio = null;
+                    component = _audio;
+                    _audio = null;
                 }
                 else if (mediaType == MediaType.Video)
                 {
-                    component = m_Video;
-                    m_Video = null;
+                    component = _video;
+                    _video = null;
                 }
                 else if (mediaType == MediaType.Subtitle)
                 {
-                    component = m_Subtitle;
-                    m_Subtitle = null;
+                    component = _subtitle;
+                    _subtitle = null;
                 }
 
                 component?.Dispose();
@@ -417,63 +418,63 @@
 
             // assign allMediaTypes. IMPORTANT: Order matters because this
             // establishes the priority in which playback measures are computed
-            if (m_Video != null)
+            if (_video != null)
             {
-                allComponents.Add(m_Video);
+                allComponents.Add(_video);
                 allMediaTypes.Add(MediaType.Video);
             }
 
-            if (m_Audio != null)
+            if (_audio != null)
             {
-                allComponents.Add(m_Audio);
+                allComponents.Add(_audio);
                 allMediaTypes.Add(MediaType.Audio);
             }
 
-            if (m_Subtitle != null)
+            if (_subtitle != null)
             {
-                allComponents.Add(m_Subtitle);
+                allComponents.Add(_subtitle);
                 allMediaTypes.Add(MediaType.Subtitle);
             }
 
-            m_All = allComponents;
-            m_MediaTypes = allMediaTypes;
-            m_Count = allComponents.Count;
+            _all = allComponents;
+            _mediaTypes = allMediaTypes;
+            _count = allComponents.Count;
 
             // Try for the main component to be the video (if it's not stuff like audio album art, that is)
-            if (m_Video != null && m_Audio != null && !m_Video.IsStillPictures)
+            if (_video != null && _audio != null && !_video.IsStillPictures)
             {
-                m_Seekable = m_Video;
-                m_SeekableMediaType = MediaType.Video;
+                _seekable = _video;
+                _seekableMediaType = MediaType.Video;
                 return;
             }
 
             // If it was not video, then it has to be audio (if it has audio)
-            if (m_Audio != null)
+            if (_audio != null)
             {
-                m_Seekable = m_Audio;
-                m_SeekableMediaType = MediaType.Audio;
+                _seekable = _audio;
+                _seekableMediaType = MediaType.Audio;
                 return;
             }
 
             // Set it to video even if it's attached pic stuff
-            if (m_Video != null)
+            if (_video != null)
             {
-                m_Seekable = m_Video;
-                m_SeekableMediaType = MediaType.Video;
+                _seekable = _video;
+                _seekableMediaType = MediaType.Video;
                 return;
             }
 
             // As a last resort, set the main component to be the subtitles
-            if (m_Subtitle != null)
+            if (_subtitle != null)
             {
-                m_Seekable = m_Subtitle;
-                m_SeekableMediaType = MediaType.Subtitle;
+                _seekable = _subtitle;
+                _seekableMediaType = MediaType.Subtitle;
                 return;
             }
 
             // We should never really hit this line
-            m_Seekable = null;
-            m_SeekableMediaType = MediaType.None;
+            _seekable = null;
+            _seekableMediaType = MediaType.None;
         }
 
         /// <summary>
@@ -482,13 +483,13 @@
         /// <param name="alsoManaged"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         private void Dispose(bool alsoManaged)
         {
-            lock (ComponentSyncLock)
+            lock (_componentSyncLock)
             {
                 if (IsDisposed || alsoManaged == false)
                     return;
 
-                m_IsDisposed = true;
-                foreach (var mediaType in m_MediaTypes)
+                _isDisposed = true;
+                foreach (var mediaType in _mediaTypes)
                     RemoveComponent(mediaType);
             }
         }

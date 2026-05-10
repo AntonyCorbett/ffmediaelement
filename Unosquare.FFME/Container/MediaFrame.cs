@@ -133,9 +133,8 @@
         /// <inheritdoc />
         public int CompareTo(MediaFrame other)
         {
-            if (other is null)
-                throw new ArgumentNullException(nameof(other));
-
+            ArgumentNullException.ThrowIfNull(other);
+            
             return StartTime.Ticks.CompareTo(other.StartTime.Ticks);
         }
 
@@ -185,7 +184,7 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static AVSubtitle* CreateAVSubtitle()
         {
-            return (AVSubtitle*)ffmpeg.av_malloc((ulong)Marshal.SizeOf(typeof(AVSubtitle)));
+            return (AVSubtitle*)ffmpeg.av_malloc((ulong)Marshal.SizeOf<AVSubtitle>());
         }
 
         /// <summary>

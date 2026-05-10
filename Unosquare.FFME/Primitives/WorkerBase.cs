@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 /// <summary>
 /// Base class for background workers. Each worker runs its own dedicated
-/// background Thread — no thread-pool dependency for the core loop.
+/// background Thread - no thread-pool dependency for the core loop.
 /// Pause/resume use a SemaphoreSlim gate; stop uses CancellationTokenSource.
 /// A ManualResetEventSlim lets other workers signal an early wakeup.
 /// </summary>
@@ -18,7 +18,7 @@ internal abstract class WorkerBase : IWorker
     /// </summary>
     protected readonly SemaphoreSlim RunGate = new(0, 1);
 
-    private CancellationTokenSource _stopCts = new();
+    private readonly CancellationTokenSource _stopCts = new();
     private volatile CancellationTokenSource _cycleCts = new();
     private readonly ManualResetEventSlim _wakeSignal = new(false);
 
@@ -93,7 +93,7 @@ internal abstract class WorkerBase : IWorker
 
         Interrupt();
         _wakeSignal.Set(); // unblock any cycle delay
-        _stopCts.Cancel();
+        await _stopCts.CancelAsync();
 
         try { await _loopDone.Task.ConfigureAwait(false); }
         catch { }

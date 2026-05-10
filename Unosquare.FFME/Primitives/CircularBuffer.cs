@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Primitives
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Primitives
 {
     using System;
     using System.Runtime.InteropServices;
@@ -16,7 +18,7 @@
         /// <summary>
         /// The locking object to perform synchronization.
         /// </summary>
-        private readonly object SyncLock = new object();
+        private readonly Lock SyncLock = new();
 
         /// <summary>
         /// The unmanaged buffer.

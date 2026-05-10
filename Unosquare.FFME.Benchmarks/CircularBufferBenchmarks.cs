@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 /// or copy speed are audible as glitches.
 /// </summary>
 [MemoryDiagnoser]
-public class CircularBufferBenchmarks : IDisposable
+public sealed class CircularBufferBenchmarks : IDisposable
 {
     private const int BufferSize = 64 * 1024; // 64 KB, typical audio buffer
     private const int ChunkSize = 4 * 1024;   // 4 KB write/read per operation

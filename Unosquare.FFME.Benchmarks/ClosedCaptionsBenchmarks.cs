@@ -31,19 +31,19 @@ public class ClosedCaptionsBenchmarks
     ];
 
     [Benchmark(Description = "Parse single packet (text)")]
-    public CaptionsPacketType ParseText() =>
+    public static CaptionsPacketType ParseText() =>
         new ClosedCaptionPacket(Timestamp, 0xFC, 0x48, 0x69).PacketType;
 
     [Benchmark(Description = "Parse single packet (control)")]
-    public CaptionsPacketType ParseControl() =>
+    public static CaptionsPacketType ParseControl() =>
         new ClosedCaptionPacket(Timestamp, 0xFC, 0x14, 0x20).PacketType;
 
     [Benchmark(Description = "Parse single packet (null pad)")]
-    public CaptionsPacketType ParseNullPad() =>
+    public static CaptionsPacketType ParseNullPad() =>
         new ClosedCaptionPacket(Timestamp, 0xFC, 0x00, 0x00).PacketType;
 
     [Benchmark(Description = "Parse all sample variants (8 packets)")]
-    public int ParseAllVariants()
+    public static int ParseAllVariants()
     {
         var count = 0;
         foreach (var (h, d0, d1) in Samples)

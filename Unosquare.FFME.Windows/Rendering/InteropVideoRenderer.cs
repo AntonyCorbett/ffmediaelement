@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Rendering
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Rendering
 {
     using System;
     using System.IO.MemoryMappedFiles;
@@ -67,7 +69,7 @@
 
         private sealed class InteropBuffer : IDisposable
         {
-            private readonly object SyncLock = new();
+            private readonly Lock SyncLock = new();
             private readonly InteropVideoRenderer Parent;
 
             private MemoryMappedFile BackBufferFile;

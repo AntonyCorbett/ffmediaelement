@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Rendering
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Rendering
 {
     using ClosedCaptions;
     using Container;
@@ -73,7 +75,7 @@
         /// Prevents Writing and resetting at the same time, causing the keys to become
         /// invalid when processing packets.
         /// </summary>
-        private readonly object _syncLock = new();
+        private readonly Lock _syncLock = new();
 
         private int _cursorColumnIndex;
         private int _cursorRowIndex = DefaultBaseRowIndex;
@@ -88,12 +90,20 @@
         public ClosedCaptionsBuffer()
         {
             for (var channel = 1; channel <= 4; channel++)
-                _channelPacketBuffer[(CaptionsChannel)channel] = new Dictionary<long, ClosedCaptionPacket>(MaxBufferLength / 4);
+            {
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
+                _channelPacketBuffer[(CaptionsChannel)channel] =
+                    new Dictionary<long, ClosedCaptionPacket>(MaxBufferLength / 4);
+#pragma warning restore IDE0028
+            }
 
             // Instantiate the state buffer
             for (var rowIndex = 0; rowIndex < RowCount; rowIndex++)
             {
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
                 State[rowIndex] = new Dictionary<int, ClosedCaptionsCell>(ColumnCount);
+#pragma warning restore IDE0028
+
                 for (var columnIndex = 0; columnIndex < ColumnCount; columnIndex++)
                 {
                     State[rowIndex][columnIndex] = new ClosedCaptionsCell(rowIndex, columnIndex);
@@ -146,7 +156,9 @@
         /// <summary>
         /// Provides access to the state of each of the character cells in the grid.
         /// </summary>
-        public Dictionary<int, Dictionary<int, ClosedCaptionsCell>> State { get; } = new Dictionary<int, Dictionary<int, ClosedCaptionsCell>>(RowCount);
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
+        public Dictionary<int, Dictionary<int, ClosedCaptionsCell>> State { get; } = new(RowCount);
+#pragma warning restore IDE0028
 
         /// <summary>
         /// Gets the index of the scroll base row.

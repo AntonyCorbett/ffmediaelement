@@ -56,7 +56,7 @@
         public uint MidiSongPtrPos;
 
         /// <inheritdoc />
-        public bool Equals(MmTime other)
+        public readonly bool Equals(MmTime other)
         {
             return Type == other.Type &&
                 Ms == other.Ms &&
@@ -66,11 +66,11 @@
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj) =>
-            obj is MmTime && Equals((MmTime)obj);
+        public override readonly bool Equals(object obj) =>
+            obj is MmTime other && Equals(other);
 
         /// <inheritdoc />
-        public override int GetHashCode() =>
+        public override readonly int GetHashCode() =>
             throw new NotSupportedException($"{nameof(MmTime)} does not support hashing.");
     }
 }

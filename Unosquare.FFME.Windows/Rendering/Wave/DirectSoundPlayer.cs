@@ -24,7 +24,7 @@
         public static readonly Guid DefaultPlaybackDeviceId = new("DEF00000-9C6D-47ED-AAF1-4DDA8F2B5C03");
 
         // Device enumerations
-        private static readonly object DevicesEnumLock = new();
+        private static readonly Lock DevicesEnumLock = new();
         private static List<DirectSoundDeviceData> enumeratedDevices;
 
         // Instance fields
@@ -93,7 +93,10 @@
         {
             lock (DevicesEnumLock)
             {
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
                 enumeratedDevices = new List<DirectSoundDeviceData>(32);
+#pragma warning restore IDE0028
+
                 NativeMethods.DirectSoundEnumerateA(EnumerateDevicesCallback, IntPtr.Zero);
                 return enumeratedDevices;
             }
@@ -311,7 +314,7 @@
             _frameStartEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
             _frameEndEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
             _playbackEndedEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-            _playbackWaitHandles = new WaitHandle[] { _frameStartEventWaitHandle, _frameEndEventWaitHandle, _playbackEndedEventWaitHandle, _cancelEvent };
+            _playbackWaitHandles = [_frameStartEventWaitHandle, _frameEndEventWaitHandle, _playbackEndedEventWaitHandle, _cancelEvent];
 
             var notificationEvents = new[]
             {
@@ -444,17 +447,17 @@
             /// <summary>
             /// DirectSound default capture device GUID.
             /// </summary>
-            public static readonly Guid DefaultCaptureDeviceId = new Guid("DEF00001-9C6D-47ED-AAF1-4DDA8F2B5C03");
+            public static readonly Guid DefaultCaptureDeviceId = new("DEF00001-9C6D-47ED-AAF1-4DDA8F2B5C03");
 
             /// <summary>
             /// DirectSound default device for voice playback.
             /// </summary>
-            public static readonly Guid DefaultVoicePlaybackDeviceId = new Guid("DEF00002-9C6D-47ED-AAF1-4DDA8F2B5C03");
+            public static readonly Guid DefaultVoicePlaybackDeviceId = new("DEF00002-9C6D-47ED-AAF1-4DDA8F2B5C03");
 
             /// <summary>
             /// DirectSound default device for voice capture.
             /// </summary>
-            public static readonly Guid DefaultVoiceCaptureDeviceId = new Guid("DEF00003-9C6D-47ED-AAF1-4DDA8F2B5C03");
+            public static readonly Guid DefaultVoiceCaptureDeviceId = new("DEF00003-9C6D-47ED-AAF1-4DDA8F2B5C03");
 
             /// <summary>
             /// The DSEnumCallback function is an application-defined callback function that enumerates the DirectSound drivers.
@@ -620,11 +623,11 @@
                 public IntPtr NotifyHandle;
 
                 /// <inheritdoc />
-                public bool Equals(DirectSoundBufferPositionNotify other) =>
+                public readonly bool Equals(DirectSoundBufferPositionNotify other) =>
                     NotifyHandle == other.NotifyHandle;
 
                 /// <inheritdoc />
-                public override bool Equals(object obj)
+                public override readonly bool Equals(object obj)
                 {
                     if (obj is DirectSoundBufferPositionNotify other)
                         return Equals(other);
@@ -633,7 +636,7 @@
                 }
 
                 /// <inheritdoc />
-                public override int GetHashCode() =>
+                public override readonly int GetHashCode() =>
                     throw new NotSupportedException($"{nameof(DirectSoundBufferPositionNotify)} does not support hashing.");
             }
 

@@ -81,7 +81,7 @@
         /// <param name="w">The window state object.</param>
         public void Capture(Window w)
         {
-            if (w == null) throw new ArgumentNullException(nameof(w));
+            ArgumentNullException.ThrowIfNull(w);
 
             WindowState = w.WindowState;
             Top = w.Top;
@@ -97,7 +97,7 @@
         /// <param name="w">The w.</param>
         public void Apply(Window w)
         {
-            if (w == null) throw new ArgumentNullException(nameof(w));
+            ArgumentNullException.ThrowIfNull(w);
 
             w.WindowState = WindowState;
             w.Top = Top;

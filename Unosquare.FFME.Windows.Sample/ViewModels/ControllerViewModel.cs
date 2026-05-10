@@ -223,8 +223,7 @@
                 var m = App.ViewModel.MediaElement;
                 if (m == null) return;
 
-                var transform = m.RenderTransform as ScaleTransform;
-                if (transform == null)
+                if (m.RenderTransform is not ScaleTransform transform)
                 {
                     transform = new ScaleTransform(1, 1);
                     m.RenderTransformOrigin = new Point(0.5, 0.5);
@@ -382,7 +381,7 @@
                 var cIx = currentFilter.LastIndexOf(VideoEqContrast, StringComparison.Ordinal);
                 Root.CurrentMediaOptions.VideoFilter = cIx < 0
                     ? $"{currentFilter},{targetFilter}"
-                    : currentFilter.Substring(0, cIx) + targetFilter;
+                    : currentFilter[..cIx] + targetFilter;
             }
             finally
             {

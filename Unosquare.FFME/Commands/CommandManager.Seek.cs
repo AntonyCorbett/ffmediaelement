@@ -94,7 +94,7 @@
         /// <returns>An awaitable task.</returns>
         private Task<bool> QueueSeekCommand(TimeSpan seekTarget, SeekMode seekMode)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 if (IsDisposed || IsDisposing || !State.IsOpen || IsDirectCommandPending || IsPriorityCommandPending || !State.IsSeekable)
                     return Task.FromResult(false);
@@ -133,7 +133,7 @@
         /// </summary>
         private void ClearSeekCommands()
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 QueuedSeekOperation?.Dispose();
                 QueuedSeekOperation = null;
@@ -340,8 +340,8 @@
         /// <seealso cref="IDisposable" />
         private sealed class SeekOperation : IDisposable
         {
-            private readonly object SyncLock = new();
-            private bool IsDisposed;
+            private readonly Lock _syncLock = new();
+            private bool _isDisposed;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="SeekOperation"/> class.
@@ -374,9 +374,9 @@
             /// </summary>
             public void Wait()
             {
-                lock (SyncLock)
+                lock (_syncLock)
                 {
-                    if (IsDisposed) return;
+                    if (_isDisposed) return;
                 }
 
                 SeekCompleted.Wait();
@@ -391,15 +391,15 @@
             /// <param name="alsoManaged"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
             private void Dispose(bool alsoManaged)
             {
-                lock (SyncLock)
+                lock (_syncLock)
                 {
-                    if (IsDisposed) return;
+                    if (_isDisposed) return;
                     SeekCompleted.Set();
 
                     if (alsoManaged)
                         SeekCompleted.Dispose();
 
-                    IsDisposed = true;
+                    _isDisposed = true;
                 }
             }
         }

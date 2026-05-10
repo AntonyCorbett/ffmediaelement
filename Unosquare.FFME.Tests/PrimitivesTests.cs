@@ -178,7 +178,7 @@ public sealed class PrimitivesTests
     public void CircularBuffer_Skip_AdvancesReadPosition()
     {
         using var buf = new CircularBuffer(16);
-        Write(buf, new byte[] { 10, 20, 30 });
+        Write(buf, [10, 20, 30]);
         buf.Skip(2);
 
         var result = new byte[1];
@@ -198,7 +198,7 @@ public sealed class PrimitivesTests
     public void CircularBuffer_Rewind_GoesBackward()
     {
         using var buf = new CircularBuffer(16);
-        Write(buf, new byte[] { 1, 2, 3, 4, 5 });
+        Write(buf, [1, 2, 3, 4, 5]);
 
         var first = new byte[2];
         buf.Read(2, first, 0);
@@ -240,11 +240,11 @@ public sealed class PrimitivesTests
     public void CircularBuffer_WrapAround_ReturnsCorrectData()
     {
         using var buf = new CircularBuffer(8);
-        Write(buf, new byte[] { 1, 2, 3, 4, 5, 6 });
+        Write(buf, [1, 2, 3, 4, 5, 6]);
         var discard = new byte[6];
         buf.Read(6, discard, 0);
 
-        Write(buf, new byte[] { 7, 8, 9, 10, 11, 12 });
+        Write(buf, [7, 8, 9, 10, 11, 12]);
 
         var result = new byte[6];
         buf.Read(6, result, 0);
@@ -362,8 +362,7 @@ public sealed class PrimitivesTests
     [Fact]
     public void RealTimeClock_NegativeSpeedRatio_ClampedToZero()
     {
-        var clock = new RealTimeClock();
-        clock.SpeedRatio = -1;
+        var clock = new RealTimeClock { SpeedRatio = -1 };
         Assert.Equal(0d, clock.SpeedRatio);
     }
 
@@ -394,8 +393,7 @@ public sealed class PrimitivesTests
     [Fact]
     public void MediaTypeDictionary_SetKey_GetReturnsValue()
     {
-        var dict = new MediaTypeDictionary<string>();
-        dict[MediaType.Audio] = "test";
+        var dict = new MediaTypeDictionary<string> {[MediaType.Audio] = "test"};
         Assert.Equal("test", dict[MediaType.Audio]);
     }
 

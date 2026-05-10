@@ -432,22 +432,13 @@
         {
             lock (SyncLock)
             {
-                if (AudioDevice != null)
-                {
-                    AudioDevice.Dispose();
-                    AudioDevice = null;
-                }
-
-                if (AudioBuffer != null)
-                {
-                    AudioBuffer.Dispose();
-                    AudioBuffer = null;
-                }
-
-                if (AudioProcessor == null)
-                    return;
-
-                AudioProcessor.Dispose();
+                AudioDevice?.Dispose();
+                AudioDevice = null;
+                
+                AudioBuffer?.Dispose();
+                AudioBuffer = null;
+                
+                AudioProcessor?.Dispose();
                 AudioProcessor = null;
             }
         }

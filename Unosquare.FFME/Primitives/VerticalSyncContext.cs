@@ -17,9 +17,9 @@
     /// </summary>
     internal sealed class VerticalSyncContext : IDisposable
     {
-        private static readonly object NativeSyncLock = new object();
+        private static readonly Lock NativeSyncLock = new();
         private readonly Stopwatch RefreshStopwatch = Stopwatch.StartNew();
-        private readonly object SyncLock = new object();
+        private readonly Lock SyncLock = new();
         private bool IsDisposed;
         private DisplayDeviceInfo? DisplayDevice;
         private AdapterInfo CurrentAdapterInfo;

@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Windows.Sample.Foundation
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Windows.Sample.Foundation
 {
     using System;
     using System.Collections.Generic;
@@ -15,10 +17,9 @@
         /// <summary>
         /// Contains a list of subscriptions Subscriptions[Publisher][PropertyName].List of subscriber-action pairs.
         /// </summary>
-        private static readonly Dictionary<INotifyPropertyChanged, SubscriptionSet> Subscriptions
-            = new Dictionary<INotifyPropertyChanged, SubscriptionSet>();
+        private static readonly Dictionary<INotifyPropertyChanged, SubscriptionSet> Subscriptions = [];
 
-        private static readonly object SyncLock = new object();
+        private static readonly Lock SyncLock = new();
 
         /// <summary>
         /// Specifies a callback when properties change.
@@ -35,7 +36,7 @@
                 // Create the subscription set for the publisher if it does not exist.
                 if (Subscriptions.ContainsKey(publisher) == false)
                 {
-                    Subscriptions[publisher] = new SubscriptionSet();
+                    Subscriptions[publisher] = [];
 
                     // if it did not exist before, we need to bind to the
                     // PropertyChanged event of the publisher.
@@ -46,7 +47,7 @@
                 {
                     // Create the set of callback references for the publisher's property if it does not exist.
                     if (Subscriptions[publisher].ContainsKey(propertyName) == false)
-                        Subscriptions[publisher][propertyName] = new CallbackList();
+                        Subscriptions[publisher][propertyName] = [];
 
                     // Add the callback for the publisher's property changed
                     Subscriptions[publisher][propertyName].Add(callback);

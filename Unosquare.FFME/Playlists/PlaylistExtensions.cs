@@ -19,7 +19,7 @@
             where T : PlaylistEntry, new()
         {
             // Get the line of text removing the start of the line data
-            var headerAttributesText = line.Substring($"{PlaylistEntryCollection<T>.HeaderPrefix} ".Length).Trim();
+            var headerAttributesText = line[$"{PlaylistEntryCollection<T>.HeaderPrefix} ".Length..].Trim();
             var headerAttributes = headerAttributesText.ParseAttributes();
 
             foreach (var attribute in headerAttributes)
@@ -36,7 +36,7 @@
         public static void BeginExtendedInfoLine(this PlaylistEntry entry, string line)
         {
             // Get the line of text removing the start of the line data
-            var entryAttributesText = line.Substring($"{PlaylistEntryCollection.EntryPrefix}:".Length).Trim();
+            var entryAttributesText = line[$"{PlaylistEntryCollection.EntryPrefix}:".Length..].Trim();
             var entryAttributes = entryAttributesText.ParseAttributes();
 
             foreach (var attribute in entryAttributes)
@@ -124,11 +124,11 @@
 
             return new ParsedAttribute
             {
-                Key = HttpUtility.UrlDecode(headerData.Substring(attributeStartIndex, attributePivotIndex - attributeStartIndex)),
-                Value = HttpUtility.UrlDecode(headerData.Substring(attributePivotIndex + 2, attributeEndIndex - attributePivotIndex - 2)),
+                Key = HttpUtility.UrlDecode(headerData[attributeStartIndex..attributePivotIndex]),
+                Value = HttpUtility.UrlDecode(headerData[(attributePivotIndex + 2)..attributeEndIndex]),
                 EndIndex = attributeEndIndex,
                 StartIndex = attributeStartIndex,
-                Substring = headerData.Substring(attributeStartIndex, attributeEndIndex - attributeStartIndex + 1)
+                Substring = headerData[attributeStartIndex..(attributeEndIndex + 1)]
             };
         }
 

@@ -37,17 +37,17 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     /// <summary>
     /// The read synchronize root.
     /// </summary>
-    private readonly object ReadSyncRoot = new();
+    private readonly Lock ReadSyncRoot = new();
 
     /// <summary>
     /// The decode synchronize root.
     /// </summary>
-    private readonly object DecodeSyncRoot = new();
+    private readonly Lock DecodeSyncRoot = new();
 
     /// <summary>
     /// The convert synchronize root.
     /// </summary>
-    private readonly object ConvertSyncRoot = new();
+    private readonly Lock ConvertSyncRoot = new();
 
     /// <summary>
     /// The stream read interrupt start time.
@@ -145,8 +145,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     public MediaContainer(IMediaInputStream inputStream, ContainerConfiguration config, ILoggingHandler loggingHandler)
     {
         // Argument Validation
-        if (inputStream is null)
-            throw new ArgumentNullException(nameof(inputStream));
+        ArgumentNullException.ThrowIfNull(inputStream);
 
         // Validate the stream pseudo Url
         var mediaSourceUrl = inputStream.StreamUri?.ToString();
@@ -360,8 +359,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     {
         lock (ReadSyncRoot)
         {
-            if (IsDisposed)
-                throw new ObjectDisposedException(nameof(MediaContainer));
+            ObjectDisposedException.ThrowIf(IsDisposed, nameof(MediaContainer));
 
             if (InputContext == null) throw new InvalidOperationException(ExceptionMessageNoInputContext);
             if (IsOpen) throw new InvalidOperationException("The stream components are already open.");
@@ -385,8 +383,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     {
         lock (ReadSyncRoot)
         {
-            if (IsDisposed)
-                throw new ObjectDisposedException(nameof(MediaContainer));
+            ObjectDisposedException.ThrowIf(IsDisposed, nameof(MediaContainer));
 
             if (InputContext == null) throw new InvalidOperationException(ExceptionMessageNoInputContext);
 
@@ -410,8 +407,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     {
         lock (ReadSyncRoot)
         {
-            if (IsDisposed)
-                throw new ObjectDisposedException(nameof(MediaContainer));
+            ObjectDisposedException.ThrowIf(IsDisposed, nameof(MediaContainer));
 
             if (InputContext == null) throw new InvalidOperationException(ExceptionMessageNoInputContext);
 
@@ -435,8 +431,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     {
         lock (DecodeSyncRoot)
         {
-            if (IsDisposed)
-                throw new ObjectDisposedException(nameof(MediaContainer));
+            ObjectDisposedException.ThrowIf(IsDisposed, nameof(MediaContainer));
 
             if (InputContext == null) throw new InvalidOperationException(ExceptionMessageNoInputContext);
 
@@ -479,14 +474,12 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     {
         lock (ConvertSyncRoot)
         {
-            if (IsDisposed)
-                throw new ObjectDisposedException(nameof(MediaContainer));
+            ObjectDisposedException.ThrowIf(IsDisposed, nameof(MediaContainer));
 
             if (InputContext == null) throw new InvalidOperationException(ExceptionMessageNoInputContext);
 
             // Check the input parameters
-            if (input is null)
-                throw new ArgumentNullException(nameof(input));
+            ArgumentNullException.ThrowIfNull(input);
 
             if (input.IsStale)
             {

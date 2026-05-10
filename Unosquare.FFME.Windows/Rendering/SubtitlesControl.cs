@@ -96,7 +96,9 @@ namespace Unosquare.FFME.Rendering
         /// <summary>
         /// Holds the text blocks that together create an outlined subtitle text display.
         /// </summary>
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
         private readonly Dictionary<Block, TextBlock> _textBlocks = new(5);
+#pragma warning restore IDE0028
 
         /// <summary>
         /// The container for the outlined text blocks.
@@ -295,7 +297,7 @@ namespace Unosquare.FFME.Rendering
         /// Gets the default text foreground effect.
         /// </summary>
         /// <returns>A new instance of a foreground effect.</returns>
-        private static Effect GetDefaultTextForegroundEffect() => new DropShadowEffect
+        private static DropShadowEffect GetDefaultTextForegroundEffect() => new()
         {
             BlurRadius = 4,
             Color = Colors.Black,

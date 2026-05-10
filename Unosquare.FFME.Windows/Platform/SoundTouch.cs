@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Platform;
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Platform;
 
 using FFmpeg.AutoGen;
 using System;
@@ -26,7 +28,7 @@ internal sealed class SoundTouch : IDisposable
     #region Private Members
 
     private const string SoundTouchLibrary = "SoundTouch.dll";
-    private readonly object SyncRoot = new();
+    private readonly Lock SyncRoot = new();
     private bool IsDisposed;
     private IntPtr handle;
 

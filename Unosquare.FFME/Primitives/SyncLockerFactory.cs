@@ -171,7 +171,7 @@
             /// <returns>Success.</returns>
             private bool AcquireWriterLock(int timeoutMilliseconds, out IDisposable releaser)
             {
-                if (m_IsDisposed) throw new ObjectDisposedException(nameof(ISyncLocker));
+                ObjectDisposedException.ThrowIf(m_IsDisposed, nameof(ISyncLocker));
 
                 releaser = SyncLockReleaser.Empty;
                 if (Locker.IsReaderLockHeld)
@@ -198,7 +198,7 @@
             /// <returns>Success.</returns>
             private bool AcquireReaderLock(int timeoutMilliseconds, out IDisposable releaser)
             {
-                if (m_IsDisposed) throw new ObjectDisposedException(nameof(ISyncLocker));
+                ObjectDisposedException.ThrowIf(m_IsDisposed, nameof(ISyncLocker));
 
                 releaser = SyncLockReleaser.Empty;
                 Locker.AcquireReaderLock(timeoutMilliseconds);
@@ -216,7 +216,7 @@
         private sealed class SyncLockerSlim : ISyncLocker, ISyncReleasable
         {
             private volatile bool m_IsDisposed;
-            private readonly ReaderWriterLockSlim Locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+            private readonly ReaderWriterLockSlim Locker = new(LockRecursionPolicy.SupportsRecursion);
 
             /// <inheritdoc />
             public bool IsDisposed => m_IsDisposed;
@@ -273,7 +273,7 @@
             /// <returns>Success.</returns>
             private bool AcquireWriterLock(int timeoutMilliseconds, out IDisposable releaser)
             {
-                if (m_IsDisposed) throw new ObjectDisposedException(nameof(ISyncLocker));
+                ObjectDisposedException.ThrowIf(m_IsDisposed, nameof(ISyncLocker));
 
                 releaser = SyncLockReleaser.Empty;
                 bool result;
@@ -302,7 +302,7 @@
             /// <returns>Success.</returns>
             private bool AcquireReaderLock(int timeoutMilliseconds, out IDisposable releaser)
             {
-                if (m_IsDisposed) throw new ObjectDisposedException(nameof(ISyncLocker));
+                ObjectDisposedException.ThrowIf(m_IsDisposed, nameof(ISyncLocker));
 
                 releaser = SyncLockReleaser.Empty;
                 var result = Locker.TryEnterReadLock(timeoutMilliseconds);

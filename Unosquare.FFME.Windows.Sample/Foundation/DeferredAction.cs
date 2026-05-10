@@ -31,9 +31,7 @@
         /// <returns>The Deferred Action.</returns>
         public static DeferredAction Create(Action<DeferredAction> action)
         {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
+            ArgumentNullException.ThrowIfNull(action);
             return new DeferredAction(action);
         }
 

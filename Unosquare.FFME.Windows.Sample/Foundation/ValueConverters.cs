@@ -15,15 +15,12 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            switch (value)
+            return value switch
             {
-                case TimeSpan span:
-                    return span.TotalSeconds;
-                case Duration duration:
-                    return duration.HasTimeSpan ? duration.TimeSpan.TotalSeconds : 0d;
-                default:
-                    return 0d;
-            }
+                TimeSpan span => span.TotalSeconds,
+                Duration duration => duration.HasTimeSpan ? duration.TimeSpan.TotalSeconds : 0d,
+                _ => 0d
+            };
         }
 
         /// <inheritdoc />
@@ -248,7 +245,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
             if (value is bool?)
             {
                 var nullableBool = (bool?)value;
-                return nullableBool.HasValue ? !nullableBool.Value : true;
+                return !nullableBool.Value;
             }
 
             if (value.GetType() == typeof(bool))
@@ -267,7 +264,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
             if (value is bool?)
             {
                 var nullableBool = (bool?)value;
-                return nullableBool.HasValue ? !nullableBool.Value : true;
+                return !nullableBool.Value;
             }
 
             if (value.GetType() == typeof(bool))

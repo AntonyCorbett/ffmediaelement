@@ -140,17 +140,16 @@ internal sealed unsafe class SubtitleComponent : MediaComponent
         if (inputParts.Length != 10)
             return string.Empty;
 
-        var normalizedInput = inputParts[inputParts.Length - 1]
+        var normalizedInput = inputParts[^1]
             .ReplaceOrdinal("\\n", " ")
             .ReplaceOrdinal("\\N", "\r\n");
 
         var builder = new StringBuilder(normalizedInput.Length);
         var isInStyle = false;
-        char currentChar;
-
+        
         for (var i = 0; i < normalizedInput.Length; i++)
         {
-            currentChar = normalizedInput[i];
+            var currentChar = normalizedInput[i];
             if (currentChar == '{' && isInStyle == false)
             {
                 isInStyle = true;

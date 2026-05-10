@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Container
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Container
 {
     using FFmpeg.AutoGen;
     using System;
@@ -14,8 +16,11 @@
     {
         #region Private Declarations
 
-        private readonly List<MediaPacket> Packets = new List<MediaPacket>(2048);
-        private readonly object SyncLock = new object();
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
+        private readonly List<MediaPacket> Packets = new(2048);
+#pragma warning restore IDE0028
+
+        private readonly Lock SyncLock = new();
         private long m_BufferLength;
         private long m_Duration;
 

@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Container
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Container
 {
     using ClosedCaptions;
     using Common;
@@ -14,7 +16,7 @@
     {
         #region Private Members
 
-        private readonly object DisposeLock = new();
+        private readonly Lock DisposeLock = new();
         private bool IsDisposed;
 
         #endregion
@@ -95,7 +97,9 @@
         /// <summary>
         /// Gets the closed caption data collected from the frame in CEA-708/EAS-608 format.
         /// </summary>
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
         public IList<ClosedCaptionPacket> ClosedCaptions { get; } = new List<ClosedCaptionPacket>(128);
+#pragma warning restore IDE0028
 
         /// <summary>
         /// Gets the display picture number (frame number).

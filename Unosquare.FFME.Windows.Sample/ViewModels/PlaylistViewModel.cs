@@ -39,8 +39,8 @@
         public PlaylistViewModel(RootViewModel root)
             : base(root)
         {
-            if (root == null) throw new ArgumentNullException(nameof(root));
-
+            ArgumentNullException.ThrowIfNull(root);
+            
             // Set and create a thumbnails directory
             ThumbsDirectory = Path.Combine(root.AppDataDirectory, "Thumbnails");
             if (Directory.Exists(ThumbsDirectory) == false)
@@ -113,20 +113,17 @@
                 if (!SetProperty(ref m_PlaylistSearchString, value))
                     return;
 
-                if (SearchAction == null)
+                SearchAction ??= DeferredAction.Create(context =>
                 {
-                    SearchAction = DeferredAction.Create(context =>
-                    {
-                        var futureSearch = PlaylistSearchString ?? string.Empty;
-                        var currentSearch = FilterString ?? string.Empty;
+                    var futureSearch = PlaylistSearchString ?? string.Empty;
+                    var currentSearch = FilterString ?? string.Empty;
 
-                        if (currentSearch == futureSearch) return;
-                        if (futureSearch.Length < MinimumSearchLength && currentSearch.Length < MinimumSearchLength) return;
+                    if (currentSearch == futureSearch) return;
+                    if (futureSearch.Length < MinimumSearchLength && currentSearch.Length < MinimumSearchLength) return;
 
-                        EntriesView.Refresh();
-                        FilterString = new string(m_PlaylistSearchString.ToCharArray());
-                    });
-                }
+                    EntriesView.Refresh();
+                    FilterString = new string(m_PlaylistSearchString.ToCharArray());
+                });
 
                 SearchAction.Defer(SearchActionDelay);
             }

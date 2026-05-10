@@ -72,64 +72,64 @@
         /// <summary>
         /// Number of channels supported.
         /// </summary>
-        public int Channels => channels;
+        public readonly int Channels => channels;
 
         /// <summary>
         /// Whether playback rate control is supported.
         /// </summary>
-        public bool SupportsPlaybackRateControl => support.HasFlag(WaveOutSupport.PlaybackRate);
+        public readonly bool SupportsPlaybackRateControl => support.HasFlag(WaveOutSupport.PlaybackRate);
 
         /// <summary>
         /// Whether volume control is supported.
         /// </summary>
-        public bool SupportsVolumeControl => support.HasFlag(WaveOutSupport.Volume);
+        public readonly bool SupportsVolumeControl => support.HasFlag(WaveOutSupport.Volume);
 
         /// <summary>
         /// Gets a value indicating whether this device supports independent channel volume control.
         /// </summary>
-        public bool SupportsChannelVolumeControl => support.HasFlag(WaveOutSupport.LRVolume);
+        public readonly bool SupportsChannelVolumeControl => support.HasFlag(WaveOutSupport.LRVolume);
 
         /// <summary>
         /// Gets a value indicating whether this device supports pitch control.
         /// </summary>
-        public bool SupportsPitchControl => support.HasFlag(WaveOutSupport.Pitch);
+        public readonly bool SupportsPitchControl => support.HasFlag(WaveOutSupport.Pitch);
 
         /// <summary>
         /// Gets a value indicating whether the device returns sample-accurate position information.
         /// </summary>
-        public bool SupportsSampleAccuratePosition => support.HasFlag(WaveOutSupport.SampleAccurate);
+        public readonly bool SupportsSampleAccuratePosition => support.HasFlag(WaveOutSupport.SampleAccurate);
 
         /// <summary>
         /// Gets a value indicating whether the driver is synchronous and will block while playing a buffer.
         /// </summary>
-        public bool IsSynchronousOutput => support.HasFlag(WaveOutSupport.Sync);
+        public readonly bool IsSynchronousOutput => support.HasFlag(WaveOutSupport.Sync);
 
         /// <summary>
         /// The product name.
         /// </summary>
-        public string ProductName => productName;
+        public readonly string ProductName => productName;
 
         /// <summary>
         /// The device name Guid (if provided).
         /// </summary>
-        public Guid NameGuid => nameGuid;
+        public readonly Guid NameGuid => nameGuid;
 
         /// <summary>
         /// The product name Guid (if provided).
         /// </summary>
-        public Guid ProductGuid => productGuid;
+        public readonly Guid ProductGuid => productGuid;
 
         /// <summary>
         /// The manufacturer guid (if provided).
         /// </summary>
-        public Guid ManufacturerGuid => manufacturerGuid;
+        public readonly Guid ManufacturerGuid => manufacturerGuid;
 
         #endregion
 
         #region Methods
 
         /// <inheritdoc />
-        public bool Equals(LegacyAudioDeviceData other)
+        public readonly bool Equals(LegacyAudioDeviceData other)
         {
             return manufacturerGuid == other.manufacturerGuid &&
                 productGuid == other.productGuid &&
@@ -138,11 +138,11 @@
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj) =>
+        public override readonly bool Equals(object obj) =>
             obj is LegacyAudioDeviceData data && Equals(data);
 
         /// <inheritdoc />
-        public override int GetHashCode() =>
+        public override readonly int GetHashCode() =>
             throw new NotSupportedException($"{nameof(LegacyAudioDeviceData)} does not support hashing.");
 
         /// <summary>
@@ -150,7 +150,7 @@
         /// </summary>
         /// <param name="waveFormat">The SupportedWaveFormat.</param>
         /// <returns>true if supported.</returns>
-        internal bool SupportsWaveFormat(SupportedWaveFormat waveFormat) => (supportedFormats & waveFormat) == waveFormat;
+        internal readonly bool SupportsWaveFormat(SupportedWaveFormat waveFormat) => (supportedFormats & waveFormat) == waveFormat;
 
         #endregion
     }

@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Container
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Container
 {
     using FFmpeg.AutoGen;
     using System;
@@ -14,7 +16,7 @@
     {
         #region Private Members
 
-        private readonly object DisposeLock = new object();
+        private readonly Lock DisposeLock = new();
         private bool IsDisposed;
 
         #endregion
@@ -72,7 +74,9 @@
         /// <summary>
         /// Gets lines of text that the subtitle frame contains.
         /// </summary>
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
         public IList<string> Text { get; } = new List<string>(16);
+#pragma warning restore IDE0028
 
         /// <summary>
         /// Gets the type of the text.

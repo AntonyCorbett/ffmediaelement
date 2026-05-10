@@ -29,7 +29,7 @@ internal abstract class ElementHostBase<T> : FrameworkElement, IDisposable
         typeof(RoutedEventHandler),
         typeof(ElementHostBase<T>));
 
-    private readonly object UnloadLock = new();
+    private readonly Lock UnloadLock = new();
     private bool m_IsDisposed;
 
     /// <summary>

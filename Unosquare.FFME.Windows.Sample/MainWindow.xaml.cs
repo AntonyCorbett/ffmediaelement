@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Windows.Sample;
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Windows.Sample;
 
 using ClosedCaptions;
 using Common;
@@ -23,8 +25,8 @@ public partial class MainWindow : Window
     #region Fields
 
     private static readonly Key[] TogglePlayPauseKeys = [Key.Play, Key.MediaPlayPause, Key.Space];
-    private readonly object ScreenshotSyncLock = new();
-    private readonly object RecorderSyncLock = new();
+    private readonly Lock ScreenshotSyncLock = new();
+    private readonly Lock RecorderSyncLock = new();
     private TransportStreamRecorder StreamRecorder;
     private DateTime LastMouseMoveTime;
     private Point LastMousePosition;

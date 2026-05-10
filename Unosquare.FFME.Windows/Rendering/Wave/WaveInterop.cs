@@ -350,7 +350,7 @@
                 LegacyAudioException.Try(
                     NativeMethods.RetrieveDeviceCapabilities((IntPtr)deviceId,
                         out var waveOutCaps,
-                        Marshal.SizeOf(typeof(LegacyAudioDeviceData))),
+                        Marshal.SizeOf<LegacyAudioDeviceData>()),
                     nameof(NativeMethods.RetrieveDeviceCapabilities));
 
                 return waveOutCaps;

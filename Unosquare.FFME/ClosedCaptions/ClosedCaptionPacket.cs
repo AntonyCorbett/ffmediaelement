@@ -172,7 +172,7 @@
         };
 
         private static readonly CaptionsStyle[] UnderlineCaptionStyles =
-        {
+        [
             CaptionsStyle.BlueUnderline,
             CaptionsStyle.CyanUnderline,
             CaptionsStyle.GreenUnderline,
@@ -189,13 +189,13 @@
             CaptionsStyle.WhiteItalicsUnderline,
             CaptionsStyle.WhiteUnderline,
             CaptionsStyle.YellowUnderline
-        };
+        ];
 
         private static readonly CaptionsStyle[] ItalicsCaptionStyles =
-        {
+        [
             CaptionsStyle.WhiteItalics,
             CaptionsStyle.WhiteItalicsUnderline
-        };
+        ];
 
         #endregion
 
@@ -224,7 +224,7 @@
         /// <param name="d1">The d1.</param>
         internal ClosedCaptionPacket(TimeSpan timestamp, byte header, byte d0, byte d1)
         {
-            Data = new[] { header, d0, d1 };
+            Data = [header, d0, d1];
 
             D0 = DropParityBit(d0);
             D1 = DropParityBit(d1);
@@ -346,8 +346,7 @@
                         PreambleStyle = (CaptionsStyle)(D1 - 0x20);
                         IsItalics = ItalicsCaptionStyles.Contains(PreambleStyle);
                         IsUnderlined = UnderlineCaptionStyles.Contains(PreambleStyle);
-                        PreambleIndent = PreambleStyleIndents.ContainsKey(PreambleStyle) ?
-                            PreambleStyleIndents[PreambleStyle] : 0;
+                        PreambleIndent = PreambleStyleIndents.GetValueOrDefault(PreambleStyle, 0);
                         return;
                     }
 
@@ -371,21 +370,19 @@
                         // Page 109 of CEA-608 Document
                         if (D1 >= 0x40 && D1 <= 0x5F)
                         {
-                            PreambleRow = Base40PreambleRows.ContainsKey(D0) ? Base40PreambleRows[D0] : 11;
+                            PreambleRow = Base40PreambleRows.GetValueOrDefault(D0, 11);
                             PreambleStyle = (CaptionsStyle)(D1 - 0x20);
                             IsItalics = ItalicsCaptionStyles.Contains(PreambleStyle);
                             IsUnderlined = UnderlineCaptionStyles.Contains(PreambleStyle);
-                            PreambleIndent = PreambleStyleIndents.ContainsKey(PreambleStyle) ?
-                                PreambleStyleIndents[PreambleStyle] : 0;
+                            PreambleIndent = PreambleStyleIndents.GetValueOrDefault(PreambleStyle, 0);
                         }
                         else
                         {
-                            PreambleRow = Base60PreambleRows.ContainsKey(D0) ? Base60PreambleRows[D0] : 11;
+                            PreambleRow = Base60PreambleRows.GetValueOrDefault(D0, 11);
                             PreambleStyle = (CaptionsStyle)(D1 - 0x40);
                             IsItalics = ItalicsCaptionStyles.Contains(PreambleStyle);
                             IsUnderlined = UnderlineCaptionStyles.Contains(PreambleStyle);
-                            PreambleIndent = PreambleStyleIndents.ContainsKey(PreambleStyle) ?
-                                PreambleStyleIndents[PreambleStyle] : 0;
+                            PreambleIndent = PreambleStyleIndents.GetValueOrDefault(PreambleStyle, 0);
                         }
 
                         return;
@@ -707,7 +704,7 @@
         /// <inheritdoc />
         public int CompareTo(ClosedCaptionPacket other)
         {
-            if (other == null) throw new ArgumentNullException(nameof(other));
+            ArgumentNullException.ThrowIfNull(other);
             return Timestamp.Ticks.CompareTo(other.Timestamp.Ticks);
         }
 

@@ -164,8 +164,7 @@
             VideoDispatcher?.InvokeAsync(() =>
             {
                 var videoView = MediaElement.VideoView;
-                if (videoView != null)
-                    videoView.Source = null;
+                videoView?.Source = null;
             },
             DispatcherPriority.Background);
         }

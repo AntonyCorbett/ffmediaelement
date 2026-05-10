@@ -27,7 +27,7 @@
         /// <summary>
         /// Holds the materialized block cache for each media type.
         /// </summary>
-        internal MediaTypeDictionary<MediaBlockBuffer> Blocks { get; } = new MediaTypeDictionary<MediaBlockBuffer>();
+        internal MediaTypeDictionary<MediaBlockBuffer> Blocks { get; } = [];
 
         /// <summary>
         /// Gets the preloaded subtitle blocks.
@@ -42,12 +42,12 @@
         /// <summary>
         /// Holds the block renderers.
         /// </summary>
-        internal MediaTypeDictionary<IMediaRenderer> Renderers { get; } = new MediaTypeDictionary<IMediaRenderer>();
+        internal MediaTypeDictionary<IMediaRenderer> Renderers { get; } = [];
 
         /// <summary>
         /// Holds the last rendered StartTime for each of the media block types.
         /// </summary>
-        internal MediaTypeDictionary<TimeSpan> CurrentRenderStartTime { get; } = new MediaTypeDictionary<TimeSpan>();
+        internal MediaTypeDictionary<TimeSpan> CurrentRenderStartTime { get; } = [];
 
         /// <summary>
         /// Gets a value indicating whether the decoder worker is sync-buffering.

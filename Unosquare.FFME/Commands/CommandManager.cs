@@ -22,7 +22,7 @@ namespace Unosquare.FFME.Commands
     /// <seealso cref="ILoggingSource" />
     internal sealed partial class CommandManager : WorkerBase, IMediaWorker, ILoggingSource
     {
-        private readonly object SyncLock = new();
+        private readonly Lock _syncLock = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandManager"/> class.
@@ -86,7 +86,7 @@ namespace Unosquare.FFME.Commands
         /// <returns>An awaitable task which contains a boolean whether or not to resume media when completed.</returns>
         public Task<bool> CloseMediaAsync()
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 if (IsCloseInterruptPending)
                 {
@@ -220,7 +220,7 @@ namespace Unosquare.FFME.Commands
             while (true)
             {
                 SeekOperation seekOperation;
-                lock (SyncLock)
+                lock (_syncLock)
                 {
                     seekOperation = QueuedSeekOperation;
                     QueuedSeekOperation = null;
@@ -235,7 +235,7 @@ namespace Unosquare.FFME.Commands
             }
 
             // Handle the case when there is no more seeking needed.
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 if (IsSeeking && QueuedSeekOperation == null)
                 {
@@ -315,9 +315,7 @@ namespace Unosquare.FFME.Commands
             if (!Debugger.IsAttached) return;
             if (RC.Current.InstancesByLocation.Count <= 0) return;
 
-#pragma warning disable U2U1108
             var builder = new StringBuilder()
-#pragma warning restore U2U1108
                 .AppendLine("Unmanaged references are still alive. If there are no further media container instances to be disposed,")
                 .AppendLine("this is an indication that there is a memory leak. Otherwise, this message can be ignored.");
 

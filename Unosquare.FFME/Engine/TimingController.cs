@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Engine
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Engine
 {
     using Common;
     using Diagnostics;
@@ -13,9 +15,9 @@
     /// </summary>
     internal sealed class TimingController
     {
-        private readonly object SyncLock = new object();
-        private readonly MediaTypeDictionary<RealTimeClock> Clocks = new MediaTypeDictionary<RealTimeClock>();
-        private readonly MediaTypeDictionary<TimeSpan> Offsets = new MediaTypeDictionary<TimeSpan>();
+        private readonly Lock SyncLock = new();
+        private readonly MediaTypeDictionary<RealTimeClock> Clocks = [];
+        private readonly MediaTypeDictionary<TimeSpan> Offsets = [];
         private bool IsReady;
         private MediaType m_ReferenceType;
         private bool m_HasDisconnectedClocks;

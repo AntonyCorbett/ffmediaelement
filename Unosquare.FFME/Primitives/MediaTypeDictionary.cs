@@ -16,7 +16,7 @@
         /// Initializes a new instance of the <see cref="MediaTypeDictionary{TValue}"/> class.
         /// </summary>
         public MediaTypeDictionary()
-            : base(Enum.GetValues(typeof(MediaType)).Length)
+            : base(Enum.GetValues<MediaType>().Length)
         {
             // placeholder
         }

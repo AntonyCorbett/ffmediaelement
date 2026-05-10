@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Windows.Sample.Foundation
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Windows.Sample.Foundation
 {
     using Common;
     using Playlists;
@@ -12,7 +14,7 @@
     /// </summary>
     public class CustomPlaylistEntryCollection : PlaylistEntryCollection<CustomPlaylistEntry>
     {
-        private readonly object SyncRoot = new();
+        private readonly Lock SyncRoot = new();
         private readonly PlaylistViewModel ViewModel;
 
         /// <summary>
@@ -66,7 +68,7 @@
         /// <param name="info">The media information.</param>
         public void AddOrUpdateEntry(Uri mediaSource, MediaInfo info)
         {
-            if (info == null) throw new ArgumentNullException(nameof(info));
+            ArgumentNullException.ThrowIfNull(info);
 
             lock (SyncRoot)
             {
@@ -136,7 +138,7 @@
         /// <param name="bitmap">The bitmap.</param>
         public void AddOrUpdateEntryThumbnail(Uri mediaSource, BitmapDataBuffer bitmap)
         {
-            if (bitmap == null) throw new ArgumentNullException(nameof(bitmap));
+            ArgumentNullException.ThrowIfNull(bitmap);
 
             lock (SyncRoot)
             {
@@ -152,10 +154,8 @@
                     entry.Thumbnail = null;
                 }
 
-                using (var bmp = bitmap.CreateDrawingBitmap())
-                {
-                    entry.Thumbnail = ThumbnailGenerator.SnapThumbnail(bmp, ViewModel.ThumbsDirectory);
-                }
+                using var bmp = bitmap.CreateDrawingBitmap();
+                entry.Thumbnail = ThumbnailGenerator.SnapThumbnail(bmp, ViewModel.ThumbsDirectory);
             }
         }
 

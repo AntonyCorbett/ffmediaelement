@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Windows.Sample.Foundation
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Windows.Sample.Foundation
 {
     using Common;
     using FFmpeg.AutoGen;
@@ -8,7 +10,7 @@
     using System.IO;
 
     /// <summary>
-    /// An recorder that simply copies input packets into an output file.
+    /// A recorder that simply copies input packets into an output file.
     /// Loosely based on the ideas from
     /// https://github.com/FFmpeg/FFmpeg/blob/5252d594a155cdb0a0e2529961b999cda96f0fa5/doc/examples/remuxing.c#L80
     /// This example does not cover re-encoding. Only re-muxing packets into a file.
@@ -19,8 +21,12 @@
     /// </summary>
     internal sealed unsafe class TransportStreamRecorder
     {
-        private readonly object SyncLock = new object();
-        private readonly Dictionary<int, int> StreamMappings = new Dictionary<int, int>(3);
+        private readonly Lock SyncLock = new();
+
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
+        private readonly Dictionary<int, int> StreamMappings = new(3);
+#pragma warning restore IDE0028
+
         private readonly MediaElement Media;
         private readonly string FilePath;
         private AVFormatContext* OutputContext;

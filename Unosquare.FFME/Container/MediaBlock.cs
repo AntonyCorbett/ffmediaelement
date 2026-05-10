@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Container
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Container
 {
     using Common;
     using FFmpeg.AutoGen;
@@ -16,11 +18,11 @@
     internal abstract class MediaBlock
         : IComparable<MediaBlock>, IComparable<TimeSpan>, IComparable<long>, IEquatable<MediaBlock>, IDisposable
     {
-        private readonly object SyncLock = new();
-        private readonly ISyncLocker Locker = SyncLockerFactory.Create(useSlim: true);
-        private volatile bool m_IsDisposed;
-        private IntPtr m_Buffer = IntPtr.Zero;
-        private int m_BufferLength;
+        private readonly Lock _syncLock = new();
+        private readonly ISyncLocker _locker = SyncLockerFactory.Create(useSlim: true);
+        private volatile bool _isDisposed;
+        private IntPtr _buffer = IntPtr.Zero;
+        private int _bufferLength;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaBlock" /> class.
@@ -81,12 +83,12 @@
         /// <summary>
         /// Gets a pointer to the first byte of the unmanaged data buffer.
         /// </summary>
-        public IntPtr Buffer { get { lock (SyncLock) return m_Buffer; } }
+        public IntPtr Buffer { get { lock (_syncLock) return _buffer; } }
 
         /// <summary>
         /// Gets the length of the unmanaged buffer in bytes.
         /// </summary>
-        public int BufferLength { get { lock (SyncLock) return m_BufferLength; } }
+        public int BufferLength { get { lock (_syncLock) return _bufferLength; } }
 
         /// <summary>
         /// Gets a value indicating whether an unmanaged buffer has been allocated.
@@ -95,8 +97,8 @@
         {
             get
             {
-                lock (SyncLock)
-                    return !IsDisposed && m_Buffer != IntPtr.Zero;
+                lock (_syncLock)
+                    return !IsDisposed && _buffer != IntPtr.Zero;
             }
         }
 
@@ -105,8 +107,8 @@
         /// </summary>
         public bool IsDisposed
         {
-            get => m_IsDisposed;
-            private set => m_IsDisposed = value;
+            get => _isDisposed;
+            private set => _isDisposed = value;
         }
 
         /// <summary>
@@ -196,8 +198,8 @@
         public bool TryAcquireReaderLock(out IDisposable locker)
         {
             locker = null;
-            lock (SyncLock)
-                return !IsDisposed && Locker.TryAcquireReaderLock(out locker);
+            lock (_syncLock)
+                return !IsDisposed && _locker.TryAcquireReaderLock(out locker);
         }
 
         /// <summary>
@@ -209,8 +211,8 @@
         public bool TryAcquireWriterLock(out IDisposable locker)
         {
             locker = null;
-            lock (SyncLock)
-                return !IsDisposed && Locker.TryAcquireWriterLock(out locker);
+            lock (_syncLock)
+                return !IsDisposed && _locker.TryAcquireWriterLock(out locker);
         }
 
         /// <summary>
@@ -233,7 +235,7 @@
         /// <inheritdoc />
         public int CompareTo(MediaBlock other)
         {
-            if (other == null) throw new ArgumentNullException(nameof(other));
+            ArgumentNullException.ThrowIfNull(other);
             return StartTime.Ticks.CompareTo(other.StartTime.Ticks);
         }
 
@@ -285,22 +287,22 @@
             if (bufferLength <= 0)
                 throw new ArgumentException($"{nameof(bufferLength)} must be greater than 0");
 
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 if (IsDisposed)
                     return false;
 
-                if (m_BufferLength == bufferLength)
+                if (_bufferLength == bufferLength)
                     return true;
 
-                if (!Locker.TryAcquireWriterLock(out var writeLock))
+                if (!_locker.TryAcquireWriterLock(out var writeLock))
                     return false;
 
                 using (writeLock)
                 {
                     Deallocate();
-                    m_Buffer = (IntPtr)ffmpeg.av_malloc((ulong)bufferLength);
-                    m_BufferLength = bufferLength;
+                    _buffer = (IntPtr)ffmpeg.av_malloc((ulong)bufferLength);
+                    _bufferLength = bufferLength;
                     return true;
                 }
             }
@@ -312,18 +314,18 @@
         /// <param name="alsoManaged"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool alsoManaged)
         {
-            lock (SyncLock)
+            lock (_syncLock)
             {
                 if (IsDisposed) return;
                 IsDisposed = true;
 
                 // Free unmanaged resources (unmanaged objects) and override a finalizer below.
-                using (Locker.AcquireWriterLock())
+                using (_locker.AcquireWriterLock())
                     Deallocate();
 
                 // set large fields to null.
                 if (alsoManaged)
-                    Locker.Dispose();
+                    _locker.Dispose();
             }
         }
 
@@ -333,11 +335,11 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual unsafe void Deallocate()
         {
-            if (m_Buffer == IntPtr.Zero) return;
+            if (_buffer == IntPtr.Zero) return;
 
-            ffmpeg.av_free((void*)m_Buffer);
-            m_Buffer = IntPtr.Zero;
-            m_BufferLength = default;
+            ffmpeg.av_free((void*)_buffer);
+            _buffer = IntPtr.Zero;
+            _bufferLength = default;
         }
     }
 }

@@ -10,7 +10,7 @@
     public sealed class VideoSeekIndexEntry
         : IComparable<VideoSeekIndexEntry>, IComparable<TimeSpan>, IEquatable<VideoSeekIndexEntry>
     {
-        private static readonly char[] CommaSeparator = new[] { ',' };
+        private static readonly char[] CommaSeparator = [','];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VideoSeekIndexEntry" /> class.
@@ -134,7 +134,7 @@
         /// <inheritdoc />
         public int CompareTo(VideoSeekIndexEntry other)
         {
-            if (other == null) throw new ArgumentNullException(nameof(other));
+            ArgumentNullException.ThrowIfNull(other);
             return StartTime.Ticks.CompareTo(other.StartTime.Ticks);
         }
 

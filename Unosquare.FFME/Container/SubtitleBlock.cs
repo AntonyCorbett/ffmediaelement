@@ -23,12 +23,16 @@
         /// <summary>
         /// Gets the lines of text for this subtitle frame with all formatting stripped out.
         /// </summary>
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
         public IList<string> Text { get; } = new List<string>(16);
+#pragma warning restore IDE0028
 
         /// <summary>
         /// Gets the original text in SRT or ASS format.
         /// </summary>
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
         public IList<string> OriginalText { get; } = new List<string>(16);
+#pragma warning restore IDE0028
 
         /// <summary>
         /// Gets the type of the original text.

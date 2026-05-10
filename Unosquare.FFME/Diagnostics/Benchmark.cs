@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Diagnostics
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Diagnostics
 {
     using System;
     using System.Collections.Generic;
@@ -11,8 +13,8 @@
     /// </summary>
     internal static class Benchmark
     {
-        private static readonly object SyncLock = new object();
-        private static readonly Dictionary<string, List<TimeSpan>> Measures = new Dictionary<string, List<TimeSpan>>();
+        private static readonly Lock SyncLock = new();
+        private static readonly Dictionary<string, List<TimeSpan>> Measures = [];
 
         /// <summary>
         /// Gets the identifiers.
@@ -64,8 +66,8 @@
         {
             lock (SyncLock)
             {
-                if (!Measures.ContainsKey(identifier)) return string.Empty;
-                return new BenchmarkResult(identifier, Measures[identifier]).ToString();
+                if (!Measures.TryGetValue(identifier, out List<TimeSpan> measure)) return string.Empty;
+                return new BenchmarkResult(identifier, measure).ToString();
             }
         }
 
@@ -75,11 +77,17 @@
         /// <returns>The benchmark result collection.</returns>
         public static IEnumerable<BenchmarkResult> Results()
         {
+            BenchmarkResult[] snapshot;
+
             lock (SyncLock)
             {
-                foreach (var kvp in Measures)
-                    yield return new BenchmarkResult(kvp.Key, kvp.Value);
+                snapshot = Measures
+                    .Select(kvp => new BenchmarkResult(kvp.Key, kvp.Value))
+                    .ToArray();
             }
+
+            foreach (var result in snapshot)
+                yield return result;
         }
 
         /// <summary>
@@ -91,8 +99,8 @@
         {
             lock (SyncLock)
             {
-                if (!Measures.ContainsKey(identifier)) return null;
-                return new BenchmarkResult(identifier, Measures[identifier]);
+                if (!Measures.TryGetValue(identifier, out List<TimeSpan> measure)) return null;
+                return new BenchmarkResult(identifier, measure);
             }
         }
 
@@ -146,10 +154,14 @@
             lock (SyncLock)
             {
                 if (Measures.ContainsKey(identifier) == false)
+                {
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
                     Measures[identifier] = new List<TimeSpan>(1024 * 1024);
-            }
+#pragma warning restore IDE0028
+                }
 
-            Measures[identifier].Add(elapsed);
+                Measures[identifier].Add(elapsed);
+            }
         }
 
         /// <summary>
@@ -160,7 +172,7 @@
         {
             private readonly string Identifier;
             private volatile bool IsDisposed;
-            private readonly Stopwatch Stopwatch = new Stopwatch();
+            private readonly Stopwatch Stopwatch = new();
 
             /// <summary>
             /// Initializes a new instance of the <see cref="BenchmarkUnit" /> class.

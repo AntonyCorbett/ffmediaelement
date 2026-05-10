@@ -22,7 +22,10 @@
 
         private readonly ClosedCaptionsBuffer _buffer = new();
         private readonly FontFamily _fontFamily = new("Lucida Console");
+
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
         private readonly Dictionary<int, Dictionary<int, TextBlock>> _characterLookup = new(ClosedCaptionsBuffer.RowCount);
+#pragma warning restore IDE0028        
 
         private Grid _captionsGrid;
 
@@ -123,7 +126,11 @@
                     Grid.SetRow(letterBorder, rowIndex);
                     Grid.SetColumn(letterBorder, columnIndex);
                     if (_characterLookup.ContainsKey(rowIndex) == false)
+                    {
+#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
                         _characterLookup[rowIndex] = new Dictionary<int, TextBlock>(ClosedCaptionsBuffer.ColumnCount);
+#pragma warning restore IDE0028
+                    }
 
                     _characterLookup[rowIndex][columnIndex] = letterText;
                     letterBorder.Name = $"CC_{rowIndex:00}_{columnIndex:00}";

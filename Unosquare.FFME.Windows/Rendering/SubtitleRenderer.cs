@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Rendering
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Rendering
 {
     using Container;
     using Diagnostics;
@@ -15,7 +17,7 @@
         /// <summary>
         /// The synchronize lock.
         /// </summary>
-        private readonly object _syncLock = new();
+        private readonly Lock _syncLock = new();
         private TimeSpan? _startTime;
         private TimeSpan? _endTime;
 

@@ -1,4 +1,6 @@
-﻿namespace Unosquare.FFME.Primitives
+﻿using System.Threading;
+
+namespace Unosquare.FFME.Primitives
 {
     using System;
     using System.Diagnostics;
@@ -9,7 +11,7 @@
     internal sealed class RealTimeClock
     {
         private readonly Stopwatch Chronometer = new Stopwatch();
-        private readonly object SyncLock = new object();
+        private readonly Lock SyncLock = new();
         private long OffsetTicks;
         private double m_SpeedRatio = Constants.DefaultSpeedRatio;
 

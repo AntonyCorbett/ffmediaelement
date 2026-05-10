@@ -66,7 +66,7 @@
         /// <summary>
         /// Gets the extended attributes key-value pairs.
         /// </summary>
-        public PlaylistEntryAttributeDictionary Attributes { get; } = new PlaylistEntryAttributeDictionary();
+        public PlaylistEntryAttributeDictionary Attributes { get; } = [];
 
         #endregion
 
@@ -88,10 +88,8 @@
         /// <param name="encoding">The encoding.</param>
         public void Load(string filePath, Encoding encoding)
         {
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                Load(fileStream, encoding);
-            }
+            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            Load(fileStream, encoding);
         }
 
         /// <summary>
@@ -127,17 +125,15 @@
         /// <param name="encoding">The encoding.</param>
         public void Save(Stream stream, Encoding encoding)
         {
-            using (var writer = new StreamWriter(stream, encoding))
-            {
-                writer.WriteLine($"{HeaderPrefix} {Name} {Attributes}".Trim());
-                writer.WriteLine();
+            using var writer = new StreamWriter(stream, encoding);
+            writer.WriteLine($"{HeaderPrefix} {Name} {Attributes}".Trim());
+            writer.WriteLine();
 
-                foreach (var entry in this)
-                {
-                    writer.WriteLine();
-                    writer.WriteLine($"{EntryPrefix}:{Convert.ToInt64(entry.Duration.TotalSeconds)} {entry.Attributes}, {entry.Title}".Trim());
-                    writer.WriteLine(entry.MediaSource?.Trim());
-                }
+            foreach (var entry in this)
+            {
+                writer.WriteLine();
+                writer.WriteLine($"{EntryPrefix}:{Convert.ToInt64(entry.Duration.TotalSeconds)} {entry.Attributes}, {entry.Title}".Trim());
+                writer.WriteLine(entry.MediaSource?.Trim());
             }
         }
 
@@ -156,10 +152,8 @@
         /// <param name="path">The path.</param>
         public void Save(string path)
         {
-            using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
-            {
-                Save(stream, Encoding.UTF8);
-            }
+            using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
+            Save(stream, Encoding.UTF8);
         }
 
         #endregion
@@ -239,7 +233,7 @@
                         currentEntry = new T();
                         currentEntry.BeginExtendedInfoLine(line);
                     }
-                    else if (line.StartsWith("#", StringComparison.Ordinal))
+                    else if (line.StartsWith('#'))
                     {
                         // This is just a comment. Do nothing.
                     }

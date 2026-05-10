@@ -22,10 +22,8 @@
         /// <returns>The file name guid.</returns>
         public static string SnapThumbnail(Image sourceImage, string targetPath)
         {
-            using (var thumb = CreateThumbnail(sourceImage, Color.Black, 256, 144)) // 16:9 (in general)
-            {
-                return SaveThumbnail(thumb, targetPath);
-            }
+            using var thumb = CreateThumbnail(sourceImage, Color.Black, 256, 144);
+            return SaveThumbnail(thumb, targetPath);
         }
 
         /// <summary>
@@ -100,7 +98,7 @@
         public static string SaveThumbnail(Image thumbnail, string baseDirectory)
         {
             var guid = Guid.NewGuid();
-            var targetFilename = Path.Combine(Path.GetFullPath(baseDirectory), $"{guid.ToString()}.png");
+            var targetFilename = Path.Combine(Path.GetFullPath(baseDirectory), $"{guid}.png");
             thumbnail.Save(targetFilename, ImageFormat.Png);
             return Path.GetFileName(targetFilename);
         }
