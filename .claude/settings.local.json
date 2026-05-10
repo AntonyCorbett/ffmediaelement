@@ -25,7 +25,10 @@
       "Bash(Remove-Item \"C:\\\\Users\\\\anton\\\\source\\\\repos\\\\AntonyCorbett\\\\ffmediaelement\\\\Unosquare.FFME\\\\Primitives\\\\IntervalWorkerBase.cs\" -Force)",
       "Bash(Remove-Item \"C:\\\\Users\\\\anton\\\\source\\\\repos\\\\AntonyCorbett\\\\ffmediaelement\\\\Unosquare.FFME\\\\Primitives\\\\StepTimer.cs\" -Force)",
       "Bash(Write-Host \"Deleted\")",
-      "PowerShell(Remove-Item *)"
+      "PowerShell(Remove-Item *)",
+      "Bash(dotnet sln *)",
+      "Bash(Remove-Item *)",
+      "Bash(dotnet run *)"
     ]
   }
 }
