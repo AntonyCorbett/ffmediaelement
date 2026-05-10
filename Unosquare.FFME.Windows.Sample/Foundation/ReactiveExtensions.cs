@@ -14,6 +14,12 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     /// </summary>
     internal static class ReactiveExtensions
     {
+        // todo: this implementation is not memory efficient as it does not remove dead references to the publisher or the callbacks.
+        ///
+        /// 1.	Publishers are never removed from the dictionary - Once a publisher is added to Subscriptions, it stays there indefinitely, preventing garbage collection even after the publisher is no longer needed.
+        /// 2.	Event handler keeps references alive - The PropertyChanged event handler (registered around line 62) holds a reference to publisher, keeping it in memory as long as the subscription exists.
+        /// 3.	No cleanup mechanism - There's no way to unsubscribe or clean up when a publisher is disposed.
+
         /// <summary>
         /// Contains a list of subscriptions Subscriptions[Publisher][PropertyName].List of subscriber-action pairs.
         /// </summary>
@@ -47,7 +53,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
                 {
                     // Create the set of callback references for the publisher's property if it does not exist.
                     if (Subscriptions[publisher].ContainsKey(propertyName) == false)
-                        Subscriptions[publisher][propertyName] = [];
+                        Subscriptions[publisher][propertyName] = new CallbackList();
 
                     // Add the callback for the publisher's property changed
                     Subscriptions[publisher][propertyName].Add(callback);

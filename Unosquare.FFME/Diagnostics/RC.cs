@@ -12,7 +12,7 @@ namespace Unosquare.FFME.Diagnostics
     /// <summary>
     /// A reference counter to keep track of unmanaged objects.
     /// </summary>
-    internal unsafe class RC
+    internal sealed unsafe class RC
     {
         /// <summary>
         /// The synchronization lock.
@@ -229,7 +229,7 @@ namespace Unosquare.FFME.Diagnostics
         /// <summary>
         /// A reference entry.
         /// </summary>
-        public class ReferenceEntry
+        public sealed class ReferenceEntry
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="ReferenceEntry"/> class.

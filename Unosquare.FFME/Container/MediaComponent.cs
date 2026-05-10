@@ -82,12 +82,8 @@ namespace Unosquare.FFME.Container
             m_Stream = new IntPtr(container.InputContext->streams[streamIndex]);
             StreamInfo = container.MediaInfo.Streams[streamIndex];
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
             // Set default codec context options from probed stream
             var setCodecParamsResult = ffmpeg.avcodec_parameters_to_context(CodecContext, Stream->codecpar);
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
             if (setCodecParamsResult < 0)
             {

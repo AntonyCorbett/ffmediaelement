@@ -427,7 +427,7 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     /// freed from memory.
     /// </summary>
     /// <returns>The list of media frames.</returns>
-    public IList<MediaFrame> Decode()
+    public List<MediaFrame> Decode()
     {
         lock (DecodeSyncRoot)
         {

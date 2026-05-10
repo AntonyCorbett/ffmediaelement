@@ -256,6 +256,9 @@ dotnet_diagnostic.U2U1002.severity = none
 dotnet_diagnostic.IDE0305.severity = none
 dotnet_diagnostic.IDE0290.severity = none
 
+dotnet_diagnostic.SYSLIB1054.severity = none
+dotnet_diagnostic.SYSLIB1096.severity = none
+
 [**/obj/**/*.cs]
 generated_code = true
 dotnet_diagnostic.CS8019.severity = none

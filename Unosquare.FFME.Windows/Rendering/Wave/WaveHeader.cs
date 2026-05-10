@@ -1,5 +1,4 @@
-﻿#pragma warning disable SA1401 // Fields must be private
-namespace Unosquare.FFME.Rendering.Wave
+﻿namespace Unosquare.FFME.Rendering.Wave
 {
     using System;
     using System.Runtime.InteropServices;
@@ -9,7 +8,7 @@ namespace Unosquare.FFME.Rendering.Wave
     /// http://msdn.microsoft.com/en-us/library/dd743837%28VS.85%29.aspx.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    internal class WaveHeader
+    internal sealed class WaveHeader
     {
         /// <summary>pointer to locked data buffer (lpData).</summary>
         public IntPtr DataBuffer;
@@ -36,4 +35,3 @@ namespace Unosquare.FFME.Rendering.Wave
         public IntPtr Reserved;
     }
 }
-#pragma warning restore SA1401 // Fields must be private

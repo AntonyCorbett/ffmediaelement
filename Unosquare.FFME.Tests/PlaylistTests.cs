@@ -126,7 +126,7 @@ public sealed class PlaylistTests
     public void PlaylistEntry_SetMediaSource_RaisesPropertyChanged()
     {
         var entry = new PlaylistEntry();
-        var events = new System.Collections.Generic.List<string>();
+        var events = new List<string>();
         entry.PropertyChanged += (_, e) => events.Add(e.PropertyName!);
 
         entry.MediaSource = "http://a.com";

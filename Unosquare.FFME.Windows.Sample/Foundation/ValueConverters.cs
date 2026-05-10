@@ -1,6 +1,4 @@
-﻿#pragma warning disable SA1649 // File name must match first type name
-#pragma warning disable CA1812 // Remove classes that are apparently never instantiated
-namespace Unosquare.FFME.Windows.Sample.Foundation
+﻿namespace Unosquare.FFME.Windows.Sample.Foundation
 {
     using ClosedCaptions;
     using System;
@@ -10,7 +8,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     using System.Windows.Media;
 
     /// <inheritdoc />
-    internal class TimeSpanToSecondsConverter : IValueConverter
+    internal sealed class TimeSpanToSecondsConverter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -37,12 +35,12 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     }
 
     /// <inheritdoc />
-    internal class TimeSpanFormatter : IValueConverter
+    internal sealed class TimeSpanFormatter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            TimeSpan? p;
+            TimeSpan p;
 
             switch (value)
             {
@@ -56,10 +54,10 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
                     return string.Empty;
             }
 
-            if (p.Value == TimeSpan.MinValue)
+            if (p == TimeSpan.MinValue)
                 return "N/A";
 
-            return $"{(int)p.Value.TotalHours:00}:{p.Value.Minutes:00}:{p.Value.Seconds:00}.{p.Value.Milliseconds:000}";
+            return $"{(int)p.TotalHours:00}:{p.Minutes:00}:{p.Seconds:00}.{p.Milliseconds:000}";
         }
 
         /// <inheritdoc />
@@ -68,7 +66,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     }
 
     /// <inheritdoc />
-    internal class ByteFormatter : IValueConverter
+    internal sealed class ByteFormatter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object format, CultureInfo culture)
@@ -111,7 +109,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     }
 
     /// <inheritdoc />
-    internal class BitFormatter : IValueConverter
+    internal sealed class BitFormatter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object format, CultureInfo culture)
@@ -154,7 +152,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     }
 
     /// <inheritdoc />
-    internal class PercentageFormatter : IValueConverter
+    internal sealed class PercentageFormatter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object format, CultureInfo culture)
@@ -176,7 +174,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     }
 
     /// <inheritdoc />
-    internal class PlaylistEntryThumbnailConverter : IValueConverter
+    internal sealed class PlaylistEntryThumbnailConverter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object format, CultureInfo culture)
@@ -196,7 +194,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     }
 
     /// <inheritdoc />
-    internal class PlaylistDurationFormatter : IValueConverter
+    internal sealed class PlaylistDurationFormatter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -217,7 +215,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     }
 
     /// <inheritdoc />
-    internal class UtcDateToLocalTimeString : IValueConverter
+    internal sealed class UtcDateToLocalTimeString : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -234,7 +232,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
 
     /// <inheritdoc />
     [ValueConversion(typeof(bool), typeof(bool))]
-    internal class InverseBooleanConverter : IValueConverter
+    internal sealed class InverseBooleanConverter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -278,7 +276,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
 
     /// <inheritdoc />
     [ValueConversion(typeof(bool), typeof(bool))]
-    internal class ClosedCaptionsChannelConverter : IValueConverter
+    internal sealed class ClosedCaptionsChannelConverter : IValueConverter
     {
         /// <inheritdoc />
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
@@ -289,5 +287,3 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
             value != null && (bool)value ? CaptionsChannel.CC1 : CaptionsChannel.CCP;
     }
 }
-#pragma warning restore CA1812 // Remove classes that are apparently never instantiated
-#pragma warning restore SA1649 // File name must match first type name

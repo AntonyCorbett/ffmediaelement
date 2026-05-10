@@ -7,7 +7,7 @@
     /// <summary>
     /// Represents the Application-Wide Commands.
     /// </summary>
-    public class AppCommands
+    public sealed class AppCommands
     {
         #region Private State
 

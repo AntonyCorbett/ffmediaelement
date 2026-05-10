@@ -272,9 +272,7 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">The <see cref="KeyEventArgs"/> instance containing the event data.</param>
-#pragma warning disable U2U1009
     private async void OnWindowKeyDown(object sender, KeyEventArgs e)
-#pragma warning restore U2U1009
     {
         // Debug.WriteLine($"KEY: {e.Key}, SRC: {e.OriginalSource?.GetType().Name}");
         if (e.OriginalSource is TextBox)
@@ -554,9 +552,7 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">The <see cref="MouseButtonEventArgs"/> instance containing the event data.</param>
-#pragma warning disable U2U1009
     private async void OnMediaDoubleClick(object sender, MouseButtonEventArgs e)
-#pragma warning restore U2U1009
     {
         if ((sender?.Equals(Media) ?? false) == false)
             return;

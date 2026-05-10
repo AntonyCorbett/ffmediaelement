@@ -1,5 +1,4 @@
-﻿#pragma warning disable SA1202 // Elements must appear in the correct order
-namespace Unosquare.FFME.Rendering
+﻿namespace Unosquare.FFME.Rendering
 {
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -367,4 +366,3 @@ namespace Unosquare.FFME.Rendering
         #endregion
     }
 }
-#pragma warning restore SA1202 // Elements must appear in the correct order

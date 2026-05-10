@@ -135,7 +135,7 @@
         /// <summary>
         /// A POCO class to hold parsed attributes.
         /// </summary>
-        private class ParsedAttribute
+        private sealed class ParsedAttribute
         {
             public string Key { get; set; }
 

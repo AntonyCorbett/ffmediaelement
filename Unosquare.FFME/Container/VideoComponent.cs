@@ -460,7 +460,7 @@ internal sealed unsafe class VideoComponent : MediaComponent
 
             rotation = Math.Atan2(
                 Convert.ToDouble(matrix[1]) / scale[1],
-                Convert.ToDouble(matrix[0]) / scale[0]) * 180 / Math.PI;
+                Convert.ToDouble(matrix[0]) / scale[0]) * (180 / Math.PI);
         }
 
         // port of double get_rotation(AVStream *st)

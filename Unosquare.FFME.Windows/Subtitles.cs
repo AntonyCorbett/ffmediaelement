@@ -7,7 +7,7 @@
     /// <summary>
     /// Defines attached properties for subtitle rendering.
     /// </summary>
-    public sealed class Subtitles
+    public static class Subtitles
     {
         /// <summary>
         /// The foreground text property.
@@ -56,14 +56,6 @@
         /// </summary>
         public static readonly DependencyProperty FontFamilyProperty = DependencyProperty.RegisterAttached(
             "FontFamily", typeof(FontFamily), typeof(Subtitles));
-
-        /// <summary>
-        /// Prevents a default instance of the <see cref="Subtitles"/> class from being created.
-        /// </summary>
-        private Subtitles()
-        {
-            // placeholder
-        }
 
         /// <summary>
         /// Gets the text.

@@ -230,7 +230,7 @@
         /// <param name="offset">The offset.</param>
         /// <returns>A DirectSound Position Notification.</returns>
         private static DirectSound.DirectSoundBufferPositionNotify CreatePositionNotification(WaitHandle eventHandle, uint offset) =>
-            new DirectSound.DirectSoundBufferPositionNotify
+            new()
             {
                 Offset = offset,
                 NotifyHandle = eventHandle.SafeWaitHandle.DangerousGetHandle()
@@ -640,11 +640,8 @@
                     throw new NotSupportedException($"{nameof(DirectSoundBufferPositionNotify)} does not support hashing.");
             }
 
-#pragma warning disable SA1401 // Fields must be private
-#pragma warning disable 649 // Field is never assigned
-
             [StructLayout(LayoutKind.Sequential, Pack = 2)]
-            public class BufferDescription
+            public sealed class BufferDescription
             {
                 public int Size;
 
@@ -661,7 +658,7 @@
             }
 
             [StructLayout(LayoutKind.Sequential, Pack = 2)]
-            public class BufferCaps
+            public sealed class BufferCaps
             {
                 public int Size;
                 public int Flags;
@@ -669,9 +666,6 @@
                 public int UnlockTransferRate;
                 public int PlayCpuOverhead;
             }
-
-#pragma warning restore 649 // Field is never assigned
-#pragma warning restore SA1401 // Fields must be private
         }
 
         private static class NativeMethods

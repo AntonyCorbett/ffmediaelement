@@ -9,7 +9,7 @@
     /// <summary>
     /// Holds media information about the input, its chapters, programs and individual stream components.
     /// </summary>
-    public unsafe class MediaInfo
+    public sealed unsafe class MediaInfo
     {
         #region Constructor and Initialization
 

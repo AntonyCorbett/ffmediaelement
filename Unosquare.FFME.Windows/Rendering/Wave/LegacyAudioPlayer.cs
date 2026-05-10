@@ -15,7 +15,7 @@
         #region State Variables
 
         private static readonly Lock DevicesEnumLock = new();
-        private readonly AutoResetEvent DriverCallbackEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent DriverCallbackEvent = new(false);
 
         private IntPtr DeviceHandle;
         private WaveOutBuffer[] Buffers;

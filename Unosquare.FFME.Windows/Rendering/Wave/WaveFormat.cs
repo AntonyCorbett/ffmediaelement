@@ -10,7 +10,7 @@ namespace Unosquare.FFME.Rendering.Wave
     /// Represents a Wave file format.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 2)]
-    internal class WaveFormat : IEquatable<WaveFormat>
+    internal sealed class WaveFormat : IEquatable<WaveFormat>
     {
         /// <summary>The format tag -- always 0x0001 PCM.</summary>
         private readonly short formatTag = 0x0001;
@@ -96,7 +96,7 @@ namespace Unosquare.FFME.Rendering.Wave
         /// <summary>
         /// Returns the block alignment.
         /// </summary>
-        public virtual int BlockAlign => blockAlign;
+        public int BlockAlign => blockAlign;
 
         /// <summary>
         /// Returns the number of bits per sample (usually 16 or 32, sometimes 24 or 8)

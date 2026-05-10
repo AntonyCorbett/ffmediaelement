@@ -66,8 +66,6 @@ internal unsafe sealed class FFBPrint : IDisposable
         Target = target;
     }
 
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-#pragma warning disable SA1310 // Field names should not contain underscore
     [StructLayout(LayoutKind.Sequential)]
     private struct AVBPrintExtended
     {
@@ -77,6 +75,4 @@ internal unsafe sealed class FFBPrint : IDisposable
         public uint size_max;
         public byte reserved_internal_buffer;
     }
-#pragma warning restore SA1310 // Field names should not contain underscore
-#pragma warning restore SA1307 // Accessible fields should begin with upper-case letter
 }

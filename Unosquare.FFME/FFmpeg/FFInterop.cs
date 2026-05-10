@@ -250,7 +250,7 @@ internal static unsafe class FFInterop
     /// Handles FFmpeg library messages.
     /// </summary>
     /// <seealso cref="ILoggingHandler" />
-    internal class FFLoggingHandler : ILoggingHandler
+    internal sealed class FFLoggingHandler : ILoggingHandler
     {
         /// <inheritdoc />
         void ILoggingHandler.HandleLogMessage(LoggingMessage message) =>

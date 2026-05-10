@@ -1,6 +1,4 @@
-﻿#pragma warning disable SA1201 // Elements must appear in the correct order
-#pragma warning disable SA1117 // Parameters must be on same line or separate lines
-namespace Unosquare.FFME
+﻿namespace Unosquare.FFME
 {
     using ClosedCaptions;
     using Common;
@@ -531,5 +529,4 @@ namespace Unosquare.FFME
         #endregion
     }
 }
-#pragma warning restore SA1117 // Parameters must be on same line or separate lines
-#pragma warning restore SA1201 // Elements must appear in the correct order
+

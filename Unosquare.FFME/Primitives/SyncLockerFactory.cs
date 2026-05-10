@@ -112,7 +112,7 @@
         private sealed class SyncLocker : ISyncLocker, ISyncReleasable
         {
             private volatile bool m_IsDisposed;
-            private readonly ReaderWriterLock Locker = new ReaderWriterLock();
+            private readonly ReaderWriterLock Locker = new();
 
             /// <summary>
             /// Gets a value indicating whether this instance is disposed.

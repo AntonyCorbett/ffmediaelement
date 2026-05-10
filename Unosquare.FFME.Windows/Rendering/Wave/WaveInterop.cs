@@ -10,7 +10,7 @@
     /// <summary>
     /// MME Wave function interop.
     /// </summary>
-    internal class WaveInterop
+    internal static class WaveInterop
     {
         private const int LockTimeout = 100;
         private const string TimeoutErrorMessage = "Failed to acquire lock on MME interop call on a timely manner.";

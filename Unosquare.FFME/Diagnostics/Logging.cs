@@ -16,7 +16,7 @@ namespace Unosquare.FFME.Diagnostics
     {
         #region Private Members
 
-        private static readonly ConcurrentQueue<LoggingMessage> LogQueue = new ConcurrentQueue<LoggingMessage>();
+        private static readonly ConcurrentQueue<LoggingMessage> LogQueue = [];
         private static readonly LogOutputTimerWorker LogOutputWorker = new();
 
         #endregion
