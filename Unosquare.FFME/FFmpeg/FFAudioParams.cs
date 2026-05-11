@@ -1,8 +1,8 @@
-﻿namespace FFmpeg.AutoGen
-{
-    using System;
-    using Unosquare.FFME;
+﻿using FFmpeg.AutoGen;
+using System;
 
+namespace Unosquare.FFME.FFmpeg
+{
     /// <summary>
     /// Contains audio format properties essential
     /// to audio processing and re-sampling in FFmpeg libraries.
