@@ -16,8 +16,6 @@ namespace Unosquare.FFME.Container
     /// </summary>
     internal sealed class MediaBlockBuffer : IDisposable
     {
-        #region Private Declarations
-
         /// <summary>
         /// The blocks that are available to be filled.
         /// </summary>
@@ -51,10 +49,6 @@ namespace Unosquare.FFME.Container
         private long _lastLookupTimeTicks = TimeSpan.MinValue.Ticks;
         private int _lastLookupIndex = -1;
 
-        #endregion
-
-        #region Constructor
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaBlockBuffer"/> class.
         /// </summary>
@@ -75,10 +69,6 @@ namespace Unosquare.FFME.Container
                 _poolBlocks.Enqueue(CreateBlock(mediaType));
         }
 
-        #endregion
-
-        #region Regular Properties
-
         /// <summary>
         /// Gets the media type of the block buffer.
         /// </summary>
@@ -93,10 +83,6 @@ namespace Unosquare.FFME.Container
         /// Gets a value indicating whether this instance is disposed.
         /// </summary>
         public bool IsDisposed { get { lock (_syncLock) return _isDisposed; } }
-
-        #endregion
-
-        #region Collection Discrete Properties
 
         /// <summary>
         /// Gets the start time of the first block.
@@ -153,10 +139,6 @@ namespace Unosquare.FFME.Container
         /// </summary>
         public bool IsFull { get { lock (_syncLock) return _isFull; } }
 
-        #endregion
-
-        #region Indexer Properties
-
         /// <summary>
         /// Gets the <see cref="MediaBlock" /> at the specified index.
         /// </summary>
@@ -189,10 +171,6 @@ namespace Unosquare.FFME.Container
                 }
             }
         }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Gets the percentage of the range for the given time position.
@@ -566,7 +544,5 @@ namespace Unosquare.FFME.Container
             _averageBlockDuration = _isMonotonic ? lastBlockDuration : TimeSpan.FromTicks(
                 Convert.ToInt64(_playbackBlocks.Average(b => Convert.ToDouble(b.Duration.Ticks))));
         }
-
-        #endregion
     }
 }

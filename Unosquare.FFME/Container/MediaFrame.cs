@@ -15,8 +15,6 @@ namespace Unosquare.FFME.Container
     /// <seealso cref="IDisposable" />
     internal abstract unsafe class MediaFrame : IComparable<MediaFrame>, IDisposable
     {
-        #region Constructor
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaFrame" /> class.
         /// </summary>
@@ -58,10 +56,6 @@ namespace Unosquare.FFME.Container
             StreamIndex = component.StreamIndex;
             MediaType = mediaType;
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets the type of the media.
@@ -126,10 +120,6 @@ namespace Unosquare.FFME.Container
         /// Gets or sets the internal pointer.
         /// </summary>
         protected IntPtr InternalPointer { get; set; }
-
-        #endregion
-
-        #region Methods
 
         /// <inheritdoc />
         public int CompareTo(MediaFrame other)
@@ -199,7 +189,5 @@ namespace Unosquare.FFME.Container
             ffmpeg.avsubtitle_free(frame);
             ffmpeg.av_free(frame);
         }
-
-        #endregion
     }
 }

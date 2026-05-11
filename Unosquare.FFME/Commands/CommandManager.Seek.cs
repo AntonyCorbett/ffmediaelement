@@ -10,8 +10,6 @@
 
     internal partial class CommandManager
     {
-        #region State Backing Fields
-
         private readonly ManualResetEventSlim SeekBlocksAvailable = new(true);
         private volatile bool m_IsSeeking;
         private volatile bool m_PlayAfterSeek;
@@ -19,10 +17,6 @@
 
         private SeekOperation QueuedSeekOperation;
         private Task<bool> QueuedSeekTask;
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets a value indicating whether a seek operation is pending or in progress.
@@ -60,10 +54,6 @@
             get => m_PlayAfterSeek;
             set => m_PlayAfterSeek = value;
         }
-
-        #endregion
-
-        #region Command Implementations
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static TimeSpan ComputeStepTargetPosition(SeekMode seekMode, MediaBlockBuffer mainBlocks, TimeSpan currentPosition)
@@ -329,10 +319,6 @@
             return hasSeekBlocks;
         }
 
-        #endregion
-
-        #region Support Classes
-
         /// <summary>
         /// Provides parameters and a reset event to reference when the operation completes.
         /// </summary>
@@ -402,7 +388,5 @@
                 }
             }
         }
-
-        #endregion
     }
 }

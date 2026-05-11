@@ -17,8 +17,6 @@
     {
         private volatile bool m_IsDisposed;
 
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaEngine" /> class.
         /// </summary>
@@ -34,10 +32,6 @@
             State = new MediaEngineState(this);
             Timing = new TimingController(this);
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// An event that is raised whenever a global FFmpeg message is logged.
@@ -89,10 +83,6 @@
         /// </summary>
         internal IMediaConnector Connector { get; }
 
-        #endregion
-
-        #region Methods
-
         /// <inheritdoc />
         void ILoggingHandler.HandleLogMessage(LoggingMessage message) =>
             SendOnMessageLogged(message);
@@ -119,7 +109,5 @@
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void RaiseFFmpegMessageLogged(LoggingMessage message) =>
             FFmpegMessageLogged?.Invoke(null, message);
-
-        #endregion
     }
 }

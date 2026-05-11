@@ -48,8 +48,6 @@
             DeferTimer.Change(delay, Timeout.InfiniteTimeSpan);
         }
 
-        #region IDisposable Implementation
-
         /// <inheritdoc />
         public void Dispose()
         {
@@ -57,7 +55,5 @@
             IsDisposed = true;
             DeferTimer.Dispose();
         }
-
-        #endregion
     }
 }

@@ -91,8 +91,6 @@ internal sealed unsafe class SubtitleComponent : MediaComponent
         return true;
     }
 
-    #region Output Formatting
-
     /// <summary>
     /// Strips the SRT format and returns plain text.
     /// </summary>
@@ -169,8 +167,6 @@ internal sealed unsafe class SubtitleComponent : MediaComponent
 
         return builder.ToString().Trim();
     }
-
-    #endregion
 
     /// <inheritdoc />
     protected override MediaFrame CreateFrameSource(IntPtr framePointer)

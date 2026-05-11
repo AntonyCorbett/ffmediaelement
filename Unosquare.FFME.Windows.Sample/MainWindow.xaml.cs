@@ -22,8 +22,6 @@ using ImageFormat = System.Drawing.Imaging.ImageFormat;
 /// </summary>
 public partial class MainWindow : Window
 {
-    #region Fields
-
     private static readonly Key[] TogglePlayPauseKeys = [Key.Play, Key.MediaPlayPause, Key.Space];
     private readonly Lock ScreenshotSyncLock = new();
     private readonly Lock RecorderSyncLock = new();
@@ -34,10 +32,6 @@ public partial class MainWindow : Window
     private MediaType StreamCycleMediaType = MediaType.None;
     private bool m_IsCaptureInProgress;
     private bool IsControllerHideCompleted;
-
-    #endregion
-
-    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainWindow"/> class.
@@ -63,10 +57,6 @@ public partial class MainWindow : Window
         InitializeMediaEvents();
     }
 
-    #endregion
-
-    #region Properties
-
     /// <summary>
     /// A proxy, strongly-typed property to the underlying DataContext.
     /// </summary>
@@ -85,10 +75,6 @@ public partial class MainWindow : Window
 
     private Storyboard ShowControllerAnimation => FindResource("ShowControlOpacity") as Storyboard;
 
-    #endregion
-
-    #region Initialization Methods
-
     /// <summary>
     /// Initializes the main window.
     /// </summary>
@@ -97,8 +83,6 @@ public partial class MainWindow : Window
         Loaded += OnWindowLoaded;
         PreviewKeyDown += OnWindowKeyDown;
         MouseWheel += OnMouseWheelChange;
-
-        #region Notification MEssages
 
         var notificationsStoryboard = FindResource("ShowNotification") as Storyboard;
         ViewModel.PropertyChanged += (s, e) =>
@@ -118,10 +102,6 @@ public partial class MainWindow : Window
                 notificationsStoryboard.Begin();
             });
         };
-
-        #endregion
-
-        #region Mouse Move Detection for Hiding the Controller Panel
 
         LastMouseMoveTime = DateTime.UtcNow;
 
@@ -183,8 +163,6 @@ public partial class MainWindow : Window
         };
 
         MouseMoveTimer.Start();
-
-        #endregion
     }
 
     /// <summary>
@@ -214,10 +192,6 @@ public partial class MainWindow : Window
         // Complex examples of Media Rendering Events
         BindMediaRenderingEvents();
     }
-
-    #endregion
-
-    #region Window Control and Input Event Handlers
 
     /// <summary>
     /// Handles the Loaded event of the MainWindow control.
@@ -574,6 +548,4 @@ public partial class MainWindow : Window
         var delta = (e.Delta / 2000d).ToMultipleOf(0.05d);
         ViewModel.Controller.MediaElementZoom = Math.Round(App.ViewModel.Controller.MediaElementZoom + delta, 2);
     }
-
-    #endregion
 }

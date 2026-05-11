@@ -15,8 +15,6 @@ using System.Runtime.CompilerServices;
 /// <seealso cref="MediaComponent" />
 internal sealed unsafe class VideoComponent : MediaComponent
 {
-    #region Private State Variables
-
     private readonly AVRational BaseFrameRateQ;
 
     private string AppliedFilterString;
@@ -29,10 +27,6 @@ internal sealed unsafe class VideoComponent : MediaComponent
     private AVFilterInOut* SinkInput = null;
     private AVFilterInOut* SourceOutput = null;
     private AVBufferRef* HardwareDeviceContext = null;
-
-    #endregion
-
-    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoComponent"/> class.
@@ -79,10 +73,6 @@ internal sealed unsafe class VideoComponent : MediaComponent
         SeekIndex = seekIndex != null && seekIndex.StreamIndex == StreamIndex ?
             seekIndex.Entries : [];
     }
-
-    #endregion
-
-    #region Properties
 
     /// <summary>
     /// Gets the video scaler flags used to perform color space conversion (if needed).
@@ -149,10 +139,6 @@ internal sealed unsafe class VideoComponent : MediaComponent
     /// Provides access to the VideoFilter string of the container's MediaOptions.
     /// </summary>
     private string FilterString => Container?.MediaOptions?.VideoFilter;
-
-    #endregion
-
-    #region Methods
 
     /// <summary>
     /// Attaches a hardware accelerator to this video component.
@@ -646,10 +632,6 @@ internal sealed unsafe class VideoComponent : MediaComponent
         }
     }
 
-    #endregion
-
-    #region IDisposable Support
-
     /// <summary>
     /// Destroys the filter graph releasing unmanaged resources.
     /// </summary>
@@ -673,6 +655,4 @@ internal sealed unsafe class VideoComponent : MediaComponent
             CurrentFilterArguments = null;
         }
     }
-
-    #endregion
 }

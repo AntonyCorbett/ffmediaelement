@@ -25,16 +25,10 @@ using System.Runtime.InteropServices;
 /// </summary>
 internal sealed class SoundTouch : IDisposable
 {
-    #region Private Members
-
     private const string SoundTouchLibrary = "SoundTouch.dll";
     private readonly Lock SyncRoot = new();
     private bool IsDisposed;
     private IntPtr handle;
-
-    #endregion
-
-    #region Constructor
 
     /// <summary>
     /// Initializes static members of the <see cref="SoundTouch"/> class.
@@ -183,10 +177,6 @@ internal sealed class SoundTouch : IDisposable
         InitialLatency = 8
     }
 
-    #endregion
-
-    #region Properties
-
     /// <summary>
     /// Get SoundTouch version string.
     /// </summary>
@@ -250,10 +240,6 @@ internal sealed class SoundTouch : IDisposable
             }
         }
     }
-
-    #endregion
-
-    #region Sample Stream Methods
 
     /// <summary>
     /// Sets sample rate.
@@ -432,10 +418,6 @@ internal sealed class SoundTouch : IDisposable
         lock (SyncRoot) { return NativeMethods.ReceiveSamples_i16(handle, outBuffer, maxSamples); }
     }
 
-    #endregion
-
-    #region IDisposable Support
-
     /// <inheritdoc />
     public void Dispose()
     {
@@ -459,10 +441,6 @@ internal sealed class SoundTouch : IDisposable
             IsDisposed = true;
         }
     }
-
-    #endregion
-
-    #region Native Methods
 
     /// <summary>
     /// Provides direct access to mapped DLL methods.
@@ -544,6 +522,4 @@ internal sealed class SoundTouch : IDisposable
         [DllImport(SoundTouchLibrary, CallingConvention = CallingConvention.Cdecl, EntryPoint = "soundtouch_isEmpty")]
         public static extern int IsEmpty(IntPtr h);
     }
-
-    #endregion
 }

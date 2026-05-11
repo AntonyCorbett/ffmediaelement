@@ -18,8 +18,6 @@ namespace Unosquare.FFME
     /// </summary>
     public static class Library
     {
-        #region Core Forwarding
-
         /// <summary>
         /// Gets or sets the FFmpeg path from which to load the FFmpeg binaries.
         /// You must set this path before setting the Source property for the first time on any instance of this control.
@@ -126,10 +124,6 @@ namespace Unosquare.FFME
         /// <returns>The seek index object.</returns>
         public static VideoSeekIndex CreateVideoSeekIndex(string mediaSource) => CoreLibrary.CreateVideoSeekIndex(mediaSource);
 
-        #endregion
-
-        #region WPF Extensions
-
         /// <summary>
         /// Gets or sets a value indicating whether the video visualization control
         /// creates its own dispatcher thread to handle rendering of video frames.
@@ -194,7 +188,5 @@ namespace Unosquare.FFME
 
             return result;
         }
-
-        #endregion
     }
 }

@@ -20,8 +20,6 @@ namespace Unosquare.FFME.Rendering
     /// <seealso cref="IMediaRenderer" />
     internal sealed class VideoRenderer : VideoRendererBase
     {
-        #region Private State
-
         /// <summary>
         /// Contains an equivalence lookup of FFmpeg pixel format and WPF pixel formats.
         /// </summary>
@@ -41,10 +39,6 @@ namespace Unosquare.FFME.Rendering
         /// </summary>
         private BitmapDataBuffer TargetBitmapData;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="VideoRenderer"/> class.
         /// </summary>
@@ -56,10 +50,6 @@ namespace Unosquare.FFME.Rendering
             if (MediaPixelFormats.ContainsKey(Constants.VideoPixelFormat) == false)
                 throw new NotSupportedException($"Unable to get equivalent pixel format from source: {Constants.VideoPixelFormat}");
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets or sets the target bitmap.
@@ -80,10 +70,6 @@ namespace Unosquare.FFME.Rendering
                 MediaElement.VideoView.Source = m_TargetBitmap;
             }
         }
-
-        #endregion
-
-        #region MediaRenderer Methods
 
         /// <inheritdoc />
         public override void Render(MediaBlock mediaBlock, TimeSpan clockPosition)
@@ -110,8 +96,6 @@ namespace Unosquare.FFME.Rendering
             },
             DispatcherPriority.Normal);
         }
-
-        #endregion
 
         /// <summary>
         /// Initializes the target bitmap if not available and returns a pointer to the back-buffer for filling.

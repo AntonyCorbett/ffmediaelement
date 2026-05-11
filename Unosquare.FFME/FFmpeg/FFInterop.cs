@@ -16,8 +16,6 @@ namespace Unosquare.FFME.FFmpeg;
 /// </summary>
 internal static unsafe class FFInterop
 {
-    #region Private Declarations
-
     private static readonly Lock FFmpegLogBufferSyncLock = new();
 
 #pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
@@ -40,10 +38,6 @@ internal static unsafe class FFInterop
     private static readonly List<OptionMetadata> EmptyOptionMetaList = [];
     private static readonly av_log_set_callback_callback FFmpegLogCallback = OnFFmpegMessageLogged;
     private static readonly FFLoggingHandler LoggingHandler = new();
-
-    #endregion
-
-    #region Interop Helper Methods
 
     public static string PrintChannelLayout(AVChannelLayout channelLayout)
     {
@@ -241,10 +235,6 @@ internal static unsafe class FFInterop
         }
     }
 
-    #endregion
-
-    #region Supporting Classes
-
     /// <summary>
     /// Handles FFmpeg library messages.
     /// </summary>
@@ -255,6 +245,4 @@ internal static unsafe class FFInterop
         void ILoggingHandler.HandleLogMessage(LoggingMessage message) =>
             MediaEngine.RaiseFFmpegMessageLogged(message);
     }
-
-    #endregion
 }

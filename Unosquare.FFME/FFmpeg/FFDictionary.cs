@@ -10,8 +10,6 @@ namespace Unosquare.FFME.FFmpeg
     /// </summary>
     internal sealed unsafe class FFDictionary : IDisposable
     {
-        #region Unmanaged Fields
-
         // These pointers and references are created by unmanaged code
         // there is no need to pin them.
         private IntPtr m_Pointer;
@@ -20,10 +18,6 @@ namespace Unosquare.FFME.FFmpeg
         /// To detect redundant Dispose calls.
         /// </summary>
         private bool IsDisposed;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FFDictionary"/> class.
@@ -41,10 +35,6 @@ namespace Unosquare.FFME.FFmpeg
         {
             Fill(other);
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets the unmanaged pointer to the dictionary object.
@@ -72,10 +62,6 @@ namespace Unosquare.FFME.FFmpeg
             get => Get(key);
             set => Set(key, value, false);
         }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Converts the AVDictionary to a regular dictionary.
@@ -248,7 +234,5 @@ namespace Unosquare.FFME.FFmpeg
             ffmpeg.av_dict_free(&reference);
             m_Pointer = IntPtr.Zero;
         }
-
-        #endregion
     }
 }

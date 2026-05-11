@@ -12,8 +12,6 @@
     /// </summary>
     internal sealed class MediaEngineState : ViewModelBase, IMediaEngineState
     {
-        #region Property Backing and Private State
-
         private static readonly Dictionary<string, string> EmptyDictionary = [];
 
         private readonly MediaEngine MediaCore;
@@ -78,10 +76,6 @@
         private string m_VideoHardwareDecoder = string.Empty;
         private bool m_HasClosedCaptions;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaEngineState" /> class.
         /// </summary>
@@ -92,10 +86,6 @@
             MediaCore = mediaCore;
             ResetAll();
         }
-
-        #endregion
-
-        #region Controller Properties
 
         /// <inheritdoc />
         public Uri Source
@@ -179,10 +169,6 @@
             }
         }
 
-        #endregion
-
-        #region Renderer Update Driven Properties
-
         /// <inheritdoc />
         public MediaPlaybackState MediaState
         {
@@ -257,10 +243,6 @@
             private set => SetProperty(ref m_HasClosedCaptions, value);
         }
 
-        #endregion
-
-        #region Self-Updating Properties
-
         /// <inheritdoc />
         public bool IsAtEndOfStream => MediaCore.Container?.IsAtEndOfStream ?? false;
 
@@ -281,10 +263,6 @@
 
         /// <inheritdoc />
         public bool IsChanging => MediaCore.Commands?.IsChanging ?? false;
-
-        #endregion
-
-        #region Container Fixed, One-Time Properties
 
         /// <inheritdoc />
         public bool IsOpen
@@ -507,10 +485,6 @@
             private set => SetProperty(ref m_IsSeekable, value);
         }
 
-        #endregion
-
-        #region State Method Managed Media Properties
-
         /// <inheritdoc />
         public bool IsBuffering
         {
@@ -595,10 +569,6 @@
                 NotifyPropertyChanged(nameof(PacketBufferCount), nameof(IsAtEndOfStream));
             }
         }
-
-        #endregion
-
-        #region State Management Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void ReportCommandStatus() => NotifyPropertyChanged(nameof(IsSeeking), nameof(IsClosing), nameof(IsOpening), nameof(IsChanging));
@@ -863,7 +833,5 @@
             PacketBufferDuration = TimeSpan.MinValue;
             PacketBufferCount = default;
         }
-
-        #endregion
     }
 }

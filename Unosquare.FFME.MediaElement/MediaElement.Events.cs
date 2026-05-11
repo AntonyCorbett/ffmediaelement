@@ -159,8 +159,6 @@ namespace Unosquare.FFME
         /// </summary>
         public event EventHandler<MediaFailedEventArgs> MediaFailed;
 
-        #region Non-UI event raisers
-
         /// <summary>
         /// Raises the message logged event.
         /// </summary>
@@ -240,10 +238,6 @@ namespace Unosquare.FFME
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal unsafe void RaiseSubtitleDecodedEvent(AVSubtitle* subtitle, AVFormatContext* context) =>
             SubtitleDecoded?.Invoke(this, new SubtitleDecodedEventArgs(subtitle, context));
-
-        #endregion
-
-        #region UI Context Event Raisers
 
         /// <summary>
         /// Raises the media failed event.
@@ -430,10 +424,6 @@ namespace Unosquare.FFME
         internal void NotifyPropertyChangedEvent(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        #endregion
-
-        #region Event Logging
-
         /// <summary>
         /// Logs the start of an event.
         /// </summary>
@@ -455,7 +445,5 @@ namespace Unosquare.FFME
             if (Debugger.IsAttached)
                 this.LogTrace(Aspects.Events, $"EVENT DONE : {eventName}");
         }
-
-        #endregion
     }
 }

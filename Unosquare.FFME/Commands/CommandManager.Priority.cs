@@ -8,19 +8,13 @@
 
     internal partial class CommandManager
     {
-        #region State Backing Fields
-
         private volatile int m_PendingPriorityCommand;
         private readonly ManualResetEventSlim PriorityCommandCompleted = new(true);
-
-        #endregion
 
         /// <summary>
         /// Gets a value indicating whether a priority command is pending.
         /// </summary>
         private bool IsPriorityCommandPending => PendingPriorityCommand != PriorityCommandType.None;
-
-        #region Execution Helpers
 
         /// <summary>
         /// Executes boilerplate code that queues priority commands.
@@ -61,10 +55,6 @@
                 PriorityCommandCompleted.Set();
             }
         }
-
-        #endregion
-
-        #region Command Implementations
 
         /// <summary>
         /// Provides the implementation for the Play Media Command.
@@ -112,10 +102,6 @@
             State.MediaState = MediaPlaybackState.Stop;
         }
 
-        #endregion
-
-        #region Implementation Helpers
-
         /// <summary>
         /// Returns the value of a discrete frame position of the main media component if possible.
         /// Otherwise, it simply rounds the position to the nearest millisecond.
@@ -134,7 +120,5 @@
 
             return blocks.GetSnapPosition(position) ?? position.Normalize();
         }
-
-        #endregion
     }
 }

@@ -14,8 +14,6 @@ namespace Unosquare.FFME.Container
     /// </summary>
     internal sealed class PacketQueue : IDisposable
     {
-        #region Private Declarations
-
 #pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
         private readonly List<MediaPacket> Packets = new(2048);
 #pragma warning restore IDE0028
@@ -23,10 +21,6 @@ namespace Unosquare.FFME.Container
         private readonly Lock SyncLock = new();
         private long m_BufferLength;
         private long m_Duration;
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets the packet count.
@@ -44,10 +38,6 @@ namespace Unosquare.FFME.Container
         {
             get { lock (SyncLock) return m_BufferLength; }
         }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Gets the duration in stream time base units.
@@ -127,10 +117,6 @@ namespace Unosquare.FFME.Container
             }
         }
 
-        #endregion
-
-        #region IDisposable Support
-
         /// <inheritdoc />
         public void Dispose() => Dispose(true);
 
@@ -146,7 +132,5 @@ namespace Unosquare.FFME.Container
             lock (SyncLock)
                 Clear();
         }
-
-        #endregion
     }
 }

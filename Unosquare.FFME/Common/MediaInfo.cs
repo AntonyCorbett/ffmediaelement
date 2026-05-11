@@ -13,8 +13,6 @@ namespace Unosquare.FFME.Common
     /// </summary>
     public sealed unsafe class MediaInfo
     {
-        #region Constructor and Initialization
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaInfo"/> class.
         /// </summary>
@@ -36,10 +34,6 @@ namespace Unosquare.FFME.Common
             Programs = ExtractPrograms(ic, Streams);
             BestStreams = FindBestStreams(ic, Streams);
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets the input URL string used to access and create the media container.
@@ -96,10 +90,6 @@ namespace Unosquare.FFME.Common
         /// This uses some internal FFmpeg heuristics.
         /// </summary>
         public IReadOnlyDictionary<AVMediaType, StreamInfo> BestStreams { get; }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Extracts the stream infos from the input.
@@ -329,8 +319,6 @@ namespace Unosquare.FFME.Common
 
             return result;
         }
-
-        #endregion
     }
 
     /// <summary>

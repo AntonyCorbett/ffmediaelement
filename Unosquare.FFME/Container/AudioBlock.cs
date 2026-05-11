@@ -17,8 +17,6 @@
             // placeholder
         }
 
-        #region Properties
-
         /// <summary>
         /// Gets the sample rate.
         /// </summary>
@@ -43,10 +41,6 @@
         /// </value>
         public int SamplesBufferLength { get; internal set; }
 
-        #endregion
-
-        #region Methods
-
         /// <inheritdoc />
         protected override void Deallocate()
         {
@@ -56,7 +50,5 @@
             SamplesPerChannel = default;
             SamplesBufferLength = 0;
         }
-
-        #endregion
     }
 }

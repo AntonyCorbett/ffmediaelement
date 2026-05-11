@@ -19,8 +19,6 @@ namespace Unosquare.FFME.Container
             // placeholder
         }
 
-        #region Properties
-
         /// <summary>
         /// Gets the lines of text for this subtitle frame with all formatting stripped out.
         /// </summary>
@@ -40,7 +38,5 @@ namespace Unosquare.FFME.Container
         /// Returns None when it's a bitmap or when it's None.
         /// </summary>
         public AVSubtitleType OriginalTextType { get; internal set; }
-
-        #endregion
     }
 }

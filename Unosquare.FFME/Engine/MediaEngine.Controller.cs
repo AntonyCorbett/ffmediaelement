@@ -8,8 +8,6 @@
 
     internal partial class MediaEngine
     {
-        #region Internal Members
-
         /// <summary>
         /// The command queue to be executed in the order they were sent.
         /// </summary>
@@ -20,10 +18,6 @@
         /// individual media component streams.
         /// </summary>
         internal MediaContainer Container { get; set; }
-
-        #endregion
-
-        #region Public API
 
         /// <summary>
         /// Opens the media using the specified URI.
@@ -125,7 +119,5 @@
         /// <returns>The awaitable command.</returns>
         public Task<bool> StepBackward() =>
             Commands.StepBackwardAsync();
-
-        #endregion
     }
 }

@@ -94,8 +94,6 @@
             WaveOutOpen = 0x3BB
         }
 
-        #region Methods
-
         /// <summary>
         /// Retrieves the audio device count.
         /// </summary>
@@ -374,8 +372,6 @@
             Monitor.TryEnter(SyncLock, LockTimeout, ref acquired);
             return acquired ? true : throw new TimeoutException(TimeoutErrorMessage);
         }
-
-        #endregion
 
         /// <summary>
         /// Contains the native methods for the Windows MME API.

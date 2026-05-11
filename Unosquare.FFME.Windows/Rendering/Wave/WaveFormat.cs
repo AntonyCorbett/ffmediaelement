@@ -76,8 +76,6 @@ namespace Unosquare.FFME.Rendering.Wave
             averageBytesPerSecond = sampleRate * blockAlign;
         }
 
-        #region Properties
-
         /// <summary>
         /// Returns the number of channels (1=mono,2=stereo etc).
         /// </summary>
@@ -109,8 +107,6 @@ namespace Unosquare.FFME.Rendering.Wave
         /// except for compressed formats which store extra data after the WAVEFORMATEX header.
         /// </summary>
         public int ExtraSize => extraSize;
-
-        #endregion
 
         /// <summary>
         /// Gets the size of a wave buffer equivalent to the latency in milliseconds.

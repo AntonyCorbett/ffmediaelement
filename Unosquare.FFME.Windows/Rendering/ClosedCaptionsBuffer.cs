@@ -15,8 +15,6 @@ namespace Unosquare.FFME.Rendering
     /// </summary>
     internal sealed class ClosedCaptionsBuffer
     {
-        #region Constants
-
         /// <summary>
         /// The column count of the character grid.
         /// </summary>
@@ -57,10 +55,6 @@ namespace Unosquare.FFME.Rendering
         /// </summary>
         private const double TimeoutSeconds = 16;
 
-        #endregion
-
-        #region Internal Buffers
-
         /// <summary>
         /// The linear, non-demuxed packet buffer.
         /// </summary>
@@ -79,10 +73,6 @@ namespace Unosquare.FFME.Rendering
 
         private int _cursorColumnIndex;
         private int _cursorRowIndex = DefaultBaseRowIndex;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClosedCaptionsBuffer"/> class.
@@ -114,10 +104,6 @@ namespace Unosquare.FFME.Rendering
             Reset();
         }
 
-        #endregion
-
-        #region Enumerations
-
         /// <summary>
         /// Defines the different state parsing modes.
         /// </summary>
@@ -148,10 +134,6 @@ namespace Unosquare.FFME.Rendering
             /// </summary>
             XDS
         }
-
-        #endregion
-
-        #region State Properties
 
         /// <summary>
         /// Provides access to the state of each of the character cells in the grid.
@@ -213,10 +195,6 @@ namespace Unosquare.FFME.Rendering
         /// </summary>
         public ClosedCaptionPacket CurrentPacket { get; private set; }
 
-        #endregion
-
-        #region Write State Properties
-
         /// <summary>
         /// Gets the last start time position of the video block containing the CC packets.
         /// </summary>
@@ -242,10 +220,6 @@ namespace Unosquare.FFME.Rendering
         /// Gets the last receive time of the current channel.
         /// </summary>
         public DateTime LastReceiveTime { get; private set; }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Sets the specified text on the given line.
@@ -796,7 +770,5 @@ namespace Unosquare.FFME.Rendering
             for (var channel = 1; channel <= 4; channel++)
                 TrimBuffer(_channelPacketBuffer[(CaptionsChannel)channel]);
         }
-
-        #endregion
     }
 }

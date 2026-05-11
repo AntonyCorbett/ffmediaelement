@@ -35,8 +35,6 @@ namespace Unosquare.FFME.Commands
             StartAsync();
         }
 
-        #region Properties
-
         /// <inheritdoc />
         public MediaEngine MediaCore { get; }
 
@@ -61,10 +59,6 @@ namespace Unosquare.FFME.Commands
             get => (PriorityCommandType)m_PendingPriorityCommand;
             set => m_PendingPriorityCommand = (int)value;
         }
-
-        #endregion
-
-        #region Public API
 
         /// <summary>
         /// Opens the media using a standard URI.
@@ -185,10 +179,6 @@ namespace Unosquare.FFME.Commands
         /// <returns>If the wait completed successfully.</returns>
         public bool WaitForSeekBlocks(int millisecondsTimeout) => SeekBlocksAvailable.Wait(millisecondsTimeout);
 
-        #endregion
-
-        #region Worker Implementation
-
         /// <inheritdoc />
         protected override void ExecuteCycleLogic(CancellationToken ct)
         {
@@ -303,8 +293,6 @@ namespace Unosquare.FFME.Commands
             QueuedSeekOperation = null;
             this.LogDebug(Aspects.EngineCommand, "Dispose completed.");
         }
-
-        #endregion
 
         /// <summary>
         /// Outputs Reference Counter Results.

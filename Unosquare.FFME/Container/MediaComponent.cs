@@ -18,8 +18,6 @@ namespace Unosquare.FFME.Container
     /// <seealso cref="IDisposable" />
     internal abstract unsafe class MediaComponent : IDisposable, ILoggingSource
     {
-        #region Private Declarations
-
         /// <summary>
         /// Related to issue 94, looks like FFmpeg requires exclusive access when calling avcodec_open2().
         /// </summary>
@@ -59,10 +57,6 @@ namespace Unosquare.FFME.Container
         /// Holds a reference to the Codec Context.
         /// </summary>
         private IntPtr m_CodecContext;
-
-        #endregion
-
-        #region Constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaComponent"/> class.
@@ -256,10 +250,6 @@ namespace Unosquare.FFME.Container
             SendFlushPacket();
         }
 
-        #endregion
-
-        #region Properties
-
         /// <inheritdoc />
         ILoggingHandler ILoggingSource.LoggingHandler => m_LoggingHandler;
 
@@ -410,10 +400,6 @@ namespace Unosquare.FFME.Container
         /// Gets or sets the last frame PTS.
         /// </summary>
         internal long? LastFramePts { get; set; }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Clears the pending and sent Packet Queues releasing all memory held by those packets.
@@ -717,7 +703,5 @@ namespace Unosquare.FFME.Container
 
             return managedFrame;
         }
-
-        #endregion
     }
 }

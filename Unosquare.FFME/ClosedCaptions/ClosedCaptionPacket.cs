@@ -9,8 +9,6 @@
     /// </summary>
     public sealed class ClosedCaptionPacket : IComparable<ClosedCaptionPacket>, IEquatable<ClosedCaptionPacket>
     {
-        #region Dictionaries
-
         private static readonly Dictionary<byte, string> SpecialNorthAmerican = new()
         {
             { 0x30, "®" },
@@ -195,10 +193,6 @@
             CaptionsStyle.WhiteItalicsUnderline
         ];
 
-        #endregion
-
-        #region Constructors
-
         private readonly byte[] Data;
 
         /// <summary>
@@ -233,8 +227,6 @@
             Timestamp = timestamp;
             try
             {
-                #region Header Checking
-
                 if (HeaderHasMarkers(header) == false
                     || IsHeaderValidFlagSet(header) == false
                     || FieldParity == 0
@@ -246,10 +238,6 @@
 
                 PacketType = CaptionsPacketType.Unrecognized;
 
-                #endregion
-
-                #region XDS Packet Detection
-
                 // XDS Parsing
                 if ((D0 & 0x0F) == D0 && D0 != 0)
                 {
@@ -257,10 +245,6 @@
                     XdsClass = (CaptionsXdsClass)D0;
                     return;
                 }
-
-                #endregion
-
-                #region Color Command Detection (Table 3)
 
                 if ((D0 == 0x10 || D0 == 0x18) && (D1 >= 0x20 && D1 <= 0x2F))
                 {
@@ -280,20 +264,12 @@
                     return;
                 }
 
-                #endregion
-
-                #region Charset Select Packet Detection (Table 4)
-
                 if ((D0 == 0x17 || D0 == 0x1F) && (D1 >= 0x24 && D1 <= 0x2A))
                 {
                     FieldChannel = D0 == 0x17 ? 1 : 2;
                     PacketType = CaptionsPacketType.PrivateCharset;
                     return;
                 }
-
-                #endregion
-
-                #region MidRow Code Detection (Table 69)
 
                 // Mid-row Code Parsing
                 if ((D0 == 0x11 || D0 == 0x19) && (D1 >= 0x20 && D1 <= 0x2F))
@@ -305,10 +281,6 @@
                     IsUnderlined = UnderlineCaptionStyles.Contains(MidRowStyle);
                     return;
                 }
-
-                #endregion
-
-                #region Misc Command Detection (Table 70)
 
                 // Screen command parsing
                 if ((D0 == 0x14 || D0 == 0x1C) && (D1 >= 0x20 && D1 <= 0x2F))
@@ -327,10 +299,6 @@
                     FieldChannel = D0 == 0x17 ? 1 : 2;
                     return;
                 }
-
-                #endregion
-
-                #region Preamble Command Detection (Table 71)
 
                 // Preamble Parsing
                 if ((D1 >= 0x40 && D1 <= 0x5F) || (D1 >= 0x60 && D1 <= 0x7F))
@@ -387,10 +355,6 @@
                     }
                 }
 
-                #endregion
-
-                #region Text Parsing (Table 5, 6, 7, 8, 9, 10, and 68 for ASCII Chars)
-
                 PacketType = CaptionsPacketType.Text;
 
                 // Special North American character set
@@ -446,8 +410,6 @@
                     return;
                 }
 
-                #endregion
-
                 PacketType = CaptionsPacketType.Unrecognized;
                 FieldChannel = 0;
             }
@@ -457,10 +419,6 @@
                     ComputeChannel(FieldParity, FieldChannel) : Constants.DefaultClosedCaptionsChannel;
             }
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets the first of the two-byte packet data.
@@ -570,10 +528,6 @@
         /// </summary>
         public bool IsItalics { get; }
 
-        #endregion
-
-        #region Operators
-
         /// <summary>
         /// Implements the operator.
         /// </summary>
@@ -632,10 +586,6 @@
         /// <returns>The result of the operation.</returns>
         public static bool operator >=(ClosedCaptionPacket left, ClosedCaptionPacket right) =>
             left == null ? right == null : left.CompareTo(right) >= 0;
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Computes the CC channel.
@@ -727,10 +677,6 @@
                 Data.GetHashCode();
         }
 
-        #endregion
-
-        #region Static Methods
-
         /// <summary>
         /// Checks that the header byte starts with 11111b (5 ones binary).
         /// </summary>
@@ -793,7 +739,5 @@
 
             return (char)input;
         }
-
-        #endregion
     }
 }

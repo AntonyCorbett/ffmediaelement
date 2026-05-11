@@ -9,8 +9,6 @@
     /// </summary>
     internal static class SyncLockerFactory
     {
-        #region Enums and Interfaces
-
         private const int DefaultTimeout = 100;
 
         /// <summary>
@@ -38,10 +36,6 @@
             void ReleaseReaderLock();
         }
 
-        #endregion
-
-        #region Factory Methods
-
         /// <summary>
         /// Creates a reader-writer lock backed by a standard ReaderWriterLock.
         /// </summary>
@@ -60,10 +54,6 @@
         /// <param name="useSlim">if set to <c>true</c> it uses the Slim version of a reader-writer lock.</param>
         /// <returns>The Sync Locker.</returns>
         public static ISyncLocker Create(bool useSlim) => useSlim ? CreateSlim() : Create();
-
-        #endregion
-
-        #region Private Classes
 
         /// <inheritdoc />
         private sealed class SyncLockReleaser : IDisposable
@@ -312,7 +302,5 @@
                 return result;
             }
         }
-
-        #endregion
     }
 }

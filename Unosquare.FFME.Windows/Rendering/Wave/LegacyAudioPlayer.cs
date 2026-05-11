@@ -12,17 +12,11 @@
     /// </summary>
     internal sealed class LegacyAudioPlayer : WorkerBase, IWavePlayer, ILoggingSource
     {
-        #region State Variables
-
         private static readonly Lock DevicesEnumLock = new();
         private readonly AutoResetEvent DriverCallbackEvent = new(false);
 
         private IntPtr DeviceHandle;
         private WaveOutBuffer[] Buffers;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LegacyAudioPlayer" /> class.
@@ -41,10 +35,6 @@
             NumberOfBuffers = 2;
             Capabilities = WaveInterop.RetrieveAudioDeviceInfo(DeviceNumber);
         }
-
-        #endregion
-
-        #region Properties
 
         /// <inheritdoc />
         ILoggingHandler ILoggingSource.LoggingHandler => Renderer?.MediaCore;
@@ -79,10 +69,6 @@
         /// Gets the capabilities.
         /// </summary>
         public LegacyAudioDeviceData Capabilities { get; }
-
-        #endregion
-
-        #region Public API
 
         /// <summary>
         /// Gets the Windows Multimedia Extensions (MME) devices in the system.
@@ -138,10 +124,6 @@
                 buffer.Clear();
         }
 
-        #endregion
-
-        #region Worker Methods
-
         /// <inheritdoc />
         protected override void ExecuteCycleLogic(CancellationToken ct)
         {
@@ -196,7 +178,5 @@
             base.Dispose();
             DriverCallbackEvent.Dispose();
         }
-
-        #endregion
     }
 }

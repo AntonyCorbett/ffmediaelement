@@ -11,8 +11,6 @@
 
     internal partial class MediaEngine
     {
-        #region State Management
-
         /// <summary>
         /// Gets the buffer length maximum.
         /// port of MAX_QUEUE_SIZE (ffplay.c).
@@ -98,10 +96,6 @@
                 return Container.Components.HasEnoughPackets == false;
             }
         }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Signals that the engine has entered the syn-buffering state.
@@ -242,7 +236,5 @@
 #pragma warning restore U2U1203
                 InvalidateRenderer(t);
         }
-
-        #endregion
     }
 }

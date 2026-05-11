@@ -14,14 +14,8 @@ namespace Unosquare.FFME.Diagnostics
     /// </summary>
     internal static class Logging
     {
-        #region Private Members
-
         private static readonly ConcurrentQueue<LoggingMessage> LogQueue = [];
         private static readonly LogOutputTimerWorker LogOutputWorker = new();
-
-        #endregion
-
-        #region Constructor
 
         /// <summary>
         /// Initializes static members of the <see cref="Logging"/> class.
@@ -30,10 +24,6 @@ namespace Unosquare.FFME.Diagnostics
         {
             LogOutputWorker.StartAsync();
         }
-
-        #endregion
-
-        #region Extension Methods
 
         /// <summary>
         /// Logs the specified message.
@@ -91,10 +81,6 @@ namespace Unosquare.FFME.Diagnostics
             Log(sender.LoggingHandler, MediaLogMessageType.Error, aspectName, $"{message}\r\n" +
                 $"{ex?.GetType().Name}: {ex?.Message}\r\nStack Trace:\r\n{ex?.StackTrace}");
 
-        #endregion
-
-        #region Methods
-
         /// <summary>
         /// Logs the specified message. This the generic logging mechanism available to all classes.
         /// </summary>
@@ -120,8 +106,6 @@ namespace Unosquare.FFME.Diagnostics
             var messageItem = new LoggingMessage(loggingHandler, messageType, message, aspectName);
             LogQueue.Enqueue(messageItem);
         }
-
-        #endregion
 
         /// <summary>
         /// Implements the timer worker that outputs data to the log.

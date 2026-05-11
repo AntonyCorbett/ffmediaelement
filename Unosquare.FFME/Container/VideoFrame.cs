@@ -14,14 +14,8 @@ namespace Unosquare.FFME.Container
     /// <seealso cref="MediaFrame" />
     internal sealed unsafe class VideoFrame : MediaFrame
     {
-        #region Private Members
-
         private readonly Lock DisposeLock = new();
         private bool IsDisposed;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VideoFrame" /> class.
@@ -90,10 +84,6 @@ namespace Unosquare.FFME.Container
             }
         }
 
-        #endregion
-
-        #region Properties
-
         /// <summary>
         /// Gets the closed caption data collected from the frame in CEA-708/EAS-608 format.
         /// </summary>
@@ -138,10 +128,6 @@ namespace Unosquare.FFME.Container
         /// </summary>
         internal AVFrame* Pointer => (AVFrame*)InternalPointer;
 
-        #endregion
-
-        #region Methods
-
         /// <inheritdoc />
         public override void Dispose()
         {
@@ -156,7 +142,5 @@ namespace Unosquare.FFME.Container
                 IsDisposed = true;
             }
         }
-
-        #endregion
     }
 }

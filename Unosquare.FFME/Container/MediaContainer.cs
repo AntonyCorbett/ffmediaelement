@@ -24,8 +24,6 @@ using System.Runtime.InteropServices;
 /// <seealso cref="IDisposable" />
 internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
 {
-    #region Private Fields
-
     /// <summary>
     /// The exception message no input context.
     /// </summary>
@@ -101,10 +99,6 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     /// </summary>
     private bool RequiresPictureAttachments = true;
 
-    #endregion
-
-    #region Constructor
-
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaContainer" /> class using a media URL.
     /// </summary>
@@ -163,10 +157,6 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
         CustomInputStream = inputStream;
         Configuration = config ?? new ContainerConfiguration();
     }
-
-    #endregion
-
-    #region Properties
 
     /// <inheritdoc />
     ILoggingHandler ILoggingSource.LoggingHandler => m_LoggingHandler;
@@ -297,18 +287,10 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     /// </summary>
     public bool IsReadAborted => SignalAbortReadsRequested;
 
-    #endregion
-
-    #region Internal Properties
-
     /// <summary>
     /// Holds a reference to the input context.
     /// </summary>
     internal AVFormatContext* InputContext { get; private set; } = null;
-
-    #endregion
-
-    #region Private State Management
 
     /// <summary>
     /// Picture attachments are required when video streams support them
@@ -333,10 +315,6 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             RequiresPictureAttachments = canRequireAttachments && value;
         }
     }
-
-    #endregion
-
-    #region Public API
 
     /// <summary>
     /// Initializes the container and its input context, extracting stream information.
@@ -611,10 +589,6 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             }
         }
     }
-
-    #endregion
-
-    #region Private Stream Methods
 
     /// <summary>
     /// Initializes the input context to start read operations.
@@ -1052,8 +1026,6 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private MediaFrame StreamSeek(TimeSpan desiredTargetTime)
     {
-        #region Setup
-
         // Select the seeking component
         var comp = Components.Seekable;
         if (comp == null) return null;
@@ -1088,10 +1060,6 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
         // Perform the stream seek
         int seekResult;
         var startPos = StreamPosition;
-
-        #endregion
-
-        #region Perform FFmpeg API Seek
 
         // The relative target time keeps track of where to seek.
         // if the seeking ends up AFTER the target, we decrement this time and try the seek
@@ -1192,8 +1160,6 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             $"| Seek: {default(long).Format()} | P0: {startPos.Format(1024)} | P1: {StreamPosition.Format(1024)} ");
 
         return frame;
-
-        #endregion
     }
 
     /// <summary>
@@ -1255,6 +1221,4 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
 
         return null;
     }
-
-    #endregion
 }

@@ -22,8 +22,6 @@ namespace Unosquare.FFME.Rendering
     /// <seealso cref="IDisposable" />
     internal sealed class AudioRenderer : IDisposable, IMediaRenderer, IWaveProvider, ILoggingSource
     {
-        #region Private Members
-
         private const int SyncLockTimeout = 100;
 
         private volatile bool IsClosing;
@@ -41,10 +39,6 @@ namespace Unosquare.FFME.Rendering
         private TimeSpan RealTimeLatency;
         private DateTime LastSyncrhonize;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioRenderer"/> class.
         /// </summary>
@@ -61,10 +55,6 @@ namespace Unosquare.FFME.Rendering
             if (MediaCore.State.HasAudio)
                 Initialize();
         }
-
-        #endregion
-
-        #region Properties
 
         /// <inheritdoc />
         ILoggingHandler ILoggingSource.LoggingHandler => MediaCore;
@@ -132,10 +122,6 @@ namespace Unosquare.FFME.Rendering
             get { lock (SyncLock) return m_HasFiredAudioDeviceStopped; }
             set { lock (SyncLock) m_HasFiredAudioDeviceStopped = value; }
         }
-
-        #endregion
-
-        #region Public API
 
         /// <inheritdoc />
         public void Render(MediaBlock mediaBlock, TimeSpan clockPosition)
@@ -275,10 +261,6 @@ namespace Unosquare.FFME.Rendering
             }
         }
 
-        #endregion
-
-        #region IWaveProvider Support
-
         /// <inheritdoc />
         public int Read(byte[] targetBuffer, int targetBufferOffset, int requestedBytes)
         {
@@ -357,10 +339,6 @@ namespace Unosquare.FFME.Rendering
 
             return requestedBytes;
         }
-
-        #endregion
-
-        #region Private Methods
 
         /// <summary>
         /// Called when [application exit].
@@ -444,10 +422,6 @@ namespace Unosquare.FFME.Rendering
             }
         }
 
-        #endregion
-
-        #region DSP (All called inside the Read method)
-
         /// <summary>
         /// Synchronizes audio rendering to the wall clock.
         /// Returns true if additional samples need to be read.
@@ -463,8 +437,6 @@ namespace Unosquare.FFME.Rendering
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool Synchronize(byte[] targetBuffer, int targetBufferOffset, int requestedBytes, double speedRatio)
         {
-            #region Documentation
-
             /*
              * Wikipedia says:
              * For television applications, audio should lead video by no more than 15 milliseconds and audio should
@@ -483,8 +455,6 @@ namespace Unosquare.FFME.Rendering
              *
              * NOTE: (- Sound delayed, + Sound advanced)
              */
-
-            #endregion
 
             var lastSyncSinceMs = TimeSpan.FromTicks(DateTime.UtcNow.Ticks - LastSyncrhonize.Ticks).TotalMilliseconds;
             var hardwareLatencyMs = WaveFormat.ConvertByteSizeToDuration(requestedBytes).TotalMilliseconds;
@@ -780,7 +750,5 @@ namespace Unosquare.FFME.Rendering
                 isLeftSample = !isLeftSample;
             }
         }
-
-        #endregion
     }
 }

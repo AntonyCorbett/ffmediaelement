@@ -16,8 +16,6 @@
     /// </summary>
     internal sealed class DirectSoundPlayer : WorkerBase, IWavePlayer, ILoggingSource
     {
-        #region Fields
-
         /// <summary>
         /// DirectSound default playback device GUID.
         /// </summary>
@@ -44,10 +42,6 @@
         private EventWaitHandle _playbackEndedEventWaitHandle;
         private WaitHandle[] _playbackWaitHandles;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectSoundPlayer" /> class.
         /// (40ms seems to work under Vista).
@@ -61,10 +55,6 @@
             _deviceId = deviceId == Guid.Empty ? DefaultPlaybackDeviceId : deviceId;
             _waveFormat = renderer.WaveFormat;
         }
-
-        #endregion
-
-        #region Properties
 
         /// <inheritdoc />
         ILoggingHandler ILoggingSource.LoggingHandler => Renderer?.MediaCore;
@@ -80,10 +70,6 @@
 
         /// <inheritdoc />
         public int DesiredLatency { get; private set; } = 50;
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Gets the DirectSound output devices in the system.
@@ -127,10 +113,6 @@
 
         /// <inheritdoc />
         public void Clear() => ClearBackBuffer();
-
-        #endregion
-
-        #region Worker Methods
 
         /// <inheritdoc />
         protected override void ExecuteCycleLogic(CancellationToken ct)
@@ -189,10 +171,6 @@
             _frameEndEventWaitHandle?.Dispose();
             _cancelEvent.Dispose();
         }
-
-        #endregion
-
-        #region Helper Methods
 
         /// <summary>
         /// Enumerates the devices.
@@ -440,10 +418,6 @@
 
             return bytesRead;
         }
-
-        #endregion
-
-        #region Native DirectSound COM Interface
 
         private static class DirectSound
         {
@@ -703,7 +677,5 @@
             [DllImport(User32Lib)]
             public static extern IntPtr GetDesktopWindow();
         }
-
-        #endregion
     }
 }

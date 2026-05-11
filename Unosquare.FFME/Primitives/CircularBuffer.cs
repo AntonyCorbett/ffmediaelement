@@ -13,8 +13,6 @@ namespace Unosquare.FFME.Primitives
     /// <seealso cref="IDisposable" />
     internal sealed unsafe class CircularBuffer : IDisposable
     {
-        #region Private State Variables
-
         /// <summary>
         /// The locking object to perform synchronization.
         /// </summary>
@@ -33,10 +31,6 @@ namespace Unosquare.FFME.Primitives
         private int m_ReadIndex;
         private int m_Length;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="CircularBuffer"/> class.
         /// </summary>
@@ -51,10 +45,6 @@ namespace Unosquare.FFME.Primitives
             for (var i = 0; i < m_Length; i++)
                 baseAddress[i] = 0;
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets a value indicating whether this instance is disposed.
@@ -112,10 +102,6 @@ namespace Unosquare.FFME.Primitives
         /// Gets percentage of used bytes (readable/available, from 0.0 to 1.0).
         /// </summary>
         public double CapacityPercent { get { lock (SyncLock) return (double)m_ReadableCount / m_Length; } }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Skips the specified amount requested bytes to be read.
@@ -254,10 +240,6 @@ namespace Unosquare.FFME.Primitives
             }
         }
 
-        #endregion
-
-        #region IDisposable Support
-
         /// <inheritdoc />
         public void Dispose()
         {
@@ -272,7 +254,5 @@ namespace Unosquare.FFME.Primitives
                 m_IsDisposed = true;
             }
         }
-
-        #endregion
     }
 }

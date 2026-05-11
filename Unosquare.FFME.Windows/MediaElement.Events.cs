@@ -7,8 +7,6 @@
 
     public partial class MediaElement
     {
-        #region Events
-
         /// <summary>
         /// Occurs when a logging message from the FFmpeg library has been received.
         /// This is shared across all instances of Media Elements.
@@ -47,10 +45,6 @@
         /// in order to output to a new audio device
         /// </summary>
         public event EventHandler AudioDeviceStopped;
-
-        #endregion
-
-        #region Event Raisers
 
         /// <summary>
         /// Raises the rendering video event.
@@ -142,7 +136,5 @@
         /// </summary>
         internal void RaiseAudioDeviceStoppedEvent() =>
             AudioDeviceStopped?.Invoke(this, EventArgs.Empty);
-
-        #endregion
     }
 }

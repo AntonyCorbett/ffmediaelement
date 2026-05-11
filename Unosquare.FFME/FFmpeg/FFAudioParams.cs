@@ -9,8 +9,6 @@ namespace Unosquare.FFME.FFmpeg
     /// </summary>
     internal sealed unsafe class FFAudioParams
     {
-        #region Constant Definitions
-
         /// <summary>
         /// The standard output audio spec.
         /// </summary>
@@ -20,10 +18,6 @@ namespace Unosquare.FFME.FFmpeg
             SampleRate = Constants.AudioSampleRate,
             Format = Constants.AudioSampleFormat
         };
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Initializes static members of the <see cref="FFAudioParams"/> class.
@@ -60,10 +54,6 @@ namespace Unosquare.FFME.FFmpeg
             SampleRate = frame->sample_rate;
         }
 
-        #endregion
-
-        #region Properties
-
         /// <summary>
         /// Gets the channel count.
         /// </summary>
@@ -94,10 +84,6 @@ namespace Unosquare.FFME.FFmpeg
         /// the samples in the current format.
         /// </summary>
         public int BufferLength { get; private set; }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Creates a source audio spec based on the info in the given audio frame.
@@ -154,7 +140,5 @@ namespace Unosquare.FFME.FFmpeg
             if (a.ChannelLayout.u.mask != b.ChannelLayout.u.mask) return false;
             return a.SampleRate == b.SampleRate;
         }
-
-        #endregion
     }
 }

@@ -21,8 +21,6 @@ namespace Unosquare.FFME.Container
             // placeholder
         }
 
-        #region Properties
-
         /// <summary>
         /// Gets the number of horizontal pixels in the image.
         /// </summary>
@@ -87,10 +85,6 @@ namespace Unosquare.FFME.Container
         /// </summary>
         internal int PictureBufferStride { get; private set; }
 
-        #endregion
-
-        #region Methods
-
         /// <summary>
         /// Allocates a block of memory suitable for a picture buffer
         /// and sets the corresponding properties.
@@ -123,7 +117,5 @@ namespace Unosquare.FFME.Container
             PixelWidth = 0;
             PixelHeight = 0;
         }
-
-        #endregion
     }
 }

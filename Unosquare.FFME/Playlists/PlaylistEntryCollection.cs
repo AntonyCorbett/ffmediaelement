@@ -17,16 +17,10 @@
     public class PlaylistEntryCollection<T> : ObservableCollection<T>
         where T : PlaylistEntry, new()
     {
-        #region Private state
-
         internal const string HeaderPrefix = "#EXTM3U";
         internal const string EntryPrefix = "#EXTINF";
 
         private string m_Name;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlaylistEntryCollection{T}"/> class.
@@ -46,10 +40,6 @@
             m_Name = name;
         }
 
-        #endregion
-
-        #region Properties
-
         /// <summary>
         /// Gets or sets the name of this playlist.
         /// </summary>
@@ -67,10 +57,6 @@
         /// Gets the extended attributes key-value pairs.
         /// </summary>
         public PlaylistEntryAttributeDictionary Attributes { get; } = [];
-
-        #endregion
-
-        #region Load Methods
 
         /// <summary>
         /// Loads from the specified file path.
@@ -114,10 +100,6 @@
                 Attributes[attribute.Key] = attribute.Value;
         }
 
-        #endregion
-
-        #region Save Methods
-
         /// <summary>
         /// Saves the playlist to the specified stream.
         /// </summary>
@@ -155,10 +137,6 @@
             using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
             Save(stream, Encoding.UTF8);
         }
-
-        #endregion
-
-        #region Other Methods
 
         /// <summary>
         /// Called when [property changed].
@@ -255,8 +233,6 @@
 
             return result;
         }
-
-        #endregion
     }
 
     /// <summary>

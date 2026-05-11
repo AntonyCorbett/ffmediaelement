@@ -16,8 +16,6 @@
             if (Debugger.IsAttached == false)
                 return;
 
-            #region Audio and Video Frame Rendering Variables
-
             // Setup GDI+ graphics
             Bitmap overlayBitmap = null;
             Graphics overlayGraphics = null;
@@ -43,14 +41,8 @@
             const float drawVuMeterMinWidth = 5;
             const float drawVuMeterScaleFactor = 20; // RMS * pixel factor = the length of the VU meter lines
 
-            #endregion
-
-            #region Rendering Event Examples
-
             Media.RenderingVideo += (s, e) =>
             {
-                #region Create the overlay buffer to work with
-
                 if (overlayBackBuffer != e.Bitmap.Scan0)
                 {
                     lock (drawVuMeterRmsLock)
@@ -68,10 +60,6 @@
                     overlayGraphics = Graphics.FromImage(overlayBitmap);
                     overlayGraphics.InterpolationMode = InterpolationMode.Default;
                 }
-
-                #endregion
-
-                #region Draw the text and the VU meter
 
                 var differenceMillis = 0d;
                 var leftChannelWidth = 0f;
@@ -110,8 +98,6 @@
                     (drawVuMeterTopOffset + drawVuMeterTopSpacing) * overlayGraphics.DpiY / 96f,
                     drawVuMeterLeftOffset + rightChannelWidth,
                     (drawVuMeterTopOffset + drawVuMeterTopSpacing) * overlayGraphics.DpiY / 96f);
-
-                #endregion
             };
 
             Media.RenderingAudio += (s, e) =>
@@ -169,8 +155,6 @@
                 // and reopened. See issue #93
                 await Media.ChangeMedia();
             };
-
-            #endregion
         }
     }
 }

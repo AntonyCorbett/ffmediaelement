@@ -14,8 +14,6 @@ using System.Runtime.CompilerServices;
 /// <seealso cref="MediaComponent" />
 internal sealed unsafe class AudioComponent : MediaComponent
 {
-    #region Private Declarations
-
     /// <summary>
     /// Holds a reference to the audio re-sampler
     /// This re-sampler gets disposed upon disposal of this object.
@@ -36,10 +34,6 @@ internal sealed unsafe class AudioComponent : MediaComponent
     private string AppliedFilterString;
     private string CurrentFilterArguments;
 
-    #endregion
-
-    #region Constructor
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioComponent"/> class.
     /// </summary>
@@ -52,10 +46,6 @@ internal sealed unsafe class AudioComponent : MediaComponent
         SampleRate = CodecContext->sample_rate;
         BitsPerSample = ffmpeg.av_samples_get_buffer_size(null, 1, 1, CodecContext->sample_fmt, 1) * 8;
     }
-
-    #endregion
-
-    #region Properties
 
     /// <summary>
     /// Gets the number of audio channels.
@@ -76,10 +66,6 @@ internal sealed unsafe class AudioComponent : MediaComponent
     /// Provides access to the AudioFilter string of the container's MediaOptions.
     /// </summary>
     private string FilterString => Container?.MediaOptions?.AudioFilter;
-
-    #endregion
-
-    #region Methods
 
     /// <inheritdoc />
     public override bool MaterializeFrame(MediaFrame input, ref MediaBlock output, MediaBlock previousBlock)
@@ -228,10 +214,6 @@ internal sealed unsafe class AudioComponent : MediaComponent
         return frameHolder;
     }
 
-    #endregion
-
-    #region IDisposable Support
-
     /// <inheritdoc />
     protected override void Dispose(bool alsoManaged)
     {
@@ -246,10 +228,6 @@ internal sealed unsafe class AudioComponent : MediaComponent
         DestroyFilterGraph();
         base.Dispose(alsoManaged);
     }
-
-    #endregion
-
-    #region Filtering Methods
 
     /// <summary>
     /// Destroys the filter graph releasing unmanaged resources.
@@ -415,6 +393,4 @@ internal sealed unsafe class AudioComponent : MediaComponent
             AppliedFilterString = filterString;
         }
     }
-
-    #endregion
 }

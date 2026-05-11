@@ -9,8 +9,6 @@
     /// </summary>
     public sealed class AppCommands
     {
-        #region Private State
-
         private readonly WindowStatus PreviousWindowStatus = new();
 
         private DelegateCommand m_OpenCommand;
@@ -21,10 +19,6 @@
         private DelegateCommand m_ToggleFullscreenCommand;
         private DelegateCommand m_RemovePlaylistItemCommand;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AppCommands"/> class.
         /// </summary>
@@ -32,8 +26,6 @@
         {
             // placeholder
         }
-
-        #endregion
 
         /// <summary>
         /// Gets the open command.

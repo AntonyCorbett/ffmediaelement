@@ -14,8 +14,6 @@
     /// <seealso cref="UserControl" />
     internal sealed class SubtitlesControl : UserControl
     {
-        #region Constants and Defaults
-
         private const FrameworkPropertyMetadataOptions AffectsMeasureAndRender
             = FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender;
 
@@ -38,10 +36,6 @@
         /// The default text outline width.
         /// </summary>
         private static readonly Thickness DefaultTextOutlineWidth = new(1);
-
-        #endregion
-
-        #region Dependency Property Registrations
 
         /// <summary>
         /// The text dependency property.
@@ -88,10 +82,6 @@
             typeof(SubtitlesControl),
             new FrameworkPropertyMetadata(DefaultTextOutline, AffectsMeasureAndRender, OnTextOutlinePropertyChanged));
 
-        #endregion
-
-        #region Private State Backing
-
         /// <summary>
         /// Holds the text blocks that together create an outlined subtitle text display.
         /// </summary>
@@ -108,8 +98,6 @@
         /// A Layout transform to condense text.
         /// </summary>
         private readonly ScaleTransform _condenseTransform = new();
-
-        #endregion
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitlesControl"/> class.
@@ -181,8 +169,6 @@
             Bottom = 4
         }
 
-        #region Dependency Property CLR Accessors
-
         /// <summary>
         /// Gets or sets the text contents of this text block.
         /// </summary>
@@ -237,10 +223,6 @@
             get => GetValue(TextForegroundEffectProperty) as Effect;
             set => SetValue(TextForegroundEffectProperty, value);
         }
-
-        #endregion
-
-        #region Helper Methods
 
         /// <inheritdoc />
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
@@ -306,10 +288,6 @@
             ShadowDepth = 6
         };
 
-        #endregion
-
-        #region Dependency Property Change Handlers
-
         private static void OnTextPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
             if (dependencyObject is SubtitlesControl == false) return;
@@ -362,7 +340,5 @@
             var value = e.NewValue as Effect;
             element._textBlocks[Block.Foreground].Effect = value;
         }
-
-        #endregion
     }
 }

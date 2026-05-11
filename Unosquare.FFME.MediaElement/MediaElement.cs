@@ -19,8 +19,6 @@
         /// </summary>
         internal MediaEngine MediaCore { get; }
 
-        #region Public API
-
         /// <summary>
         /// Requests new media options to be applied, including stream component selection.
         /// Handle the <see cref="MediaChanging"/> event to set new <see cref="MediaOptions"/> based on
@@ -141,8 +139,6 @@
 
             return false;
         }).ConfigureAwait(true);
-
-        #endregion
 
         /// <inheritdoc />
         void ILoggingHandler.HandleLogMessage(LoggingMessage message) =>

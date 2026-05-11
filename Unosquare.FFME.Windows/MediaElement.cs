@@ -32,8 +32,6 @@ namespace Unosquare.FFME
     [DefaultProperty(nameof(Source))]
     public sealed partial class MediaElement : UserControl, IUriContext, IDisposable
     {
-        #region Fields and Property Backing
-
         /// <summary>
         /// The affects measure and render metadata options.
         /// </summary>
@@ -50,10 +48,6 @@ namespace Unosquare.FFME
         private readonly DispatcherTimer _updatesTimer;
 
         private bool _isDisposed;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Initializes static members of the <see cref="MediaElement"/> class.
@@ -126,10 +120,6 @@ namespace Unosquare.FFME
             }
         }
 
-        #endregion
-
-        #region Properties
-
         /// <inheritdoc />
         Uri IUriContext.BaseUri { get; set; }
 
@@ -177,10 +167,6 @@ namespace Unosquare.FFME
             set => _isStateUpdating = value;
         }
 
-        #endregion
-
-        #region Public API
-
         /// <summary>
         /// Captures the currently displayed video image and returns a GDI bitmap.
         /// </summary>
@@ -214,10 +200,6 @@ namespace Unosquare.FFME
 
         /// <inheritdoc />
         public void Dispose() => Dispose(true);
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// Binds the property.
@@ -492,7 +474,5 @@ namespace Unosquare.FFME
                 _isDisposed = true;
             }
         }
-
-        #endregion
     }
 }

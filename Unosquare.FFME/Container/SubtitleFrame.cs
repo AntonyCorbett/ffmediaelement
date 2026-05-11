@@ -14,14 +14,8 @@ namespace Unosquare.FFME.Container
     /// <seealso cref="MediaFrame" />
     internal sealed unsafe class SubtitleFrame : MediaFrame
     {
-        #region Private Members
-
         private readonly Lock DisposeLock = new();
         private bool IsDisposed;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitleFrame" /> class.
@@ -67,10 +61,6 @@ namespace Unosquare.FFME.Container
             }
         }
 
-        #endregion
-
-        #region Properties
-
         /// <summary>
         /// Gets lines of text that the subtitle frame contains.
         /// </summary>
@@ -91,10 +81,6 @@ namespace Unosquare.FFME.Container
         /// </summary>
         internal AVSubtitle* Pointer => (AVSubtitle*)InternalPointer;
 
-        #endregion
-
-        #region Static Methods
-
         /// <inheritdoc />
         public override void Dispose()
         {
@@ -110,7 +96,5 @@ namespace Unosquare.FFME.Container
                 IsDisposed = true;
             }
         }
-
-        #endregion
     }
 }

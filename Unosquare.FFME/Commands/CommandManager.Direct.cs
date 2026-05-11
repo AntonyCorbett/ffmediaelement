@@ -13,15 +13,9 @@
 
     internal partial class CommandManager
     {
-        #region State Backing
-
         private volatile bool HasDirectCommandCompleted = true;
         private volatile int m_PendingDirectCommand = (int)DirectCommandType.None;
         private volatile bool m_IsCloseInterruptPending;
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets a value indicating whether a <see cref="OpenMediaAsync(Uri)"/> operation is in progress.
@@ -66,10 +60,6 @@
             get => m_IsCloseInterruptPending;
             set => m_IsCloseInterruptPending = value;
         }
-
-        #endregion
-
-        #region Execution Helpers
 
         /// <summary>
         /// Execute boilerplate logic required ofr the execution of direct commands.
@@ -259,10 +249,6 @@
             return commandException == null;
         }
 
-        #endregion
-
-        #region Command Implementations
-
         /// <summary>
         /// Provides the implementation for the Open Media Command.
         /// </summary>
@@ -439,10 +425,6 @@
 
             return playWhenCompleted;
         }
-
-        #endregion
-
-        #region Implementation Helpers
 
         /// <summary>
         /// Initializes the media block buffers and
@@ -632,7 +614,5 @@
             MediaCore.PreloadedSubtitles?.Dispose();
             MediaCore.PreloadedSubtitles = null;
         }
-
-        #endregion
     }
 }

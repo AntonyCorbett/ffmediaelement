@@ -16,8 +16,6 @@ namespace Unosquare.FFME.Container
     /// </summary>
     internal sealed class MediaComponentSet : IDisposable
     {
-        #region Private Declarations
-
         // Synchronization locks
         private readonly Lock _componentSyncLock = new();
         private readonly Lock _bufferSyncLock = new();
@@ -34,19 +32,11 @@ namespace Unosquare.FFME.Container
         private SubtitleComponent _subtitle;
         private PacketBufferState _bufferState;
 
-        #endregion
-
-        #region Delegates
-
         public delegate void OnPacketQueueChangedDelegate(
             PacketQueueOp operation, MediaPacket avPacket, MediaType mediaType, PacketBufferState bufferState);
 
         public delegate void OnFrameDecodedDelegate(IntPtr avFrame, MediaType mediaType);
         public delegate void OnSubtitleDecodedDelegate(IntPtr avSubtitle);
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets or sets a method that gets called when a packet is queued.
@@ -233,10 +223,6 @@ namespace Unosquare.FFME.Container
         /// <inheritdoc />
         public void Dispose() => Dispose(true);
 
-        #endregion
-
-        #region Methods
-
         /// <summary>
         /// Sends the specified packet to the correct component by reading the stream index
         /// of the packet that is being sent. No packet is sent if the provided packet is set to null.
@@ -284,10 +270,6 @@ namespace Unosquare.FFME.Container
             foreach (var component in All)
                 component.ClearQueuedPackets(flushBuffers);
         }
-
-        #endregion
-
-        #region Helper Methods
 
         /// <summary>
         /// Updates queue properties and invokes the on packet queue changed callback.
@@ -494,6 +476,4 @@ namespace Unosquare.FFME.Container
             }
         }
     }
-
-    #endregion
 }

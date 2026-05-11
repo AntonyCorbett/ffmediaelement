@@ -15,14 +15,10 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     /// </summary>
     public class DelegateCommand : ICommand
     {
-        #region Property backing fields
-
         private readonly Lock SyncLock = new();
         private readonly Func<object, bool> m_CanExecute;
         private readonly Action<object> ExecuteAction;
         private bool m_IsExecuting;
-
-        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DelegateCommand"/> class.
@@ -55,22 +51,12 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
             // placeholder
         }
 
-        #endregion
-
-        #region Events
-
         /// <inheritdoc />
         public event EventHandler CanExecuteChanged
         {
             add => CommandManager.RequerySuggested += value;
             remove => CommandManager.RequerySuggested -= value;
         }
-
-        #endregion
-
-        #endregion
-
-        #region ICommand Members
 
         /// <summary>
         /// Determines if the command is currently executing.
@@ -146,7 +132,5 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
         /// </summary>
         /// <returns>The awaitable task.</returns>
         public ConfiguredTaskAwaitable ExecuteAsync() => ExecuteAsync(null);
-
-        #endregion
     }
 }

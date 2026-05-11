@@ -16,8 +16,6 @@
     {
         private const int MaxProductNameLength = 32;
 
-        #region Fields
-
         /// <summary>
         /// wMid.
         /// </summary>
@@ -64,10 +62,6 @@
         private Guid manufacturerGuid;
         private Guid productGuid;
         private Guid nameGuid;
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Number of channels supported.
@@ -124,10 +118,6 @@
         /// </summary>
         public readonly Guid ManufacturerGuid => manufacturerGuid;
 
-        #endregion
-
-        #region Methods
-
         /// <inheritdoc />
         public readonly bool Equals(LegacyAudioDeviceData other)
         {
@@ -151,8 +141,6 @@
         /// <param name="waveFormat">The SupportedWaveFormat.</param>
         /// <returns>true if supported.</returns>
         internal readonly bool SupportsWaveFormat(SupportedWaveFormat waveFormat) => (supportedFormats & waveFormat) == waveFormat;
-
-        #endregion
     }
 
 #pragma warning restore IDE0044 // Add readonly modifier

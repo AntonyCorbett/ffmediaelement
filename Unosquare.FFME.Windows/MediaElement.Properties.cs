@@ -12,8 +12,6 @@
 
     public partial class MediaElement
     {
-        #region IsDesignPreviewEnabled Dependency Property
-
         /// <summary>
         /// Gets or sets a value that indicates whether the MediaElement will display
         /// a preview image in design time. This is a dependency property.
@@ -66,10 +64,6 @@
             }
         }
 
-        #endregion
-
-        #region Volume Dependency Property
-
         /// <summary>
         /// Gets/Sets the Volume property on the MediaElement.
         /// Note: Valid values are from 0 to 1.
@@ -102,10 +96,6 @@
             return element.MediaCore.State.Volume;
         }
 
-        #endregion
-
-        #region Balance Dependency Property
-
         /// <summary>
         /// Gets/Sets the Balance property on the MediaElement.
         /// </summary>
@@ -137,10 +127,6 @@
             return element.MediaCore.State.Balance;
         }
 
-        #endregion
-
-        #region IsMuted Dependency Property
-
         /// <summary>
         /// Gets/Sets the IsMuted property on the MediaElement.
         /// </summary>
@@ -171,10 +157,6 @@
             element.MediaCore.State.IsMuted = (bool)value;
             return element.MediaCore.State.IsMuted;
         }
-
-        #endregion
-
-        #region ScrubbingEnabled Dependency Property
 
         /// <summary>
         /// Gets or sets a value that indicates whether the MediaElement will update frames
@@ -208,10 +190,6 @@
             return element.MediaCore.State.ScrubbingEnabled;
         }
 
-        #endregion
-
-        #region VerticalSyncEnabled Dependency Property
-
         /// <summary>
         /// Gets or sets a value that indicates whether the MediaElement will update frames
         /// for seek operations while paused. This is a dependency property.
@@ -244,10 +222,6 @@
             return element.MediaCore.State.VerticalSyncEnabled;
         }
 
-        #endregion
-
-        #region SpeedRatio Dependency Property
-
         /// <summary>
         /// Gets/Sets the SpeedRatio property on the MediaElement.
         /// </summary>
@@ -278,10 +252,6 @@
             element.MediaCore.State.SpeedRatio = (double)value;
             return element.MediaCore.State.SpeedRatio;
         }
-
-        #endregion
-
-        #region Position Dependency Property
 
         /// <summary>
         /// Gets/Sets the Position property on the MediaElement.
@@ -335,10 +305,6 @@
             return targetSeek;
         }
 
-        #endregion
-
-        #region LoadedBahavior Dependency Property
-
         /// <summary>
         /// Specifies the action that the media element should execute when it
         /// is loaded. The default behavior is that it is under manual control
@@ -361,10 +327,6 @@
         public static readonly DependencyProperty LoadedBehaviorProperty = DependencyProperty.Register(
             nameof(LoadedBehavior), typeof(MediaPlaybackState), typeof(MediaElement),
             new FrameworkPropertyMetadata(MediaPlaybackState.Manual));
-
-        #endregion
-
-        #region UnoadedBahavior Dependency Property
 
         /// <summary>
         /// Specifies how the underlying media engine's resources should be handled when
@@ -397,10 +359,6 @@
             element.VideoView.PreventShutdown = behavior != MediaPlaybackState.Close;
         }
 
-        #endregion
-
-        #region LoopingBehavior Dependency Property
-
         /// <summary>
         /// Specifies how the media should behave when it has ended. The default behavior is to Pause the media.
         /// </summary>
@@ -418,10 +376,6 @@
         public static readonly DependencyProperty LoopingBehaviorProperty = DependencyProperty.Register(
             nameof(LoopingBehavior), typeof(MediaPlaybackState), typeof(MediaElement),
             new FrameworkPropertyMetadata(MediaPlaybackState.Pause));
-
-        #endregion
-
-        #region ClosedCaptionsChannel Dependency Property
 
         /// <summary>
         /// Gets/Sets the ClosedCaptionsChannel property on the MediaElement.
@@ -447,10 +401,6 @@
             if (d is MediaElement m) m.CaptionsView.Reset();
         }
 
-        #endregion
-
-        #region Stretch Dependency Property
-
         /// <summary>
         /// Gets/Sets the Stretch on this MediaElement.
         /// The Stretch property determines how large the MediaElement will be drawn.
@@ -473,10 +423,6 @@
             if (d is MediaElement m && m.VideoView != null && m.VideoView.IsLoaded && e.NewValue is Stretch v)
                 m.VideoView.Stretch = v;
         }
-
-        #endregion
-
-        #region StretchDirection Dependency Property
 
         /// <summary>
         /// Gets/Sets the stretch direction of the ViewBox, which determines the restrictions on
@@ -503,10 +449,6 @@
                 m.VideoView.StretchDirection = v;
         }
 
-        #endregion
-
-        #region IgnorePixelAspectRatio Dependency Property
-
         /// <summary>
         /// Gets/Sets the stretch direction of the ViewBox, which determines the restrictions on
         /// scaling that are applied to the content inside the ViewBox.  For instance, this property
@@ -525,8 +467,6 @@
         public static readonly DependencyProperty IgnorePixelAspectRatioProperty = DependencyProperty.Register(
             nameof(IgnorePixelAspectRatio), typeof(bool), typeof(MediaElement),
             new FrameworkPropertyMetadata(false, AffectsMeasureAndRender));
-
-        #endregion
     }
 }
 

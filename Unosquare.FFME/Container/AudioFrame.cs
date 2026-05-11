@@ -14,14 +14,8 @@ using System;
 /// <seealso cref="IDisposable" />
 internal sealed unsafe class AudioFrame : MediaFrame
 {
-    #region Private Members
-
     private readonly Lock _disposeLock = new();
     private bool _isDisposed;
-
-    #endregion
-
-    #region Constructor
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioFrame" /> class.
@@ -47,18 +41,10 @@ internal sealed unsafe class AudioFrame : MediaFrame
         EndTime = TimeSpan.FromTicks(StartTime.Ticks + Duration.Ticks);
     }
 
-    #endregion
-
-    #region Properties
-
     /// <summary>
     /// Gets the pointer to the unmanaged frame.
     /// </summary>
     internal AVFrame* Pointer => (AVFrame*)InternalPointer;
-
-    #endregion
-
-    #region IDisposable Support
 
     /// <inheritdoc />
     public override void Dispose()
@@ -75,6 +61,4 @@ internal sealed unsafe class AudioFrame : MediaFrame
             _isDisposed = true;
         }
     }
-
-    #endregion
 }

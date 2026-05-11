@@ -15,8 +15,6 @@ namespace Unosquare.FFME.Windows.Sample
 
     public partial class MainWindow
     {
-        #region Seek indexing example
-
         /// <summary>
         /// Loads or creates a seek index for short media files.
         /// </summary>
@@ -51,10 +49,6 @@ namespace Unosquare.FFME.Windows.Sample
                 return seekIndex;
             }
         }
-
-        #endregion
-
-        #region Logging Event Handlers
 
         /// <summary>
         /// Handles the MessageLogged event of the Media control.
@@ -104,10 +98,6 @@ namespace Unosquare.FFME.Windows.Sample
                 MessageBoxImage.Error,
                 MessageBoxResult.OK);
         }
-
-        #endregion
-
-        #region Media Stream Opening Event Handlers
 
         /// <summary>
         /// Handles the MediaInitializing event of the Media control.
@@ -464,10 +454,6 @@ namespace Unosquare.FFME.Windows.Sample
                 await media.ChangeMedia();
         }
 
-        #endregion
-
-        #region Other Media Event Handlers and Methods
-
         /// <summary>
         /// Handles the reception of data frames.
         /// </summary>
@@ -517,7 +503,5 @@ namespace Unosquare.FFME.Windows.Sample
                 _ => TaskbarItemProgressState.None,
             };
         }
-
-        #endregion
     }
 }

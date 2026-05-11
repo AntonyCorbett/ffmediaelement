@@ -12,8 +12,6 @@
     /// </summary>
     public sealed class BitmapDataBuffer
     {
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BitmapDataBuffer"/> class.
         /// </summary>
@@ -89,10 +87,6 @@
             PixelFormat = pixelFormat;
         }
 
-        #endregion
-
-        #region Properties
-
         /// <summary>
         /// Gets the length of the buffer (Stride x Pixel Height).
         /// </summary>
@@ -152,8 +146,6 @@
         /// Gets the pixel format.
         /// </summary>
         public PixelFormat PixelFormat { get; }
-
-        #endregion
 
         /// <summary>
         /// Creates a Drawing Bitmap from this data buffer.

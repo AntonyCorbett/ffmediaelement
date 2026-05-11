@@ -49,14 +49,10 @@
             };
         }
 
-        #region Properties
-
         /// <summary>
         /// A proxy, strongly-typed property to the underlying DataContext.
         /// </summary>
         public RootViewModel ViewModel => DataContext as RootViewModel;
-
-        #endregion
 
 #pragma warning disable U2U1012
         private static void FocusTextBox(TextBoxBase textBox)

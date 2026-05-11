@@ -69,8 +69,6 @@ namespace Unosquare.FFME.Common
         /// </summary>
         public long DecodingTime { get; }
 
-        #region Operators
-
         /// <summary>
         /// Implements the operator.
         /// </summary>
@@ -129,8 +127,6 @@ namespace Unosquare.FFME.Common
         /// <returns>The result of the operation.</returns>
         public static bool operator >=(VideoSeekIndexEntry left, VideoSeekIndexEntry right) =>
             left == null ? right == null : left.CompareTo(right) >= 0;
-
-        #endregion
 
         /// <inheritdoc />
         public int CompareTo(VideoSeekIndexEntry other)

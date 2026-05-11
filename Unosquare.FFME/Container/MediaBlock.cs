@@ -126,8 +126,6 @@ namespace Unosquare.FFME.Container
         /// </summary>
         internal MediaBlock Previous { get; set; }
 
-        #region Operators
-
         /// <summary>
         /// Implements the operator.
         /// </summary>
@@ -186,8 +184,6 @@ namespace Unosquare.FFME.Container
         /// <returns>The result of the operation.</returns>
         public static bool operator >=(MediaBlock left, MediaBlock right) =>
             left == null ? right == null : left.CompareTo(right) >= 0;
-
-        #endregion
 
         /// <summary>
         /// Tries the acquire a reader lock on the unmanaged buffer.

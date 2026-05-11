@@ -13,8 +13,6 @@
     /// <seealso cref="AttachedViewModel" />
     public sealed class PlaylistViewModel : AttachedViewModel
     {
-        #region Private State
-
         // Constants
         private const int MinimumSearchLength = 3;
 
@@ -29,8 +27,6 @@
         private bool m_IsPlaylistEnabled = true;
         private string m_OpenMediaSource = string.Empty;
         private string m_PlaylistSearchString = string.Empty;
-
-        #endregion
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlaylistViewModel"/> class.
