@@ -1,6 +1,7 @@
-﻿namespace Unosquare.FFME
+﻿using FFmpeg.AutoGen;
+
+namespace Unosquare.FFME
 {
-    using FFmpeg.AutoGen;
     using System;
     using System.Runtime.CompilerServices;
 

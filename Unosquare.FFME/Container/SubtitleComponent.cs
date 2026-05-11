@@ -1,6 +1,7 @@
-﻿namespace Unosquare.FFME.Container;
+﻿using FFmpeg.AutoGen;
 
-using FFmpeg.AutoGen;
+namespace Unosquare.FFME.Container;
+
 using System;
 using System.Text;
 

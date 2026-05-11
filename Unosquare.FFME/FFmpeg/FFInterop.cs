@@ -1,15 +1,14 @@
-﻿using System.Threading;
-
-namespace FFmpeg.AutoGen;
-
+﻿using FFmpeg.AutoGen;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using Unosquare.FFME;
+using System.Threading;
 using Unosquare.FFME.Common;
 using Unosquare.FFME.Diagnostics;
 using Unosquare.FFME.Engine;
+
+namespace Unosquare.FFME.FFmpeg;
 
 /// <summary>
 /// Provides a set of utilities to perform logging, text formatting,

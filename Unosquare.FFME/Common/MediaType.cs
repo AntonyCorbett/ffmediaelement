@@ -1,7 +1,7 @@
-﻿namespace Unosquare.FFME.Common
-{
-    using FFmpeg.AutoGen;
+﻿using FFmpeg.AutoGen;
 
+namespace Unosquare.FFME.Common
+{
     /// <summary>
     /// Enumerates the different Media Types compatible with AVMEDIATYPE_* constants
     /// defined by FFmpeg.

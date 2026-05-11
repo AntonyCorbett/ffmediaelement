@@ -28,7 +28,14 @@
       "PowerShell(Remove-Item *)",
       "Bash(dotnet sln *)",
       "Bash(Remove-Item *)",
-      "Bash(dotnet run *)"
+      "Bash(dotnet run *)",
+      "PowerShell(Get-ChildItem *)",
+      "Read(//c/Users/anton/.nuget/packages/ffmpeg.autogen/8.1.0//**)",
+      "Read(//c/Users/anton/.nuget/packages/ffmpeg.autogen/8.1.0/**)",
+      "PowerShell($dll = \"$env:USERPROFILE\\\\.nuget\\\\packages\\\\ffmpeg.autogen\\\\8.1.0\\\\lib\\\\netstandard2.1\\\\FFmpeg.AutoGen.dll\"; $assembly = [System.Reflection.Assembly]::LoadFrom\\($dll\\); $assembly.GetTypes\\(\\) | Select-Object FullName | Select-Object -First 30)",
+      "PowerShell($dll = \"$env:USERPROFILE\\\\.nuget\\\\packages\\\\ffmpeg.autogen\\\\8.1.0\\\\lib\\\\netstandard2.1\\\\FFmpeg.AutoGen.dll\"; $assembly = [System.Reflection.Assembly]::LoadFrom\\($dll\\); try { $assembly.GetTypes\\(\\) | Select-Object FullName | Select-Object -First 30 } catch { $_.Exception.LoaderExceptions | Select-Object -First 5 | ForEach-Object { $_.Message } })",
+      "Read(//tmp/**)",
+      "Bash(cat)"
     ]
   }
 }

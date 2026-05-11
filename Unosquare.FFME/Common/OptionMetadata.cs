@@ -1,7 +1,7 @@
-﻿namespace Unosquare.FFME.Common
-{
-    using FFmpeg.AutoGen;
+﻿using FFmpeg.AutoGen;
 
+namespace Unosquare.FFME.Common
+{
     /// <summary>
     /// Provides information about a named option for a demuxer or a codec.
     /// </summary>

@@ -1,9 +1,10 @@
-﻿namespace Unosquare.FFME
+﻿using FFmpeg.AutoGen;
+
+namespace Unosquare.FFME
 {
     using ClosedCaptions;
     using Common;
     using Engine;
-    using FFmpeg.AutoGen;
     using System;
     using System.IO;
     using System.Reflection;

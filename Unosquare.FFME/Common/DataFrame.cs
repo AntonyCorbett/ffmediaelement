@@ -1,10 +1,11 @@
-﻿namespace Unosquare.FFME.Common
+﻿using FFmpeg.AutoGen;
+
+namespace Unosquare.FFME.Common
 {
     using Container;
     using System;
     using Engine;
-    using FFmpeg.AutoGen;
-
+    
     /// <summary>
     /// Represents a frame of non multimedia data read from an input stream.
     /// </summary>

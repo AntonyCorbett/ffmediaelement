@@ -1,10 +1,11 @@
-﻿namespace Unosquare.FFME.Rendering
+﻿using FFmpeg.AutoGen;
+
+namespace Unosquare.FFME.Rendering
 {
     using Common;
     using Container;
     using Diagnostics;
     using Engine;
-    using FFmpeg.AutoGen;
     using Platform;
     using Primitives;
     using System;

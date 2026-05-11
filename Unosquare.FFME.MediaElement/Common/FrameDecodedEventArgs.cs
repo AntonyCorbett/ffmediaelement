@@ -1,7 +1,7 @@
-﻿namespace Unosquare.FFME.Common
-{
-    using FFmpeg.AutoGen;
+﻿using FFmpeg.AutoGen;
 
+namespace Unosquare.FFME.Common
+{
     /// <summary>
     /// Event arguments corresponding to the audio or video frame decoded events. Useful for capturing streams.
     /// </summary>

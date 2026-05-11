@@ -1,8 +1,9 @@
-﻿namespace Unosquare.FFME.Common
+﻿using FFmpeg.AutoGen;
+
+namespace Unosquare.FFME.Common
 {
     using System;
-    using FFmpeg.AutoGen;
-
+    
     /// <summary>
     /// A callback that gets called before the media container's input context gets initialized for the <see cref="IMediaInputStream"/>.
     /// </summary>

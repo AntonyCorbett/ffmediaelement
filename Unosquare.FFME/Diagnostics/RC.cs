@@ -1,8 +1,8 @@
-﻿using System.Threading;
+﻿using FFmpeg.AutoGen;
+using System.Threading;
 
 namespace Unosquare.FFME.Diagnostics
 {
-    using FFmpeg.AutoGen;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;

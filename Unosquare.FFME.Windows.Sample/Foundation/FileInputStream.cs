@@ -1,9 +1,9 @@
 ﻿using System.Threading;
+using FFmpeg.AutoGen;
 
 namespace Unosquare.FFME.Windows.Sample.Foundation;
 
 using Common;
-using FFmpeg.AutoGen;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;

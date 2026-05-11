@@ -1,9 +1,9 @@
-﻿using System.Threading;
+﻿using FFmpeg.AutoGen;
+using System.Threading;
 
 namespace Unosquare.FFME.Container;
 
 using Common;
-using FFmpeg.AutoGen;
 using System;
 
 /// <inheritdoc />

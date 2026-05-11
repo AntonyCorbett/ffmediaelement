@@ -1,9 +1,8 @@
-namespace FFmpeg;
-
 using FFmpeg.AutoGen;
 using System;
 using System.Runtime.InteropServices;
-using Unosquare.FFME;
+
+namespace Unosquare.FFME.FFmpeg;
 
 internal unsafe sealed class FFBPrint : IDisposable
 {

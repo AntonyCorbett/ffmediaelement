@@ -1,9 +1,9 @@
-﻿namespace FFmpeg.AutoGen
-{
-    using System;
-    using System.Collections.Generic;
-    using Unosquare.FFME;
+﻿using FFmpeg.AutoGen;
+using System;
+using System.Collections.Generic;
 
+namespace Unosquare.FFME.FFmpeg
+{
     /// <inheritdoc />
     /// <summary>
     /// An AVDictionary management class.

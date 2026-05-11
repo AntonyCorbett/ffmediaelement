@@ -1,6 +1,7 @@
+using FFmpeg.AutoGen;
+
 namespace Unosquare.FFME.Tests.Fixtures;
 
-using FFmpeg.AutoGen;
 using System;
 using Xunit;
 

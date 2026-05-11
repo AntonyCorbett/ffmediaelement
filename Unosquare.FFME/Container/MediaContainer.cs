@@ -1,8 +1,10 @@
+using FFmpeg.AutoGen;
+using Unosquare.FFME.FFmpeg;
+
 namespace Unosquare.FFME.Container;
 
 using Common;
 using Diagnostics;
-using FFmpeg.AutoGen;
 using System.Threading;
 using System;
 using System.Collections.Generic;

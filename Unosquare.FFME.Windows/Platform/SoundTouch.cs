@@ -1,8 +1,8 @@
-﻿using System.Threading;
+﻿using FFmpeg.AutoGen;
+using System.Threading;
 
 namespace Unosquare.FFME.Platform;
 
-using FFmpeg.AutoGen;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;

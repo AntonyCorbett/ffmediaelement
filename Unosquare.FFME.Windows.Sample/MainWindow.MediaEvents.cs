@@ -1,7 +1,8 @@
-﻿namespace Unosquare.FFME.Windows.Sample
+﻿using FFmpeg.AutoGen;
+
+namespace Unosquare.FFME.Windows.Sample
 {
     using ClosedCaptions;
-    using FFmpeg.AutoGen;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;

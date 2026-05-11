@@ -1,7 +1,7 @@
-﻿namespace Unosquare.FFME.Common
-{
-    using FFmpeg.AutoGen;
+﻿using FFmpeg.AutoGen;
 
+namespace Unosquare.FFME.Common
+{
     /// <summary>
     /// Represents a hardware configuration pair of device and pixel format.
     /// </summary>

@@ -1,3 +1,5 @@
+using FFmpeg.AutoGen;
+
 namespace Unosquare.FFME.Tests;
 
 using Fixtures;
@@ -110,7 +112,7 @@ public sealed class LibraryTests
             var info = Library.RetrieveMediaInfo(path);
             Assert.NotNull(info);
             Assert.True(info.Streams.Count > 0);
-            Assert.Contains(info.BestStreams.Keys, k => k == FFmpeg.AutoGen.AVMediaType.AVMEDIA_TYPE_AUDIO);
+            Assert.Contains(info.BestStreams.Keys, k => k == AVMediaType.AVMEDIA_TYPE_AUDIO);
         }
         finally
         {
@@ -147,8 +149,8 @@ public sealed class LibraryTests
         if (!_ffmpeg.IsAvailable) Assert.Skip(SkipReason);
 
         var original = Library.FFmpegLogLevel;
-        Library.FFmpegLogLevel = FFmpeg.AutoGen.ffmpeg.AV_LOG_ERROR;
-        Assert.Equal(FFmpeg.AutoGen.ffmpeg.AV_LOG_ERROR, Library.FFmpegLogLevel);
+        Library.FFmpegLogLevel = ffmpeg.AV_LOG_ERROR;
+        Assert.Equal(ffmpeg.AV_LOG_ERROR, Library.FFmpegLogLevel);
         Library.FFmpegLogLevel = original;
     }
 

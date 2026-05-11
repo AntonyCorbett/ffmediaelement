@@ -57,8 +57,8 @@
 
         /// <summary>
         /// Gets the unadjusted, original presentation timestamp (PTS) of the frame in
-        /// <see cref="StreamInfo.TimeBase"/> units. May return <see cref="FFmpeg.AutoGen.ffmpeg.AV_NOPTS_VALUE"/>
-        /// when invialid, not applicable (as in continuous audio rendering), or unavailable.
+        /// <see cref="StreamInfo.TimeBase"/> units. May return <see cref="long.MinValue"/>
+        /// (<c>AV_NOPTS_VALUE</c>) when invalid, not applicable (as in continuous audio rendering), or unavailable.
         /// </summary>
         public long PresentationTime { get; }
     }
