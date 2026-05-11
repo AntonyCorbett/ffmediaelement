@@ -127,15 +127,11 @@ internal abstract class WorkerBase : IWorker
     /// </summary>
     public void RequestWakeup() => _wakeSignal.Set();
 
-    /// <summary>
-    /// Cancels the current cycle's CancellationToken and replaces it with a fresh one.
-    /// Called on pause and stop to break out of in-flight cycle logic promptly.
-    /// </summary>
     protected void Interrupt()
     {
-        var old = Interlocked.Exchange(ref _cycleCts, new CancellationTokenSource());
-        try { old.Cancel(); }
-        finally { old.Dispose(); }
+        // Cancel current cycle only; do not allocate a replacement here.
+        try { _cycleCts.Cancel(); }
+        catch (ObjectDisposedException) { }
     }
 
     /// <summary>
@@ -202,10 +198,27 @@ internal abstract class WorkerBase : IWorker
                 RunGate.Release(); // re-release immediately for next iteration
 
                 // Give each cycle a fresh, uncancelled token.
-                var oldCts = Interlocked.Exchange(ref _cycleCts, new CancellationTokenSource());
-                oldCts.Dispose();
 
-                var ct = _cycleCts.Token;
+                var cts = _cycleCts;
+                if (cts.IsCancellationRequested)
+                {
+                    var newCts = new CancellationTokenSource();
+                    var old = Interlocked.CompareExchange(ref _cycleCts, newCts, cts);
+
+                    if (ReferenceEquals(old, cts))
+                    {
+                        cts.Dispose();
+                        cts = newCts;
+                    }
+                    else
+                    {
+                        newCts.Dispose();
+                        cts = old;
+                    }
+                }
+
+                var ct = cts!.Token;
+
                 BeginCycle();
                 try
                 {
