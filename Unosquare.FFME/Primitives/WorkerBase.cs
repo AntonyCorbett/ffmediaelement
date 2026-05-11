@@ -21,6 +21,7 @@ internal abstract class WorkerBase : IWorker
     private readonly CancellationTokenSource _stopCts = new();
     private volatile CancellationTokenSource _cycleCts = new();
     private readonly ManualResetEventSlim _wakeSignal = new(false);
+    private readonly ManualResetEventSlim _cycleCompleted = new(true);
 
     private readonly TaskCompletionSource _loopDone = new();
     private volatile int _stateValue = (int)WorkerState.Created;
@@ -65,9 +66,10 @@ internal abstract class WorkerBase : IWorker
             return WorkerState;
 
         // Cancel the current cycle so its inner loops exit promptly,
-        // then wait for the gate (released by the cycle at the start of each iteration).
+        // then consume the run gate to prevent another cycle from starting.
         Interrupt();
         await RunGate.WaitAsync(_stopCts.Token).ConfigureAwait(false);
+        _cycleCompleted.Wait(_stopCts.Token);
         return WorkerState;
     }
 
@@ -113,6 +115,7 @@ internal abstract class WorkerBase : IWorker
         _stopCts.Dispose();
         _cycleCts.Dispose();
         _wakeSignal.Dispose();
+        _cycleCompleted.Dispose();
 
         _isDisposed = true;
         IsDisposing = false;
@@ -134,6 +137,16 @@ internal abstract class WorkerBase : IWorker
         try { old.Cancel(); }
         finally { old.Dispose(); }
     }
+
+    /// <summary>
+    /// Marks the start of an active worker cycle.
+    /// </summary>
+    protected void BeginCycle() => _cycleCompleted.Reset();
+
+    /// <summary>
+    /// Marks the end of an active worker cycle.
+    /// </summary>
+    protected void EndCycle() => _cycleCompleted.Set();
 
     /// <summary>Executes one unit of work. Check ct frequently for responsive interruption.</summary>
     protected abstract void ExecuteCycleLogic(CancellationToken ct);
@@ -193,6 +206,7 @@ internal abstract class WorkerBase : IWorker
                 oldCts.Dispose();
 
                 var ct = _cycleCts.Token;
+                BeginCycle();
                 try
                 {
                     ExecuteCycleLogic(ct);
@@ -204,6 +218,10 @@ internal abstract class WorkerBase : IWorker
                 catch (Exception ex)
                 {
                     OnCycleException(ex);
+                }
+                finally
+                {
+                    EndCycle();
                 }
 
                 WaitForNextCycle();

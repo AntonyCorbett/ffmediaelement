@@ -5,6 +5,7 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// A very simple set of extensions to more easily handle UI state changes based on
@@ -14,16 +15,10 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     /// </summary>
     internal static class ReactiveExtensions
     {
-        // todo: this implementation is not memory efficient as it does not remove dead references to the publisher or the callbacks.
-        ///
-        /// 1.	Publishers are never removed from the dictionary - Once a publisher is added to Subscriptions, it stays there indefinitely, preventing garbage collection even after the publisher is no longer needed.
-        /// 2.	Event handler keeps references alive - The PropertyChanged event handler (registered around line 62) holds a reference to publisher, keeping it in memory as long as the subscription exists.
-        /// 3.	No cleanup mechanism - There's no way to unsubscribe or clean up when a publisher is disposed.
-
         /// <summary>
         /// Contains a list of subscriptions Subscriptions[Publisher][PropertyName].List of subscriber-action pairs.
         /// </summary>
-        private static readonly Dictionary<INotifyPropertyChanged, SubscriptionSet> Subscriptions = [];
+        private static readonly ConditionalWeakTable<INotifyPropertyChanged, SubscriptionSet> Subscriptions = new();
 
         private static readonly Lock SyncLock = new();
 
@@ -35,61 +30,58 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
         /// <param name="propertyNames">The property names.</param>
         public static void WhenChanged(this INotifyPropertyChanged publisher, Action callback, params string[] propertyNames)
         {
+            ArgumentNullException.ThrowIfNull(publisher);
+            ArgumentNullException.ThrowIfNull(callback);
+            ArgumentNullException.ThrowIfNull(propertyNames);
+
             var bindPropertyChanged = false;
+            SubscriptionSet subscriptionSet;
 
             lock (SyncLock)
             {
-                // Create the subscription set for the publisher if it does not exist.
-                if (Subscriptions.ContainsKey(publisher) == false)
+                if (!Subscriptions.TryGetValue(publisher, out subscriptionSet))
                 {
-                    Subscriptions[publisher] = [];
-
-                    // if it did not exist before, we need to bind to the
-                    // PropertyChanged event of the publisher.
+                    subscriptionSet = [];
+                    Subscriptions.Add(publisher, subscriptionSet);
                     bindPropertyChanged = true;
                 }
 
                 foreach (var propertyName in propertyNames)
                 {
-                    // Create the set of callback references for the publisher's property if it does not exist.
-                    if (!Subscriptions[publisher].ContainsKey(propertyName))
-                        Subscriptions[publisher][propertyName] = [];
+                    if (!subscriptionSet.ContainsKey(propertyName))
+                        subscriptionSet[propertyName] = [];
 
-                    // Add the callback for the publisher's property changed
-                    Subscriptions[publisher][propertyName].Add(callback);
+                    subscriptionSet[propertyName].Add(callback);
                 }
             }
 
             // Make an initial call
             callback();
 
-            // No need to bind to the PropertyChanged event if we are already bound to it.
-            if (bindPropertyChanged == false)
+            if (bindPropertyChanged)
+                publisher.PropertyChanged += OnPublisherPropertyChanged;
+        }
+
+        private static void OnPublisherPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (sender is not INotifyPropertyChanged publisher)
                 return;
 
-            // Finally, bind to property changed
-            publisher.PropertyChanged += (s, e) =>
+            CallbackList propertyCallbacks = null;
+
+            lock (SyncLock)
             {
-                CallbackList propertyCallbacks = null;
+                if (!Subscriptions.TryGetValue(publisher, out var subscriptionSet))
+                    return;
 
-                lock (SyncLock)
-                {
-                    // we don't need to perform any action if there are no subscriptions to
-                    // this property name.
-                    if (Subscriptions[publisher].ContainsKey(e.PropertyName) == false)
-                        return;
+                if (!subscriptionSet.TryGetValue(e.PropertyName, out var callbacks))
+                    return;
 
-                    // Get the list of alive subscriptions for this property name
-                    propertyCallbacks = Subscriptions[publisher][e.PropertyName];
-                }
+                propertyCallbacks = [.. callbacks];
+            }
 
-                // Call the subscription's callbacks
-                foreach (var propertyCallback in propertyCallbacks)
-                {
-                    // if the subscription is alive, invoke the matching action
-                    propertyCallback.Invoke();
-                }
-            };
+            foreach (var propertyCallback in propertyCallbacks)
+                propertyCallback();
         }
 
         internal sealed class SubscriptionSet : Dictionary<string, CallbackList> { }
