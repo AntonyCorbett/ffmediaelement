@@ -32,7 +32,6 @@
     <Product>Unosquare FFME Reference Media Player</Product>
     <Description>Reference implementation of a media player using the FFME</Description>
     <Copyright>Unosquare SA de CV, Mario Di Vece, and Contributors, (C) 2015-2024</Copyright>
-    <PackageProjectUrl>https://github.com/unosquare/ffmediaelement</PackageProjectUrl>
     <ApplicationIcon>ffmpeg.ico</ApplicationIcon>
   </PropertyGroup>
 
