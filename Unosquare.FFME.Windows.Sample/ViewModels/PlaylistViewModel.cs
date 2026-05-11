@@ -172,7 +172,7 @@
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void OnMediaOpened(object sender, EventArgs e)
+        private void OnMediaOpened(object sender, MediaOpenedEventArgs e)
         {
             HasTakenThumbnail = false;
             var m = App.ViewModel.MediaElement;

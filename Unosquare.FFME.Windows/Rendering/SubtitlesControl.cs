@@ -27,12 +27,12 @@
         /// <summary>
         /// The default text foreground.
         /// </summary>
-        private static readonly Brush DefaultTextForeground = Brushes.WhiteSmoke;
+        private static readonly SolidColorBrush DefaultTextForeground = Brushes.WhiteSmoke;
 
         /// <summary>
         /// The default text outline.
         /// </summary>
-        private static readonly Brush DefaultTextOutline = Brushes.Black;
+        private static readonly SolidColorBrush DefaultTextOutline = Brushes.Black;
 
         /// <summary>
         /// The default text outline width.

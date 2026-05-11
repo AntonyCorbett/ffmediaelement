@@ -40,7 +40,7 @@ internal static unsafe class FFInterop
     private static readonly object SyncLock = new();
     private static readonly List<OptionMetadata> EmptyOptionMetaList = [];
     private static readonly av_log_set_callback_callback FFmpegLogCallback = OnFFmpegMessageLogged;
-    private static readonly ILoggingHandler LoggingHandler = new FFLoggingHandler();
+    private static readonly FFLoggingHandler LoggingHandler = new();
 
     #endregion
 

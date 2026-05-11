@@ -500,7 +500,7 @@ public sealed class MediaContainerTests
     /// Calls Read+Decode in a loop until at least one frame is returned or the limit is reached.
     /// Caller is responsible for disposing the returned frames.
     /// </summary>
-    private static IList<MediaFrame> ReadUntilFrames(MediaContainer container, int maxReads = 20)
+    private static List<MediaFrame> ReadUntilFrames(MediaContainer container, int maxReads = 20)
     {
         for (var i = 0; i < maxReads; i++)
         {

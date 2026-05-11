@@ -230,8 +230,11 @@ internal abstract class ElementHostBase<T> : FrameworkElement, IDisposable
     protected override Size MeasureOverride(Size newAvailableSize)
     {
         var previousAvailableSize = AvailableSize;
+
+#pragma warning disable U2U1017
         var previousDesiredSize = Element?.DesiredSize ?? default;
         var availableSizeChanged = previousAvailableSize != newAvailableSize;
+#pragma warning restore U2U1017
 
         AvailableSize = newAvailableSize;
         if (HasOwnDispatcher == false)

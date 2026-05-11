@@ -10,7 +10,6 @@
         /// <inheritdoc />
         public IMediaRenderer CreateRenderer(MediaType mediaType, MediaEngine mediaCore)
         {
-#pragma warning disable IDE0066 // We don't want to use embedded switch expressions
             switch (mediaType)
             {
                 case MediaType.Audio:
@@ -27,7 +26,6 @@
                 default:
                     throw new NotSupportedException($"No suitable renderer for Media Type '{mediaType}'");
             }
-#pragma warning restore IDE0066
         }
     }
 }

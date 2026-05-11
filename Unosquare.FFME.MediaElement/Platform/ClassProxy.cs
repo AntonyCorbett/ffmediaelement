@@ -95,7 +95,9 @@
         /// Retrieves the property information for the properties of the specified type.
         /// </summary>
         /// <returns>A collection of property information objects.</returns>
+#pragma warning disable U2U1011
         public static IReadOnlyList<PropertyInfo> RetrieveProperties()
+#pragma warning restore U2U1011
         {
             var flags = BindingFlags.Instance | BindingFlags.Public;
             var declaredOnly = typeof(T).IsInterface;

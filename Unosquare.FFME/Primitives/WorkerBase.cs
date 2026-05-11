@@ -93,7 +93,7 @@ internal abstract class WorkerBase : IWorker
 
         Interrupt();
         _wakeSignal.Set(); // unblock any cycle delay
-        await _stopCts.CancelAsync();
+        await _stopCts.CancelAsync().ConfigureAwait(false);
 
         try { await _loopDone.Task.ConfigureAwait(false); }
         catch { }

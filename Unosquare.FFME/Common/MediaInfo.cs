@@ -186,7 +186,7 @@
         private static Dictionary<AVMediaType, StreamInfo> FindBestStreams(AVFormatContext* ic, IReadOnlyDictionary<int, StreamInfo> streams)
         {
             // Initialize and clear all the stream indexes.
-            var streamIndexes = new Dictionary<AVMediaType, int>();
+            Dictionary<AVMediaType, int> streamIndexes = [];
 
             for (var i = 0; i < (int)AVMediaType.AVMEDIA_TYPE_NB; i++)
                 streamIndexes[(AVMediaType)i] = -1;
@@ -225,7 +225,7 @@
                     &requestedCodec,
                     0);
 
-            var result = new Dictionary<AVMediaType, StreamInfo>();
+            Dictionary<AVMediaType, StreamInfo> result = [];
             foreach (var kvp in streamIndexes.Where(n => n.Value >= 0))
             {
                 result[kvp.Key] = streams[kvp.Value];

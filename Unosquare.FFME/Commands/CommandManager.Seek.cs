@@ -161,7 +161,6 @@
             try
             {
                 var seekableType = MediaCore.Container.Components.SeekableMediaType;
-                var all = MediaCore.Container.Components.MediaTypes;
                 var mainBlocks = MediaCore.Blocks[seekableType];
                 var initialPosition = MediaCore.PlaybackPosition;
 
@@ -214,6 +213,8 @@
                 var firstFrame = MediaCore.Container.Seek(adjustedSeekTarget);
                 if (firstFrame != null)
                 {
+                    var all = MediaCore.Container.Components.MediaTypes;
+
                     // if we seeked to minvalue we really meant the first frame start time
                     if (targetPosition == TimeSpan.MinValue)
                         targetPosition = firstFrame.StartTime;

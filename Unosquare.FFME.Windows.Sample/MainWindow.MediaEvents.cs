@@ -276,17 +276,17 @@
                     }
                 }
 
-                // Hardware device priorities
-                var deviceCandidates = new[]
-                {
-                    AVHWDeviceType.AV_HWDEVICE_TYPE_CUDA,
-                    AVHWDeviceType.AV_HWDEVICE_TYPE_D3D11VA,
-                    AVHWDeviceType.AV_HWDEVICE_TYPE_DXVA2
-                };
-
                 // Hardware device selection
                 if (videoStream.FPS <= 30)
                 {
+                    // Hardware device priorities
+                    var deviceCandidates = new[]
+                    {
+                        AVHWDeviceType.AV_HWDEVICE_TYPE_CUDA,
+                        AVHWDeviceType.AV_HWDEVICE_TYPE_D3D11VA,
+                        AVHWDeviceType.AV_HWDEVICE_TYPE_DXVA2
+                    };
+
                     var devices = new List<HardwareDeviceInfo>(deviceCandidates.Length);
                     foreach (var deviceType in deviceCandidates)
                     {

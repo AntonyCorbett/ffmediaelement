@@ -410,9 +410,11 @@ namespace Unosquare.FFME
                 return;
 
             // Compute the position offset of the video
+#pragma warning disable U2U1017
             var videoPosition = VideoView.HasOwnDispatcher ?
                 VideoView.TransformToAncestor(ContentGrid).Transform(new Point(0, 0)) :
                 VideoView.Element.TransformToAncestor(ContentGrid).Transform(new Point(0, 0));
+#pragma warning restore U2U1017
 
             // Compute the dimensions of the video
             var videoSize = VideoView.HasOwnDispatcher ?

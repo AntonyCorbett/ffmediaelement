@@ -14,7 +14,7 @@
     {
         #region Property Backing and Private State
 
-        private static readonly IReadOnlyDictionary<string, string> EmptyDictionary = new Dictionary<string, string>(0);
+        private static readonly Dictionary<string, string> EmptyDictionary = [];
 
         private readonly MediaEngine MediaCore;
         // volatile int/bool give memory-barrier semantics for frequently toggled flags.

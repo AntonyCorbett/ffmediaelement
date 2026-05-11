@@ -52,8 +52,8 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
                 foreach (var propertyName in propertyNames)
                 {
                     // Create the set of callback references for the publisher's property if it does not exist.
-                    if (Subscriptions[publisher].ContainsKey(propertyName) == false)
-                        Subscriptions[publisher][propertyName] = new CallbackList();
+                    if (!Subscriptions[publisher].ContainsKey(propertyName))
+                        Subscriptions[publisher][propertyName] = [];
 
                     // Add the callback for the publisher's property changed
                     Subscriptions[publisher][propertyName].Add(callback);

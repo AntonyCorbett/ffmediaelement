@@ -288,9 +288,11 @@ public sealed class VideoSeekIndexTests
     // Helpers
     // -------------------------------------------------------------------------
 
+#pragma warning disable U2U1012
     private static VideoSeekIndexEntry MakeEntry(
         int streamIndex, long startTicks = 0, long pts = 0, long dts = 0) =>
         new(streamIndex, 1, 90000, startTicks, pts, dts);
+#pragma warning restore U2U1012
 
     private static VideoSeekIndex IndexWithSortedEntries(params TimeSpan[] times)
     {

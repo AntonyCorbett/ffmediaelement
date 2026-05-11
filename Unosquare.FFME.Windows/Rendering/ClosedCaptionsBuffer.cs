@@ -416,9 +416,12 @@ namespace Unosquare.FFME.Rendering
                 for (var c = 1; c <= 4; c++)
                 {
                     var currentChannel = (CaptionsChannel)c;
+
+#pragma warning disable U2U1017
                     var dequeuedPackets = DequeuePackets(_channelPacketBuffer[currentChannel], clockPosition.Ticks);
                     if (currentChannel == Channel)
                         packets = dequeuedPackets;
+#pragma warning restore U2U1017
                 }
 
                 // Check if we have at least 1 dequeued packet

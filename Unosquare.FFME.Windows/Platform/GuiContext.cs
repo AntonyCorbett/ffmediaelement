@@ -81,7 +81,7 @@ namespace Unosquare.FFME.Platform
         /// <param name="arguments">The arguments.</param>
         /// <returns>The awaitable task.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task InvokeAsyncInternal(DispatcherPriority priority, Delegate callback, params object[] arguments)
+        private async Task InvokeAsyncInternal(DispatcherPriority priority, Action callback, params object[] arguments)
         {
             if (Thread == Thread.CurrentThread)
             {

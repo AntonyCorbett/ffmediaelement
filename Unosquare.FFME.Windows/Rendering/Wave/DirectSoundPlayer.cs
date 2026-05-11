@@ -229,12 +229,13 @@
         /// <param name="eventHandle">The event handle.</param>
         /// <param name="offset">The offset.</param>
         /// <returns>A DirectSound Position Notification.</returns>
-        private static DirectSound.DirectSoundBufferPositionNotify CreatePositionNotification(WaitHandle eventHandle, uint offset) =>
-            new()
-            {
-                Offset = offset,
-                NotifyHandle = eventHandle.SafeWaitHandle.DangerousGetHandle()
-            };
+        private static DirectSound.DirectSoundBufferPositionNotify CreatePositionNotification(
+            EventWaitHandle eventHandle, uint offset) =>
+                new()
+                {
+                    Offset = offset,
+                    NotifyHandle = eventHandle.SafeWaitHandle.DangerousGetHandle()
+                };
 
         /// <summary>
         /// Initializes the direct sound.
@@ -366,7 +367,9 @@
             if (_audioBackBuffer == null)
                 return;
 
+#pragma warning disable U2U1017
             var silence = new byte[_samplesTotalSize];
+#pragma warning restore U2U1017
 
             // Lock the SecondaryBuffer
             _audioBackBuffer.Lock(0,

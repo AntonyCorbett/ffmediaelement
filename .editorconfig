@@ -255,6 +255,7 @@ dotnet_diagnostic.U2U1002.severity = none
 
 dotnet_diagnostic.IDE0305.severity = none
 dotnet_diagnostic.IDE0290.severity = none
+dotnet_diagnostic.IDE0066.severity = none
 
 dotnet_diagnostic.SYSLIB1054.severity = none
 dotnet_diagnostic.SYSLIB1096.severity = none

@@ -385,7 +385,8 @@ namespace Unosquare.FFME.Container
                     // Check if we already have a block at the given time
                     if (IsInRange(source.StartTime) && source.HasValidStartTime)
                     {
-                        var repeatedBlock = _playbackBlocks.FirstOrDefault(f => f.StartTime.Ticks == source.StartTime.Ticks);
+                        var startTimeTicks = source.StartTime.Ticks;
+                        var repeatedBlock = _playbackBlocks.FirstOrDefault(f => f.StartTime.Ticks == startTimeTicks);
                         if (repeatedBlock != null)
                         {
                             _playbackBlocks.Remove(repeatedBlock);
@@ -557,7 +558,9 @@ namespace Unosquare.FFME.Container
 
             // Monotonic verification
             var lastBlockDuration = _playbackBlocks[^1].Duration;
-            _isNonMonotonic = _playbackBlocks.Any(b => b.Duration.Ticks != lastBlockDuration.Ticks);
+
+            var lastBlockDurationTicks = lastBlockDuration.Ticks;
+            _isNonMonotonic = _playbackBlocks.Any(b => b.Duration.Ticks != lastBlockDurationTicks);
             _isMonotonic = !_isNonMonotonic;
             _monotonicDuration = _isMonotonic ? lastBlockDuration : TimeSpan.Zero;
             _averageBlockDuration = _isMonotonic ? lastBlockDuration : TimeSpan.FromTicks(

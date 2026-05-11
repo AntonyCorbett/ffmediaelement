@@ -335,6 +335,8 @@ public sealed class ClosedCaptionsTests
     // Helper
     // -------------------------------------------------------------------------
 
+#pragma warning disable U2U1012
     private static ClosedCaptionPacket Packet(byte header, byte d0, byte d1) =>
         new(T, header, d0, d1);
+#pragma warning restore U2U1012
 }

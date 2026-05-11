@@ -60,11 +60,15 @@ namespace Unosquare.FFME.Rendering
 
         public void Dispose() => Graphics?.Dispose();
 
-        private void UpdateTargetImage(DispatcherPriority priority, bool syncrhonous)
+        private void UpdateTargetImage(DispatcherPriority priority, bool synchronous)
         {
+#pragma warning disable U2U1017
             var task = VideoDispatcher?.InvokeAsync(() => Graphics.Render(MediaElement.VideoView), priority);
-            if (syncrhonous)
+            if (synchronous)
+            {
                 task?.Wait();
+            }
+#pragma warning restore U2U1017
         }
 
         private sealed class InteropBuffer : IDisposable

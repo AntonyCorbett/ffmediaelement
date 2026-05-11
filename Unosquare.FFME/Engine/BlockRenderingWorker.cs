@@ -611,10 +611,6 @@ namespace Unosquare.FFME.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DetectPlaybackEnded(MediaType main)
         {
-            var playbackEndClock = MediaCore.Blocks[main].Count > 0
-                ? MediaCore.Blocks[main].RangeEndTime
-                : MediaCore.Timing.GetEndTime(main) ?? TimeSpan.MaxValue;
-
             // Check End of Media Scenarios
             if (!Commands.HasPendingCommands
                 && MediaCore.HasDecodingEnded
@@ -623,6 +619,10 @@ namespace Unosquare.FFME.Engine
                 // Rendered all and nothing else to render
                 if (State.HasMediaEnded == false)
                 {
+                    var playbackEndClock = MediaCore.Blocks[main].Count > 0
+                        ? MediaCore.Blocks[main].RangeEndTime
+                        : MediaCore.Timing.GetEndTime(main) ?? TimeSpan.MaxValue;
+
                     if (Container.IsStreamSeekable)
                     {
                         var componentStartTime = Container.Components[main].StartTime;

@@ -84,7 +84,9 @@
         /// <returns>the converted dictionary.</returns>
         public static Dictionary<string, string> ToDictionary(AVDictionary* dictionary)
         {
+#pragma warning disable U2U1201
             var result = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+#pragma warning restore U2U1201
 
             var kvpEntry = ffmpeg.av_dict_get(dictionary, string.Empty, null, ffmpeg.AV_DICT_IGNORE_SUFFIX);
             while (kvpEntry != null)

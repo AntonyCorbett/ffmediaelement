@@ -63,7 +63,7 @@
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
         /// <returns>The thumbnail image.</returns>
-        public static Bitmap CreateThumbnail(Image sourceImage, Color background, int width, int height)
+        public static Bitmap CreateThumbnail(Bitmap sourceImage, Color background, int width, int height)
         {
             var outputSize = new Size(width, height);
             var proportionalSize = ComputeProportionalSize(outputSize, sourceImage.Size);
@@ -73,18 +73,16 @@
 
             // Resize the bitmap
             var outputImage = new Bitmap(width, height);
-            using (var g = Graphics.FromImage(outputImage))
-            {
-                g.Clear(background);
-                g.InterpolationMode = InterpolationMode.Bilinear;
-                g.DrawImage(
-                    sourceImage,
-                    new Rectangle(destinationPoint, proportionalSize),
-                    new Rectangle(Point.Empty, sourceImage.Size),
-                    GraphicsUnit.Pixel);
+            using var g = Graphics.FromImage(outputImage);
+            g.Clear(background);
+            g.InterpolationMode = InterpolationMode.Bilinear;
+            g.DrawImage(
+                sourceImage,
+                new Rectangle(destinationPoint, proportionalSize),
+                new Rectangle(Point.Empty, sourceImage.Size),
+                GraphicsUnit.Pixel);
 
-                g.Flush();
-            }
+            g.Flush();
 
             return outputImage;
         }

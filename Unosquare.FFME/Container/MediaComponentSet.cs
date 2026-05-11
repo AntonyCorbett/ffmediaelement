@@ -23,8 +23,8 @@ namespace Unosquare.FFME.Container
         private readonly Lock _bufferSyncLock = new();
         private volatile bool _isDisposed;
 
-        private IReadOnlyList<MediaComponent> _all = [];
-        private IReadOnlyList<MediaType> _mediaTypes = [];
+        private List<MediaComponent> _all = [];
+        private List<MediaType> _mediaTypes = [];
 
         private int _count;
         private MediaType _seekableMediaType = MediaType.None;

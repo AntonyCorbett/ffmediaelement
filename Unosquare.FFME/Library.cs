@@ -21,6 +21,8 @@ internal static class FFmpegLibrary
         $"{nameof(FFmpeg)} library not initialized. Set the {nameof(FFmpegDirectory)} and call {nameof(LoadFFmpeg)}";
 
     private static readonly Lock SyncLock = new();
+
+#pragma warning disable U2U1020
     private static IReadOnlyList<string> m_InputFormatNames;
     private static IReadOnlyList<OptionMetadata> m_GlobalInputFormatOptions;
     private static IReadOnlyDictionary<string, IReadOnlyList<OptionMetadata>> m_InputFormatOptions;
@@ -28,6 +30,8 @@ internal static class FFmpegLibrary
     private static IReadOnlyList<string> m_EncoderNames;
     private static IReadOnlyList<OptionMetadata> m_GlobalDecoderOptions;
     private static IReadOnlyDictionary<string, IReadOnlyList<OptionMetadata>> m_DecoderOptions;
+#pragma warning restore U2U1020
+
     private static unsafe AVCodec*[] m_AllCodecs;
     private static int m_FFmpegLogLevel = Debugger.IsAttached ? ffmpeg.AV_LOG_VERBOSE : ffmpeg.AV_LOG_WARNING;
     private static bool m_IsInitialized;

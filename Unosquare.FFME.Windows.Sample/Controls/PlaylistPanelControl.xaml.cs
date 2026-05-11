@@ -58,7 +58,9 @@
 
         #endregion
 
+#pragma warning disable U2U1012
         private static void FocusTextBox(TextBoxBase textBox)
+#pragma warning restore U2U1012
         {
             DeferredAction.Create(context =>
             {
