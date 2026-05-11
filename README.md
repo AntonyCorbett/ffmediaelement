@@ -1,6 +1,6 @@
 # OnlyFFME: Advanced WPF Media Engine
 
-> Community-maintained project derived from `unosquare/ffmediaelement`.
+> Community-maintained project **derived from `unosquare/ffmediaelement`**.
 > This repository is independently maintained and includes major architectural and behavioral changes.
 
 ## Status
