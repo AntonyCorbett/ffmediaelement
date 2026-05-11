@@ -1,8 +1,6 @@
 ﻿namespace Unosquare.FFME.Diagnostics
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
 
     /// <summary>
     /// Contains benchmark summary data.
@@ -13,14 +11,17 @@
         /// Initializes a new instance of the <see cref="BenchmarkResult" /> class.
         /// </summary>
         /// <param name="identifier">The identifier.</param>
-        /// <param name="measures">The measures.</param>
-        internal BenchmarkResult(string identifier, List<TimeSpan> measures)
+        /// <param name="count">The measure count.</param>
+        /// <param name="average">The average time in milliseconds.</param>
+        /// <param name="min">The minimum time in milliseconds.</param>
+        /// <param name="max">The maximum time in milliseconds.</param>
+        internal BenchmarkResult(string identifier, int count, double average, double min, double max)
         {
             Identifier = identifier;
-            Count = measures.Count;
-            Average = measures.Average(t => t.TotalMilliseconds);
-            Min = measures.Min(t => t.TotalMilliseconds);
-            Max = measures.Max(t => t.TotalMilliseconds);
+            Count = count;
+            Average = average;
+            Min = min;
+            Max = max;
         }
 
         /// <summary>

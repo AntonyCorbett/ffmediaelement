@@ -14,7 +14,7 @@ namespace Unosquare.FFME.Diagnostics
     internal static class Benchmark
     {
         private static readonly Lock SyncLock = new();
-        private static readonly Dictionary<string, List<TimeSpan>> Measures = [];
+        private static readonly Dictionary<string, BenchmarkMeasures> Measures = [];
 
         /// <summary>
         /// Gets the identifiers.
@@ -51,7 +51,7 @@ namespace Unosquare.FFME.Diagnostics
             {
                 var builder = new StringBuilder();
                 foreach (var kvp in Measures)
-                    builder.AppendLine(new BenchmarkResult(kvp.Key, kvp.Value).ToString());
+                    builder.AppendLine(kvp.Value.ToResult(kvp.Key).ToString());
 
                 return builder.ToString().TrimEnd();
             }
@@ -66,8 +66,8 @@ namespace Unosquare.FFME.Diagnostics
         {
             lock (SyncLock)
             {
-                if (!Measures.TryGetValue(identifier, out List<TimeSpan> measure)) return string.Empty;
-                return new BenchmarkResult(identifier, measure).ToString();
+                if (!Measures.TryGetValue(identifier, out var measure)) return string.Empty;
+                return measure.ToResult(identifier).ToString();
             }
         }
 
@@ -82,7 +82,7 @@ namespace Unosquare.FFME.Diagnostics
             lock (SyncLock)
             {
                 snapshot = Measures
-                    .Select(kvp => new BenchmarkResult(kvp.Key, kvp.Value))
+                    .Select(kvp => kvp.Value.ToResult(kvp.Key))
                     .ToArray();
             }
 
@@ -99,8 +99,8 @@ namespace Unosquare.FFME.Diagnostics
         {
             lock (SyncLock)
             {
-                if (!Measures.TryGetValue(identifier, out List<TimeSpan> measure)) return null;
-                return new BenchmarkResult(identifier, measure);
+                if (!Measures.TryGetValue(identifier, out var measure)) return null;
+                return measure.ToResult(identifier);
             }
         }
 
@@ -127,8 +127,7 @@ namespace Unosquare.FFME.Diagnostics
         {
             lock (SyncLock)
             {
-                if (Measures.ContainsKey(identifier) == false) return;
-                Measures[identifier].Clear();
+                Measures.Remove(identifier);
             }
         }
 
@@ -139,8 +138,7 @@ namespace Unosquare.FFME.Diagnostics
         {
             lock (SyncLock)
             {
-                foreach (var kvp in Measures)
-                    kvp.Value.Clear();
+                Measures.Clear();
             }
         }
 
@@ -153,14 +151,41 @@ namespace Unosquare.FFME.Diagnostics
         {
             lock (SyncLock)
             {
-                if (Measures.ContainsKey(identifier) == false)
+                if (!Measures.TryGetValue(identifier, out var measures))
                 {
-#pragma warning disable IDE0028 // don't simplify init since we want to set the initial capacity.
-                    Measures[identifier] = new List<TimeSpan>(1024 * 1024);
-#pragma warning restore IDE0028
+                    measures = new BenchmarkMeasures();
+                    Measures[identifier] = measures;
                 }
 
-                Measures[identifier].Add(elapsed);
+                measures.Add(elapsed);
+            }
+        }
+
+        private sealed class BenchmarkMeasures
+        {
+            private double TotalMilliseconds;
+
+            public int Count { get; private set; }
+
+            public double MinMilliseconds { get; private set; } = double.MaxValue;
+
+            public double MaxMilliseconds { get; private set; } = double.MinValue;
+
+            public void Add(TimeSpan elapsed)
+            {
+                var elapsedMilliseconds = elapsed.TotalMilliseconds;
+                Count++;
+                TotalMilliseconds += elapsedMilliseconds;
+                MinMilliseconds = Math.Min(MinMilliseconds, elapsedMilliseconds);
+                MaxMilliseconds = Math.Max(MaxMilliseconds, elapsedMilliseconds);
+            }
+
+            public BenchmarkResult ToResult(string identifier)
+            {
+                var average = Count > 0 ? TotalMilliseconds / Count : 0d;
+                var min = Count > 0 ? MinMilliseconds : 0d;
+                var max = Count > 0 ? MaxMilliseconds : 0d;
+                return new BenchmarkResult(identifier, Count, average, min, max);
             }
         }
 
