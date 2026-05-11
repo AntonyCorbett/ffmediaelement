@@ -16,9 +16,9 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
     internal static class ReactiveExtensions
     {
         /// <summary>
-        /// Contains a list of subscriptions Subscriptions[Publisher][PropertyName].List of subscriber-action pairs.
+        /// Contains a list of Subscriptions[Publisher][PropertyName].List of subscriber-action pairs.
         /// </summary>
-        private static readonly ConditionalWeakTable<INotifyPropertyChanged, SubscriptionSet> Subscriptions = new();
+        private static readonly ConditionalWeakTable<INotifyPropertyChanged, SubscriptionSet> Subscriptions = [];
 
         private static readonly Lock SyncLock = new();
 
@@ -35,11 +35,10 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
             ArgumentNullException.ThrowIfNull(propertyNames);
 
             var bindPropertyChanged = false;
-            SubscriptionSet subscriptionSet;
-
+            
             lock (SyncLock)
             {
-                if (!Subscriptions.TryGetValue(publisher, out subscriptionSet))
+                if (!Subscriptions.TryGetValue(publisher, out SubscriptionSet subscriptionSet))
                 {
                     subscriptionSet = [];
                     Subscriptions.Add(publisher, subscriptionSet);
@@ -48,10 +47,13 @@ namespace Unosquare.FFME.Windows.Sample.Foundation
 
                 foreach (var propertyName in propertyNames)
                 {
-                    if (!subscriptionSet.ContainsKey(propertyName))
-                        subscriptionSet[propertyName] = [];
+                    if (subscriptionSet != null)
+                    {
+                        if (!subscriptionSet.ContainsKey(propertyName))
+                            subscriptionSet[propertyName] = [];
 
-                    subscriptionSet[propertyName].Add(callback);
+                        subscriptionSet[propertyName].Add(callback);
+                    }
                 }
             }
 
