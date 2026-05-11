@@ -2,9 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-
-    /// <inheritdoc />
+    
     /// <summary>
     /// Represents a 3-byte packet of closed-captioning data in EIA-608 format.
     /// See: http://jackyjung.tistory.com/attachment/499e14e28c347DB.pdf.

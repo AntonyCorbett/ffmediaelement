@@ -247,7 +247,7 @@ namespace Unosquare.FFME.Commands
                     MediaCore.Workers.ResumePaused();
 
                     // Resume if requested
-                    if (PlayAfterSeek == true)
+                    if (PlayAfterSeek)
                     {
                         PlayAfterSeek = false;
                         State.MediaState = MediaPlaybackState.Play;

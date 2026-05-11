@@ -664,10 +664,12 @@
             public sealed class BufferCaps
             {
                 public int Size;
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
                 public int Flags;
                 public int BufferBytes;
                 public int UnlockTransferRate;
                 public int PlayCpuOverhead;
+#pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
             }
         }
 

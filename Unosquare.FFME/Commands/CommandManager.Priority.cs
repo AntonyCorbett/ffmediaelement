@@ -37,10 +37,11 @@
                 PendingPriorityCommand = command;
                 PriorityCommandCompleted.Reset();
 
+                var completed = PriorityCommandCompleted;
                 var commandTask = new Task<bool>(() =>
                 {
                     ResumeAsync().Wait();
-                    PriorityCommandCompleted.Wait();
+                    completed.Wait();
                     return true;
                 });
 
@@ -68,25 +69,21 @@
         /// <summary>
         /// Provides the implementation for the Play Media Command.
         /// </summary>
-        /// <returns>True if the command was successful.</returns>
-        private bool CommandPlayMedia()
+        private void CommandPlayMedia()
         {
             foreach (var renderer in MediaCore.Renderers.Values)
                 renderer.OnPlay();
 
             State.MediaState = MediaPlaybackState.Play;
-
-            return true;
         }
 
         /// <summary>
         /// Provides the implementation for the Pause Media Command.
         /// </summary>
-        /// <returns>True if the command was successful.</returns>
-        private bool CommandPauseMedia()
+        private void CommandPauseMedia()
         {
             if (State.CanPause == false)
-                return false;
+                return;
 
             MediaCore.PausePlayback();
 
@@ -95,17 +92,15 @@
 
             MediaCore.ChangePlaybackPosition(SnapPositionToBlockPosition(MediaCore.PlaybackPosition));
             State.MediaState = MediaPlaybackState.Pause;
-            return true;
         }
 
         /// <summary>
         /// Provides the implementation for the Stop Media Command.
         /// </summary>
-        /// <returns>True if the command was successful.</returns>
-        private bool CommandStopMedia()
+        private void CommandStopMedia()
         {
             if (State.IsSeekable == false)
-                return false;
+                return;
 
             MediaCore.ResetPlaybackPosition();
 
@@ -115,7 +110,6 @@
                 renderer.OnStop();
 
             State.MediaState = MediaPlaybackState.Stop;
-            return true;
         }
 
         #endregion

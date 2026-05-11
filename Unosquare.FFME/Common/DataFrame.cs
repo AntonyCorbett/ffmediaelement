@@ -38,7 +38,7 @@ namespace Unosquare.FFME.Common
             }
 
             PacketPosition = packet.Position;
-            PacketPresetnationTimestamp = packet.Pointer->pts;
+            PacketPresentationTimestamp = packet.Pointer->pts;
             PacketDecodingTimestamp = packet.Pointer->dts;
 
             DecodingTime = stream == null
@@ -47,7 +47,7 @@ namespace Unosquare.FFME.Common
 
             StartTime = stream == null
                 ? TimeSpan.MinValue
-                : PacketPresetnationTimestamp.ToTimeSpan(stream.TimeBase);
+                : PacketPresentationTimestamp.ToTimeSpan(stream.TimeBase);
 
             GuessStartTime(mediaCore);
         }
@@ -55,12 +55,13 @@ namespace Unosquare.FFME.Common
         /// <summary>
         /// Gets the stream index this packet corresponds to.
         /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public int StreamIndex { get; }
 
         /// <summary>
         /// Gets the original PTS of the packet in stream timebase units.
         /// </summary>
-        public long PacketPresetnationTimestamp { get; }
+        public long PacketPresentationTimestamp { get; }
 
         /// <summary>
         /// Gets the original DTS of the packet in stream timebase units.
@@ -71,12 +72,14 @@ namespace Unosquare.FFME.Common
         /// Gets the <see cref="PacketDecodingTimestamp"/> expressed as a <see cref="TimeSpan"/>.
         /// Returns <see cref="TimeSpan.MinValue"/> if invalid.
         /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public TimeSpan DecodingTime { get; }
 
         /// <summary>
         /// Gets a value indicating whether the presentation time of this data
         /// frame was guessed.
         /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public bool IsStartTimeGuessed { get; private set; }
 
         /// <summary>
@@ -85,12 +88,14 @@ namespace Unosquare.FFME.Common
         /// Check the <see cref="IsStartTimeGuessed"/> property
         /// to see if this value was guessed.
         /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public TimeSpan StartTime { get; private set; }
 
         /// <summary>
         /// Gets the packet's byte position in the input stream.
         /// Returns -1 if unknown.
         /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
         public long PacketPosition { get; }
 
         /// <summary>
@@ -107,7 +112,7 @@ namespace Unosquare.FFME.Common
         /// <param name="mediaCore">The media core.</param>
         private void GuessStartTime(MediaEngine mediaCore)
         {
-            if (PacketPresetnationTimestamp != ffmpeg.AV_NOPTS_VALUE)
+            if (PacketPresentationTimestamp != ffmpeg.AV_NOPTS_VALUE)
                 return;
 
             if (mediaCore == null)

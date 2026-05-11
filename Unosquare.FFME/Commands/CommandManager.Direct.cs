@@ -151,23 +151,22 @@
                     {
                         this.LogError(Aspects.EngineCommand, $"Direct Command '{command}' execution error", ex);
                         commandException = ex;
-                        commandResult = false;
                     }
 
                     // We are done executing -- Update the commanding state
-                    // The post-procesor will use the new IsOpening, IsClosing and IsChanging states
+                    // The post-processor will use the new IsOpening, IsClosing and IsChanging states
                     PendingDirectCommand = DirectCommandType.None;
 
                     try
                     {
-                        // Update the sate based on command result
+                        // Update the state based on command result
                         commandResult = PostProcessDirectCommand(command, commandException, resumeResult);
 
                         // Resume the workers and this processor if we are in the Open state
                         if (State.IsOpen && commandResult)
                         {
                             // Resume the media core workers
-                            MediaCore.Workers.ResumePaused();
+                            MediaCore.Workers?.ResumePaused();
 
                             // Resume this queue processor
                             ResumeAsync();
@@ -513,8 +512,8 @@
         private MediaType[] GetCurrentRenderingTypes()
         {
             var currentMediaTypes = new List<MediaType>(8);
-            currentMediaTypes.AddRange(MediaCore?.Renderers?.Keys?.ToArray() ?? []);
-            currentMediaTypes.AddRange(MediaCore?.Blocks?.Keys?.ToArray() ?? []);
+            currentMediaTypes.AddRange(MediaCore?.Renderers?.Keys.ToArray() ?? []);
+            currentMediaTypes.AddRange(MediaCore?.Blocks?.Keys.ToArray() ?? []);
 
             return currentMediaTypes.Distinct().ToArray();
         }

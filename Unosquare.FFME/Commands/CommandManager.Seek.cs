@@ -148,10 +148,10 @@
         /// <param name="seekOperation">The seek operation.</param>
         /// <param name="ct">The ct.</param>
         /// <returns>True if the operation was successful.</returns>
-        private bool SeekMedia(SeekOperation seekOperation, CancellationToken ct)
+        private void SeekMedia(SeekOperation seekOperation, CancellationToken ct)
         {
             // TODO: Handle Cancellation token ct
-            // var result = false;
+            
             var hasDecoderSeeked = false;
             var startTime = DateTime.UtcNow;
             var targetSeekMode = seekOperation.Mode;
@@ -179,7 +179,7 @@
                 if (mainBlocks.IsInRange(targetPosition))
                 {
                     MediaCore.ChangePlaybackPosition(targetPosition);
-                    return true;
+                    return;
                 }
 
                 // Let consumers know main blocks are not available
@@ -231,7 +231,7 @@
 
                     // Create the blocks from the obtained seek frames
                     MediaCore.Blocks[firstFrame.MediaType]?.Add(firstFrame, MediaCore.Container);
-                    hasSeekBlocks = TrySignalBlocksAvailable(targetSeekMode, mainBlocks, targetPosition, hasSeekBlocks);
+                    hasSeekBlocks = TrySignalBlocksAvailable(targetSeekMode, mainBlocks, targetPosition, false);
 
                     // Decode all available queued packets into the media component blocks
                     foreach (var mt in all)
@@ -249,7 +249,7 @@
                     while (MediaCore.ShouldReadMorePackets && !ct.IsCancellationRequested && !hasSeekBlocks)
                     {
                         // Check if we are already in range
-                        hasSeekBlocks = TrySignalBlocksAvailable(targetSeekMode, mainBlocks, targetPosition, hasSeekBlocks);
+                        hasSeekBlocks = TrySignalBlocksAvailable(targetSeekMode, mainBlocks, targetPosition, false);
                         if (hasSeekBlocks) break;
 
                         // Read the next packet
@@ -261,7 +261,7 @@
                         if (blocks.RangeEndTime.Ticks < targetPosition.Ticks || blocks.IsFull == false)
                         {
                             blocks.Add(MediaCore.Container.Components[packetType].ReceiveNextFrame(), MediaCore.Container);
-                            hasSeekBlocks = TrySignalBlocksAvailable(targetSeekMode, mainBlocks, targetPosition, hasSeekBlocks);
+                            hasSeekBlocks = TrySignalBlocksAvailable(targetSeekMode, mainBlocks, targetPosition, false);
                         }
                     }
                 }
@@ -308,8 +308,6 @@
                 MediaCore.InvalidateRenderers();
                 seekOperation.Dispose();
             }
-
-            return !hasSeekBlocks;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
